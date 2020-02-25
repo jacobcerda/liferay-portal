@@ -24,34 +24,34 @@ definition {
 		Navigator.gotoPage(pageName = "Blogs Page");
 	}
 
-	tearDown {
-		var testPortalInstance = PropsUtil.get("test.portal.instance");
+	// tearDown {
+	// 	var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		if ("${testPortalInstance}" == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			BlogsEntry.tearDownCP();
+	// 	if ("${testPortalInstance}" == "true") {
+	// 		PortalInstances.tearDownCP();
+	// 	}
+	// 	else {
+	// 		BlogsEntry.tearDownCP();
 
-			Blogs.tearDownConfigurationDisplaySettingsPG(
-				pageName = "Blogs Page",
-				portletName = "Blogs");
+	// 		Blogs.tearDownConfigurationDisplaySettingsPG(
+	// 			pageName = "Blogs Page",
+	// 			portletName = "Blogs");
 
-			Blogs.tearDownConfigurationScopePG(
-				pageName = "Blogs Page",
-				portletName = "Blogs");
+	// 		Blogs.tearDownConfigurationScopePG(
+	// 			pageName = "Blogs Page",
+	// 			portletName = "Blogs");
 
-			Page.tearDownCP();
+	// 		Page.tearDownCP();
 
-			Site.tearDownCP();
+	// 		Site.tearDownCP();
 
-			Organization.tearDownCP();
+	// 		Organization.tearDownCP();
 
-			JSONUser.tearDownNonAdminUsers();
+	// 		JSONUser.tearDownNonAdminUsers();
 
-			ServerAdministration.tearDownMailServerSettings();
-		}
-	}
+	// 		ServerAdministration.tearDownMailServerSettings();
+	// 	}
+	// }
 
 	@priority = "5"
 	test AddBlogsEntry {
@@ -69,25 +69,31 @@ definition {
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 	}
-
+	
 	@priority = "4"
 	test AddBlogsEntryComment {
-		JSONBlog.addEntry(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
+		 JSONBlog.addEntry(
+		 	entryContent = "Blogs Entry Content",
+		 	entryTitle = "Blogs Entry Title");
+	
 		Navigator.gotoPage(pageName = "Blogs Page");
-
+	
 		Pause(locator1 = "3000");
+	
+		BlogsNavigator.gotoEntryPG(
+		 	entryContent = "Blogs Entry Content",
+		 	entryTitle = "Blogs Entry Title"
+		);
 
 		Comments.addPG(entryComment = "Blogs Entry Comment");
-
+		
 		Navigator.gotoPage(pageName = "Blogs Page");
-
+	
 		BlogsNavigator.gotoEntryPG(
 			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
+			entryTitle = "Blogs Entry Title"
+		);
+		
 		Comments.viewPG(
 			commentCount = "1",
 			entryComment = "Blogs Entry Comment",
