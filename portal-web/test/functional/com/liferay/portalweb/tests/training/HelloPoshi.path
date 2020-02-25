@@ -1,0 +1,19 @@
+<html> 
+<head>
+<title>HelloPoshi</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">HelloPoshi</td></tr>
+</thead>
+<tbody>
+<tr>
+	<td>ASSERT_HEADER</td>
+	<td>//h2[@class='portlet-title-text'][contains(text(),'${header}')]</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>
