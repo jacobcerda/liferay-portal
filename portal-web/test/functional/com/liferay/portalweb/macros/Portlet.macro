@@ -17,12 +17,6 @@ definition {
 			value1 = "Add");
 	}
 
-
-	macro viewHeader {
-		var key_header = "${header}"; 
-		AssertElementPresent(locator1 = "HelloPoshi#ASSERT_HEADER");
-	}
-
 	macro addDuplicatePG {
 		var portletTypeKey = "PORTLET";
 
