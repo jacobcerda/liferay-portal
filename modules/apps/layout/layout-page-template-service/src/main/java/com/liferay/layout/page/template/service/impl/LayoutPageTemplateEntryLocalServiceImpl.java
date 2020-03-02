@@ -886,10 +886,12 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 
 		String typeSettings = StringPool.BLANK;
 
+		UnicodeProperties typeSettingsProperties = new UnicodeProperties();
+
+		typeSettingsProperties.put("published", "true");
+
 		if ((type == LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT) ||
 			(masterLayoutPlid > 0)) {
-
-			UnicodeProperties typeSettingsProperties = new UnicodeProperties();
 
 			typeSettingsProperties.setProperty(
 				"lfr-theme:regular:show-footer", Boolean.FALSE.toString());
@@ -901,9 +903,9 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 			typeSettingsProperties.setProperty(
 				"lfr-theme:regular:wrap-widget-page-content",
 				Boolean.FALSE.toString());
-
-			typeSettings = typeSettingsProperties.toString();
 		}
+
+		typeSettings = typeSettingsProperties.toString();
 
 		serviceContext.setAttribute(
 			"layout.instanceable.allowed", Boolean.TRUE);

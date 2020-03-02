@@ -935,7 +935,9 @@
 		},
 
 		listSelect(select, delimeter) {
-			select = Util.getElement(select);
+			select = Util.getElement(
+				select instanceof RadioNodeList ? select.item(0) : select
+			);
 
 			return Array.from(select.querySelectorAll('option'))
 				.reduce((prev, item) => {

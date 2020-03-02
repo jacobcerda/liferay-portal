@@ -12,24 +12,16 @@
  * details.
  */
 
-package com.liferay.depot.web.internal.configuration;
+const withContextMock = Component => {
+	return class WithContextMock extends Component {
+		getChildContext() {
+			return {
+				store: {
+					editingLanguageId: 'en_US',
+				},
+			};
+		}
+	};
+};
 
-import aQute.bnd.annotation.metatype.Meta;
-
-import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
-
-/**
- * @author Alejandro Tardín
- */
-@ExtendedObjectClassDefinition(category = "asset-libraries")
-@Meta.OCD(
-	id = "com.liferay.depot.web.internal.configuration.FFDepotConfiguration",
-	localization = "content/Language",
-	name = "asset-libraries-configuration-name"
-)
-public interface FFDepotConfiguration {
-
-	@Meta.AD(deflt = "true", name = "enabled", required = false)
-	public boolean enabled();
-
-}
+export default withContextMock;

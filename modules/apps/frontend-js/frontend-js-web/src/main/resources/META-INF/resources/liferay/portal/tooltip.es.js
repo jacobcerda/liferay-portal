@@ -12,24 +12,14 @@
  * details.
  */
 
-package com.liferay.depot.web.internal.configuration;
-
-import aQute.bnd.annotation.metatype.Meta;
-
-import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
-
 /**
- * @author Alejandro Tardín
+ * Prepares given element to show tooltip
+ * @param {HTMLElement} element The portlet's namespace
+ * @param {String} text Text to show in tooltip
+ * @deprecated As of Athanasius (7.3.x), replaced by ClayTooltip
  */
-@ExtendedObjectClassDefinition(category = "asset-libraries")
-@Meta.OCD(
-	id = "com.liferay.depot.web.internal.configuration.FFDepotConfiguration",
-	localization = "content/Language",
-	name = "asset-libraries-configuration-name"
-)
-public interface FFDepotConfiguration {
+export function showTooltip(element, text) {
+	element.setAttribute('title', text);
 
-	@Meta.AD(deflt = "true", name = "enabled", required = false)
-	public boolean enabled();
-
+	element.classList.add('lfr-portal-tooltip');
 }
