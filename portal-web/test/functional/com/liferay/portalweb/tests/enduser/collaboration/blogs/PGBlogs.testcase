@@ -74,7 +74,7 @@ definition {
 	test AddBlogsEntryComment {
 		JSONBlog.addEntry(
 			entryContent = "Blogs Entry Content",
-			EntryTitle = "Blogs Entry Title");
+			entryTitle = "Blogs Entry Title");
 
 		Navigator.gotoPage(pageName = "Blogs Page");
 
