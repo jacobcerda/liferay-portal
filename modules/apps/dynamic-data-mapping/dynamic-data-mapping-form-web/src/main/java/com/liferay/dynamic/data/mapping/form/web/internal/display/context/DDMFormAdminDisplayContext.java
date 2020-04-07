@@ -92,6 +92,7 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -101,7 +102,10 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.taglib.servlet.PipingServletResponse;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -117,6 +121,7 @@ import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.PageContext;
 
 /**
  * @author Bruno Basto
@@ -277,10 +282,11 @@ public class DDMFormAdminDisplayContext {
 	}
 
 	public JSONArray getDDMFormFieldTypesJSONArray() throws PortalException {
-		List<DDMFormFieldType> formFieldTypes =
-			_ddmFormFieldTypeServicesTracker.getDDMFormFieldTypes();
+		List<DDMFormFieldType> availableDDMFormFieldTypes =
+			_removeDDMFormFieldTypesOutOfScope(
+				_ddmFormFieldTypeServicesTracker.getDDMFormFieldTypes());
 
-		String serializedFormFieldTypes = serialize(formFieldTypes);
+		String serializedFormFieldTypes = serialize(availableDDMFormFieldTypes);
 
 		JSONArray jsonArray = jsonFactory.createJSONArray(
 			serializedFormFieldTypes);
@@ -292,7 +298,8 @@ public class DDMFormAdminDisplayContext {
 			PortalUtil.getHttpServletResponse(renderResponse);
 
 		for (int i = 0; i < jsonArray.length(); i++) {
-			DDMFormFieldType ddmFormFieldType = formFieldTypes.get(i);
+			DDMFormFieldType ddmFormFieldType = availableDDMFormFieldTypes.get(
+				i);
 
 			JSONObject jsonObject = jsonArray.getJSONObject(i);
 
@@ -950,7 +957,9 @@ public class DDMFormAdminDisplayContext {
 		return ParamUtil.getBoolean(renderRequest, "showPublishAlert");
 	}
 
-	public String serializeSettingsForm() throws PortalException {
+	public String serializeSettingsForm(PageContext pageContext)
+		throws PortalException {
+
 		long formInstanceId = ParamUtil.getLong(
 			renderRequest, "formInstanceId");
 
@@ -958,7 +967,7 @@ public class DDMFormAdminDisplayContext {
 			WebKeys.THEME_DISPLAY);
 
 		DDMFormRenderingContext ddmFormRenderingContext =
-			createDDMFormRenderingContext(renderRequest, renderResponse);
+			createDDMFormRenderingContext(pageContext, renderRequest);
 
 		setDDMFormRenderingContextDDMFormValues(
 			ddmFormRenderingContext, formInstanceId);
@@ -975,7 +984,7 @@ public class DDMFormAdminDisplayContext {
 	}
 
 	protected DDMFormRenderingContext createDDMFormRenderingContext(
-		RenderRequest renderRequest, RenderResponse renderResponse) {
+		PageContext pageContext, RenderRequest renderRequest) {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -986,7 +995,7 @@ public class DDMFormAdminDisplayContext {
 		ddmFormRenderingContext.setHttpServletRequest(
 			_portal.getHttpServletRequest(renderRequest));
 		ddmFormRenderingContext.setHttpServletResponse(
-			_portal.getHttpServletResponse(renderResponse));
+			PipingServletResponse.createPipingServletResponse(pageContext));
 		ddmFormRenderingContext.setContainerId("settingsDDMForm");
 		ddmFormRenderingContext.setLocale(themeDisplay.getLocale());
 		ddmFormRenderingContext.setPortletNamespace(
@@ -1409,6 +1418,30 @@ public class DDMFormAdminDisplayContext {
 
 		navigationItem.setLabel(
 			LanguageUtil.get(moduleResourceBundle, "data-providers"));
+	}
+
+	private List<DDMFormFieldType> _removeDDMFormFieldTypesOutOfScope(
+		List<DDMFormFieldType> ddmFormFieldTypes) {
+
+		List<DDMFormFieldType> availableDDMFormFieldTypes = new ArrayList<>();
+
+		ListUtil.filter(
+			ddmFormFieldTypes, availableDDMFormFieldTypes,
+			ddmFormFieldType ->
+				!ddmFormFieldType.getName(
+				).equals(
+					"geolocation"
+				) &&
+				!ddmFormFieldType.getName(
+				).equals(
+					"journal_article"
+				) &&
+				!ddmFormFieldType.getName(
+				).equals(
+					"link_to_layout"
+				));
+
+		return Collections.unmodifiableList(availableDDMFormFieldTypes);
 	}
 
 	private static final String[] _DISPLAY_VIEWS = {"descriptive", "list"};

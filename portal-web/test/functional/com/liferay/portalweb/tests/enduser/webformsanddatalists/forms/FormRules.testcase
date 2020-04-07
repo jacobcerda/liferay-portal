@@ -134,9 +134,13 @@ definition {
 
 		Navigator.gotoPage(pageName = "Form Page");
 
+		Pause(locator1 = "5000");
+
 		FormFields.viewTextLabel(
 			fieldLabel = "Text Field",
 			fieldName = "TextField");
+
+		Pause(locator1 = "5000");
 
 		FormFields.editText(
 			fieldName = "TextField",
@@ -145,6 +149,8 @@ definition {
 		FormFields.viewSelectOptionsList(
 			fieldName = "Countries",
 			selectOption = "Option");
+
+		Refresh();
 
 		FormFields.editText(
 			fieldName = "TextField",
@@ -158,7 +164,7 @@ definition {
 	@description = "This is a use case for LPS-71592."
 	@priority = "5"
 	test ConfigureCalculateRule {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 		property test.name.skip.portal.instance = "FormRules#ConfigureCalculateRule";
 		var portalURL = PropsUtil.get("portal.url");
 
@@ -241,6 +247,8 @@ definition {
 		PortletEntry.save();
 
 		Navigator.gotoPage(pageName = "Form Page");
+
+		Pause(locator1 = "5000");
 
 		FormFields.editText(
 			fieldName = "Value",
@@ -327,6 +335,8 @@ definition {
 
 		Navigator.gotoPage(pageName = "Form Page");
 
+		Pause(locator1 = "5000");
+
 		FormFields.viewRequiredAsteriskNotPresent();
 
 		FormFields.editText(
@@ -338,6 +348,9 @@ definition {
 		FormPortlet.submitWithValidationError();
 	}
 
+	// Ignored because of the ticket LRQA-57207
+
+	@ignore = "true"
 	@priority = "5"
 	test ConfigureShowRuleUsingAndCondition {
 		property portal.acceptance = "true";
@@ -434,6 +447,8 @@ definition {
 		PortletEntry.save();
 
 		Navigator.gotoPage(pageName = "Form Page");
+
+		Pause(locator1 = "5000");
 
 		FormFields.editText(
 			fieldName = "TextField1",
@@ -550,6 +565,8 @@ definition {
 
 		Navigator.gotoPage(pageName = "Form Page");
 
+		Pause(locator1 = "5000");
+
 		FormFields.viewTextField(
 			fieldLabel = "Public",
 			fieldName = "Public");
@@ -568,6 +585,8 @@ definition {
 			userScreenName = "test");
 
 		Navigator.gotoPage(pageName = "Form Page");
+
+		Pause(locator1 = "5000");
 
 		FormFields.viewTextField(
 			fieldLabel = "Public",
@@ -902,6 +921,8 @@ definition {
 
 		FormsAdminNavigator.gotoPublishedForm();
 
+		Pause(locator1 = "5000");
+
 		FormFields.viewRequiredAsterisk();
 
 		FormPortlet.submit();
@@ -1086,6 +1107,8 @@ definition {
 		Form.publishForm();
 
 		FormsAdminNavigator.gotoPublishedForm();
+
+		Pause(locator1 = "5000");
 
 		FormFields.editText(
 			fieldName = "TextField2",

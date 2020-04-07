@@ -8,6 +8,12 @@
 	<component bodyContent="true" name="DataLayoutBuilder" writeJSP="true">
 		<attributes>
 			<attribute>
+				<name>additionalPanels</name>
+				<inputType><![CDATA[java.util.List<java.util.Map>]]></inputType>
+				<outputType><![CDATA[java.util.List<java.util.Map>]]></outputType>
+				<required>false</required>
+			</attribute>
+			<attribute>
 				<name>componentId</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
@@ -17,7 +23,7 @@
 				<name>contentType</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
-				<required>false</required>
+				<required>true</required>
 			</attribute>
 			<attribute>
 				<name>dataDefinitionId</name>
@@ -30,13 +36,6 @@
 				<inputType>java.lang.Long</inputType>
 				<outputType>java.lang.Long</outputType>
 				<required>false</required>
-			</attribute>
-			<attribute>
-				<name>enableSuccessPage</name>
-				<inputType>boolean</inputType>
-				<outputType>boolean</outputType>
-				<required>false</required>
-				<defaultValue>true</defaultValue>
 			</attribute>
 			<attribute>
 				<name>groupId</name>
@@ -60,13 +59,6 @@
 				<name>scopes</name>
 				<inputType>java.util.Set</inputType>
 				<required>false</required>
-			</attribute>
-			<attribute>
-				<name>singlePage</name>
-				<inputType>boolean</inputType>
-				<outputType>boolean</outputType>
-				<required>false</required>
-				<defaultValue>false</defaultValue>
 			</attribute>
 		</attributes>
 	</component>

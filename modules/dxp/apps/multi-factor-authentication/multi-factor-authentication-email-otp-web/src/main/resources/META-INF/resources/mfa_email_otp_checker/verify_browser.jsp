@@ -16,6 +16,10 @@
 
 <%@ include file="/init.jsp" %>
 
+<%
+long mfaEmailOTPSetAtTime = (Long)request.getAttribute(MFAEmailOTPWebKeys.MFA_EMAIL_OTP_SET_AT_TIME);
+%>
+
 <div id="<portlet:namespace />phaseOne">
 	<div class="portlet-msg-info">
 		<liferay-ui:message key="your-one-time-password-will-be-sent-to-your-email-address" />
@@ -35,27 +39,64 @@
 <aui:script use="aui-base,aui-io-request">
 	<liferay-portlet:resourceURL id="/mfa_email_otp_verify/send_mfa_email_otp" portletName="<%= MFAEmailOTPPortletKeys.MFA_EMAIL_OTP_VERIFY_PORTLET %>" var="sendEmailOTPURL" />
 
-	A.one('#<portlet:namespace />sendEmailButton').on('click', function(event) {
-		var sendEmailButton = A.one('#<portlet:namespace />sendEmailButton');
+	var configuredResendDuration = <%= mfaEmailOTPConfiguration.resendEmailTimeout() %>;
 
+	var countdown;
+
+	var sendEmailButton = A.one('#<portlet:namespace />sendEmailButton');
+
+	var originalButtonText = sendEmailButton.text();
+
+	var previousSetTime = <%= mfaEmailOTPSetAtTime %>;
+
+	var elapsedTime = Math.floor((Date.now() - previousSetTime) / 1000);
+
+	function <portlet:namespace />createCountdown(f, countdown, interval) {
+		return setInterval(function() {
+			--countdown;
+			f(countdown);
+		}, interval);
+	}
+
+	function <portlet:namespace />setResendCountdown(resendDuration) {
+		if (resendDuration < 1) {
+			sendEmailButton.text(originalButtonText);
+
+			sendEmailButton.removeAttribute('disabled');
+
+			clearInterval(countdown);
+		}
+		else {
+			sendEmailButton.text(resendDuration);
+		}
+	}
+
+	if (
+		elapsedTime > 0 &&
+		elapsedTime < configuredResendDuration &&
+		previousSetTime > 0
+	) {
 		sendEmailButton.setAttribute('disabled', 'disabled');
 
-		var buttonText = sendEmailButton.text();
+		var resendDuration = configuredResendDuration - elapsedTime;
+
+		countdown = <portlet:namespace />createCountdown(
+			<portlet:namespace />setResendCountdown,
+			resendDuration,
+			1000
+		);
+	}
+
+	A.one('#<portlet:namespace />sendEmailButton').on('click', function(event) {
+		sendEmailButton.setAttribute('disabled', 'disabled');
 
 		var resendDuration = <%= mfaEmailOTPConfiguration.resendEmailTimeout() %>;
 
-		var interval = setInterval(function() {
-			if (resendDuration === 0) {
-				sendEmailButton.text(buttonText);
-
-				sendEmailButton.removeAttribute('disabled');
-
-				clearInterval(interval);
-			}
-			else {
-				sendEmailButton.text(--resendDuration);
-			}
-		}, 1000);
+		countdown = <portlet:namespace />createCountdown(
+			<portlet:namespace />setResendCountdown,
+			resendDuration,
+			1000
+		);
 
 		var data = {
 			p_auth: Liferay.authToken,

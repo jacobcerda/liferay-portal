@@ -37,14 +37,13 @@ import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.template.soy.util.SoyContext;
-import com.liferay.portal.template.soy.util.SoyContextFactoryUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -108,135 +107,14 @@ public class EditFragmentEntryDisplayContext {
 		return _fragmentCollectionId;
 	}
 
-	public SoyContext getFragmentEditorDisplayContext() throws Exception {
-		SoyContext soyContext = SoyContextFactoryUtil.createSoyContext();
-
-		SoyContext allowedStatusSoyContext =
-			SoyContextFactoryUtil.createSoyContext();
-
-		allowedStatusSoyContext.put(
-			"approved", String.valueOf(WorkflowConstants.STATUS_APPROVED)
+	public Map<String, Object> getFragmentEditorData() throws Exception {
+		return HashMapBuilder.<String, Object>put(
+			"context",
+			Collections.singletonMap(
+				"namespace", _renderResponse.getNamespace())
 		).put(
-			"draft", String.valueOf(WorkflowConstants.STATUS_DRAFT)
-		);
-
-		FragmentServiceConfiguration fragmentServiceConfiguration =
-			ConfigurationProviderUtil.getCompanyConfiguration(
-				FragmentServiceConfiguration.class,
-				_themeDisplay.getCompanyId());
-
-		TemplateManager templateManager =
-			TemplateManagerUtil.getTemplateManager(
-				TemplateConstants.LANG_TYPE_FTL);
-
-		Template template = templateManager.getTemplate(
-			new StringTemplateResource(
-				TemplateConstants.LANG_TYPE_FTL,
-				TemplateConstants.LANG_TYPE_FTL),
-			true);
-
-		template.prepare(_httpServletRequest);
-
-		Map<String, Object> taglibMap = new HashMap<>();
-
-		templateManager.addTaglibSupport(
-			taglibMap, _httpServletRequest,
-			PortalUtil.getHttpServletResponse(_renderResponse));
-
-		List<String> freeMarkerTaglibs = new ArrayList<>();
-		List<String> freeMarkerVariables = new ArrayList<>();
-
-		freeMarkerTaglibs.addAll(taglibMap.keySet());
-		freeMarkerVariables.addAll(template.keySet());
-
-		freeMarkerVariables.add("configuration");
-
-		soyContext.put(
-			"allowedStatus", allowedStatusSoyContext
-		).put(
-			"autocompleteTags",
-			_fragmentEntryProcessorRegistry.getAvailableTagsJSONArray()
-		).put(
-			"cacheable", _fragmentEntry.isCacheable()
-		).put(
-			"fragmentCollectionId", getFragmentCollectionId()
-		).put(
-			"fragmentEntryId", getFragmentEntryId()
-		).put(
-			"freeMarkerTaglibs", freeMarkerTaglibs
-		).put(
-			"freeMarkerVariables", freeMarkerVariables
-		).put(
-			"initialConfiguration", _getConfigurationContent()
-		).put(
-			"initialCSS", _getCssContent()
-		).put(
-			"initialHTML", _getHtmlContent()
-		).put(
-			"initialJS", _getJsContent()
-		).put(
-			"name", getName()
-		).put(
-			"portletNamespace", _renderResponse.getNamespace()
-		).put(
-			"propagationEnabled",
-			fragmentServiceConfiguration.propagateChanges()
-		).put(
-			"readOnly", _isReadOnlyFragmentEntry()
-		).put(
-			"resources",
-			() -> {
-				FragmentCollection fragmentCollection =
-					FragmentCollectionServiceUtil.fetchFragmentCollection(
-						getFragmentCollectionId());
-
-				if (fragmentCollection == null) {
-					return Collections.<String>emptyList();
-				}
-
-				List<String> resources = new ArrayList<>();
-
-				for (FileEntry fileEntry : fragmentCollection.getResources()) {
-					resources.add(fileEntry.getFileName());
-				}
-
-				return resources;
-			}
-		).put(
-			"spritemap",
-			_themeDisplay.getPathThemeImages() + "/lexicon/icons.svg"
-		);
-
-		FragmentEntry fragmentEntry = getFragmentEntry();
-
-		soyContext.put("status", String.valueOf(fragmentEntry.getStatus()));
-
-		SoyContext urlsSoycontext = SoyContextFactoryUtil.createSoyContext();
-
-		urlsSoycontext.put("current", _themeDisplay.getURLCurrent());
-
-		PortletURL editActionURL = _renderResponse.createActionURL();
-
-		editActionURL.setParameter(
-			ActionRequest.ACTION_NAME, "/fragment/edit_fragment_entry");
-
-		urlsSoycontext.put(
-			"edit", editActionURL.toString()
-		).put(
-			"preview",
-			_getFragmentEntryRenderURL(
-				fragmentEntry, "/fragment/preview_fragment_entry")
-		).put(
-			"redirect", getRedirect()
-		).put(
-			"render",
-			_getFragmentEntryRenderURL(
-				fragmentEntry, "/fragment/render_fragment_entry")
-		);
-
-		soyContext.put("urls", urlsSoycontext);
-
-		return soyContext;
+			"props", _getProps()
+		).build();
 	}
 
 	public FragmentEntry getFragmentEntry() {
@@ -385,8 +263,7 @@ public class EditFragmentEntryDisplayContext {
 		return _cssContent;
 	}
 
-	private String _getFragmentEntryRenderURL(
-			FragmentEntry fragmentEntry, String mvcRenderCommandName)
+	private String _getFragmentEntryRenderURL(String mvcRenderCommandName)
 		throws Exception {
 
 		PortletURL portletURL = PortletURLFactoryUtil.create(
@@ -394,12 +271,16 @@ public class EditFragmentEntryDisplayContext {
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter("mvcRenderCommandName", mvcRenderCommandName);
+
+		FragmentEntry fragmentEntry = getFragmentEntry();
+
 		portletURL.setParameter(
 			"fragmentEntryId",
 			String.valueOf(fragmentEntry.getFragmentEntryId()));
 		portletURL.setParameter(
 			"fragmentEntryKey",
 			String.valueOf(fragmentEntry.getFragmentEntryKey()));
+
 		portletURL.setWindowState(LiferayWindowState.POP_UP);
 
 		return portletURL.toString();
@@ -445,6 +326,162 @@ public class EditFragmentEntryDisplayContext {
 		}
 
 		return _jsContent;
+	}
+
+	private Map<String, Object> _getProps() throws Exception {
+		TemplateManager templateManager =
+			TemplateManagerUtil.getTemplateManager(
+				TemplateConstants.LANG_TYPE_FTL);
+
+		Template template = templateManager.getTemplate(
+			new StringTemplateResource(
+				TemplateConstants.LANG_TYPE_FTL,
+				TemplateConstants.LANG_TYPE_FTL),
+			true);
+
+		template.prepare(_httpServletRequest);
+
+		Map<String, Object> taglibMap = new HashMap<>();
+
+		templateManager.addTaglibSupport(
+			taglibMap, _httpServletRequest,
+			PortalUtil.getHttpServletResponse(_renderResponse));
+
+		List<String> freeMarkerTaglibs = new ArrayList<>();
+
+		freeMarkerTaglibs.addAll(taglibMap.keySet());
+
+		List<String> freeMarkerVariables = new ArrayList<>();
+
+		freeMarkerVariables.addAll(template.keySet());
+
+		freeMarkerVariables.add("configuration");
+
+		return HashMapBuilder.<String, Object>put(
+			"allowedStatus",
+			HashMapBuilder.<String, Object>put(
+				"approved", String.valueOf(WorkflowConstants.STATUS_APPROVED)
+			).put(
+				"draft", String.valueOf(WorkflowConstants.STATUS_DRAFT)
+			).build()
+		).put(
+			"autocompleteTags",
+			_fragmentEntryProcessorRegistry.getAvailableTagsJSONArray()
+		).put(
+			"cacheable", _fragmentEntry.isCacheable()
+		).put(
+			"fragmentCollectionId", getFragmentCollectionId()
+		).put(
+			"fragmentEntryId", getFragmentEntryId()
+		).put(
+			"freeMarkerTaglibs", freeMarkerTaglibs
+		).put(
+			"freeMarkerVariables", freeMarkerVariables
+		).put(
+			"htmlEditorCustomEntities",
+			() -> {
+				List<Map<String, Object>> htmlEditorCustomEntities =
+					new ArrayList<>();
+
+				htmlEditorCustomEntities.add(
+					HashMapBuilder.<String, Object>put(
+						"content", freeMarkerTaglibs
+					).put(
+						"end", "]"
+					).put(
+						"start", "[@"
+					).build());
+
+				htmlEditorCustomEntities.add(
+					HashMapBuilder.<String, Object>put(
+						"content", freeMarkerVariables
+					).put(
+						"end", "}"
+					).put(
+						"start", "${"
+					).build());
+
+				return htmlEditorCustomEntities;
+			}
+		).put(
+			"initialConfiguration", _getConfigurationContent()
+		).put(
+			"initialCSS", _getCssContent()
+		).put(
+			"initialHTML", _getHtmlContent()
+		).put(
+			"initialJS", _getJsContent()
+		).put(
+			"name", getName()
+		).put(
+			"portletNamespace", _renderResponse.getNamespace()
+		).put(
+			"propagationEnabled",
+			() -> {
+				FragmentServiceConfiguration fragmentServiceConfiguration =
+					ConfigurationProviderUtil.getCompanyConfiguration(
+						FragmentServiceConfiguration.class,
+						_themeDisplay.getCompanyId());
+
+				return fragmentServiceConfiguration.propagateChanges();
+			}
+		).put(
+			"readOnly", _isReadOnlyFragmentEntry()
+		).put(
+			"resources",
+			() -> {
+				FragmentCollection fragmentCollection =
+					FragmentCollectionServiceUtil.fetchFragmentCollection(
+						getFragmentCollectionId());
+
+				if (fragmentCollection == null) {
+					return Collections.<String>emptyList();
+				}
+
+				List<String> resources = new ArrayList<>();
+
+				for (FileEntry fileEntry : fragmentCollection.getResources()) {
+					resources.add(fileEntry.getFileName());
+				}
+
+				return resources;
+			}
+		).put(
+			"spritemap",
+			_themeDisplay.getPathThemeImages() + "/lexicon/icons.svg"
+		).put(
+			"status",
+			() -> {
+				FragmentEntry fragmentEntry = getFragmentEntry();
+
+				return String.valueOf(fragmentEntry.getStatus());
+			}
+		).put(
+			"urls",
+			HashMapBuilder.<String, Object>put(
+				"current", _themeDisplay.getURLCurrent()
+			).put(
+				"edit",
+				() -> {
+					PortletURL editActionURL =
+						_renderResponse.createActionURL();
+
+					editActionURL.setParameter(
+						ActionRequest.ACTION_NAME,
+						"/fragment/edit_fragment_entry");
+
+					return editActionURL.toString();
+				}
+			).put(
+				"preview",
+				_getFragmentEntryRenderURL("/fragment/preview_fragment_entry")
+			).put(
+				"redirect", getRedirect()
+			).put(
+				"render",
+				_getFragmentEntryRenderURL("/fragment/render_fragment_entry")
+			).build()
+		).build();
 	}
 
 	private boolean _isReadOnlyFragmentEntry() {

@@ -19,6 +19,7 @@ import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetLinkLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
@@ -50,6 +51,8 @@ import com.liferay.journal.util.JournalConverter;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -134,12 +137,12 @@ public class StructuredContentDTOConverter
 				datePublished = journalArticle.getDisplayDate();
 				description = journalArticle.getDescription(
 					dtoConverterContext.getLocale());
-				description_i18n = LocalizedMapUtil.getLocalizedMap(
+				description_i18n = LocalizedMapUtil.getI18nMap(
 					dtoConverterContext.isAcceptAllLanguages(),
 					journalArticle.getDescriptionMap());
 				friendlyUrlPath = journalArticle.getUrlTitle(
 					dtoConverterContext.getLocale());
-				friendlyUrlPath_i18n = LocalizedMapUtil.getLocalizedMap(
+				friendlyUrlPath_i18n = LocalizedMapUtil.getI18nMap(
 					dtoConverterContext.isAcceptAllLanguages(),
 					journalArticle.getFriendlyURLMap());
 				id = journalArticle.getResourcePrimKey();
@@ -179,7 +182,7 @@ public class StructuredContentDTOConverter
 					TaxonomyCategoryBrief.class);
 				title = journalArticle.getTitle(
 					dtoConverterContext.getLocale());
-				title_i18n = LocalizedMapUtil.getLocalizedMap(
+				title_i18n = LocalizedMapUtil.getI18nMap(
 					dtoConverterContext.isAcceptAllLanguages(),
 					journalArticle.getTitleMap());
 				uuid = journalArticle.getUuid();
@@ -251,14 +254,25 @@ public class StructuredContentDTOConverter
 				return new Value();
 			}
 
-			return new Value() {
-				{
-					image = ContentDocumentUtil.toContentDocument(
-						dlURLHelper, dlAppService.getFileEntry(fileEntryId));
+			try {
+				return new Value() {
+					{
+						image = ContentDocumentUtil.toContentDocument(
+							dlURLHelper,
+							dlAppService.getFileEntry(fileEntryId));
 
-					image.setDescription(jsonObject.getString("alt"));
+						image.setDescription(jsonObject.getString("alt"));
+					}
+				};
+			}
+			catch (NoSuchFileEntryException noSuchFileEntryException) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						noSuchFileEntryException, noSuchFileEntryException);
 				}
-			};
+
+				return new Value();
+			}
 		}
 
 		if (Objects.equals(
@@ -339,7 +353,7 @@ public class StructuredContentDTOConverter
 					ddmFormField);
 				label = localizedValue.getString(
 					dtoConverterContext.getLocale());
-				label_i18n = LocalizedMapUtil.getLocalizedMap(
+				label_i18n = LocalizedMapUtil.getI18nMap(
 					dtoConverterContext.isAcceptAllLanguages(),
 					localizedValue.getValues());
 				name = ddmFormField.getName();
@@ -453,7 +467,7 @@ public class StructuredContentDTOConverter
 						journalArticle.getResourcePrimKey(),
 						ddmTemplate.getTemplateId());
 					templateName = ddmTemplate.getName(locale);
-					templateName_i18n = LocalizedMapUtil.getLocalizedMap(
+					templateName_i18n = LocalizedMapUtil.getI18nMap(
 						acceptAllLanguages, ddmTemplate.getNameMap());
 				}
 			},
@@ -478,6 +492,9 @@ public class StructuredContentDTOConverter
 			ddmFormField, dlAppService, dlURLHelper, journalArticleService,
 			layoutLocalService, locale, valueString);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		StructuredContentDTOConverter.class);
 
 	@Reference
 	private AssetCategoryLocalService _assetCategoryLocalService;

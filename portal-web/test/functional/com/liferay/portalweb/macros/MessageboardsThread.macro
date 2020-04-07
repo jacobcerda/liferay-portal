@@ -40,6 +40,14 @@ definition {
 			UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
 				locator1 = "TextInput#FILE",
 				value1 = "${mbAttachmentFile}");
+
+			Pause(locator1 = "3000");
+
+			if (IsNotChecked.isNotCheckedNotVisible(key_fileName = "${mbAttachmentFile}", locator1 = "Checkbox#UPLOAD_FILE_ENTRY")) {
+				Check.checkNotVisible(
+					key_fileName = "${mbAttachmentFile}",
+					locator1 = "Checkbox#UPLOAD_FILE_ENTRY");
+			}
 		}
 
 		PortletEntry.publish();
@@ -636,7 +644,7 @@ definition {
 				value1 = "Reply");
 		}
 		else {
-			AssertElementPresent(
+			AssertElementPresent.pauseAssertVisible(
 				key_threadSubject = "${threadSubject}",
 				locator1 = "MessageBoardsThread#THREAD_REPLY_BUTTON");
 
@@ -646,7 +654,7 @@ definition {
 				value1 = "Reply");
 		}
 
-		AssertElementPresent.pauseAssertVisible(locator1 = "MessageBoardsThread#THREAD_REPLY_EDITOR");
+		AssertElementPresent.assertVisible(locator1 = "MessageBoardsThread#THREAD_REPLY_EDITOR");
 
 		Type.typeEditor(
 			locator1 = "MessageBoardsThread#THREAD_REPLY_EDITOR",

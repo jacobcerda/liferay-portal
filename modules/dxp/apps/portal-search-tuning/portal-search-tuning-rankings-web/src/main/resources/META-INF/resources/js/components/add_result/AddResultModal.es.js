@@ -384,6 +384,7 @@ function AddResultModal({
 								author={result.author}
 								clicks={result.clicks}
 								date={result.date}
+								description={result.description}
 								hidden={result.hidden}
 								icon={result.icon}
 								id={result.id}
@@ -423,7 +424,7 @@ function AddResultModal({
 
 	return (
 		<ClayModal
-			className="modal-full-screen-sm-down result-ranking-modal-root"
+			className="result-ranking-modal-root"
 			observer={observer}
 			size="lg"
 		>
@@ -458,7 +459,7 @@ function AddResultModal({
 						searchQuery={searchQuery}
 					/>
 
-					<div className="add-result-scroller inline-scroller">
+					<div className="add-result-scroller">
 						{loading && (
 							<div className="add-result-sheet sheet">
 								<div className="sheet-title">

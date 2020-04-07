@@ -202,6 +202,25 @@ public abstract class BaseDataLayoutResourceTestCase {
 	}
 
 	@Test
+	public void testDeleteDataLayoutsDataDefinition() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		DataLayout dataLayout =
+			testDeleteDataLayoutsDataDefinition_addDataLayout();
+
+		assertHttpResponseStatusCode(
+			204,
+			dataLayoutResource.deleteDataLayoutsDataDefinitionHttpResponse(
+				dataLayout.getDataDefinitionId()));
+	}
+
+	protected DataLayout testDeleteDataLayoutsDataDefinition_addDataLayout()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetDataDefinitionDataLayoutsPage() throws Exception {
 		Page<DataLayout> page =
 			dataLayoutResource.getDataDefinitionDataLayoutsPage(
@@ -452,6 +471,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 
 	@Test
 	public void testDeleteDataLayout() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		DataLayout dataLayout = testDeleteDataLayout_addDataLayout();
 
 		assertHttpResponseStatusCode(
@@ -772,6 +792,14 @@ public abstract class BaseDataLayoutResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("dataRules", additionalAssertFieldName)) {
+				if (dataLayout.getDataRules() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("description", additionalAssertFieldName)) {
 				if (dataLayout.getDescription() == null) {
 					valid = false;
@@ -898,6 +926,17 @@ public abstract class BaseDataLayoutResourceTestCase {
 				if (!Objects.deepEquals(
 						dataLayout1.getDataLayoutPages(),
 						dataLayout2.getDataLayoutPages())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("dataRules", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						dataLayout1.getDataRules(),
+						dataLayout2.getDataRules())) {
 
 					return false;
 				}
@@ -1134,6 +1173,11 @@ public abstract class BaseDataLayoutResourceTestCase {
 		}
 
 		if (entityFieldName.equals("dataLayoutPages")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("dataRules")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}

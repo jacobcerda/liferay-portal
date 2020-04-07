@@ -47,7 +47,7 @@
 </tr>
 <tr>
 	<td>VERTICAL_ELLIPSIS_BUTTON</td>
-	<td>//tr[contains(@data-testid,'item')][descendant::a[contains(.,'${key_itemName}')]]//button[contains(@class,'dropdown-toggle')]</td>
+	<td>//p[contains(.,'${key_itemName}')]/ancestor::tr//button[contains(@class,'dropdown-toggle')]</td>
 	<td></td>
 </tr>
 
@@ -202,6 +202,18 @@
 	<td></td>
 </tr>
 
+<tr>
+	<td>PRODUCT_MENU_SITE_DROPDOWN_OPTION</td>
+	<td>//span[text()='${key_dropdownOption}']</td>
+	<td></td>
+</tr>
+
+<tr>
+	<td>DEPLOY_BUTTON</td>
+	<td>//button[contains(@class,'btn-primary') and contains(text(),'Deploy')]</td>
+	<td></td>
+</tr>
+
 <!--CONTROL_PANEL-->
 <tr>
 	<td>CUSTOM_PORTLET</td>
@@ -242,7 +254,7 @@
 
 <tr>
 	<td>VALIDATE_LIST_TITLE_NAME_AT_ROW</td>
-	<td>//tr[@data-testid='item'][${key_RowNumber}]//a</td>
+	<td>//tr[${key_RowNumber}]//a</td>
 	<td></td>
 </tr>
 
@@ -294,6 +306,22 @@
 	<td>//td[contains(@class,'text-left')]//p[text()='${key_roleTitle}']/parent::td/following-sibling::td//input[@name='VIEW_DATA_RECORD']</td>
 	<td></td>
 </tr>
+
+<!-- NAVBAR -->
+<tr>
+	<td>NAVBAR</td>
+	<td>//div[contains(@class,'navbar')]</td>
+	<td></td>
+</tr>
+
+<!--HOMEPAGE_TABLE_VIEW-->
+
+<tr>
+	<td>FIELD_LABEL_IN_TABLE</td>
+	<td>//*[contains(.,'(Table View)')]//thead//tr//th[contains(text(),'${key_fieldLabel}')]</td>
+	<td></td>
+</tr>
+
 
 </tbody>
 </table>

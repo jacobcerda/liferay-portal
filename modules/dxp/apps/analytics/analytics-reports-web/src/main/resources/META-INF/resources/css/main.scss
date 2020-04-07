@@ -61,6 +61,19 @@
 		padding-bottom: 0.5rem;
 	}
 
+	.custom-circle {
+		border-radius: 50%;
+		display: inline-block;
+		height: 8px;
+		width: 8px;
+	}
+
+	.custom-square {
+		display: inline-block;
+		height: 8px;
+		width: 8px;
+	}
+
 	.custom-tooltip {
 		background-color: rgb(255, 255, 255);
 		border: 1px solid rgb(204, 204, 204);
@@ -68,13 +81,6 @@
 		opacity: 0.9;
 		padding: 0.25rem;
 		white-space: nowrap;
-		.custom-tooltip-dot {
-			border-radius: 50%;
-			display: inline-block;
-			height: 10px;
-			margin-right: 0.2rem;
-			width: 10px;
-		}
 	}
 
 	.line-chart-wrapper {
@@ -82,8 +88,18 @@
 		position: relative;
 
 		&.line-chart-wrapper--loading {
-			opacity: 0.8;
-			pointer-events: none;
+			.line-chart {
+				opacity: 0.6;
+				pointer-events: none;
+				.recharts-cartesian-axis .recharts-cartesian-axis-ticks {
+					opacity: 0;
+				}
+			}
+		}
+		.recharts-cartesian-axis .recharts-cartesian-axis-ticks {
+			opacity: 1;
+			transition: opacity 0.15s ease-in-out;
+			will-change: opacity;
 		}
 	}
 
@@ -91,10 +107,42 @@
 		left: 0;
 		position: absolute;
 		right: 0;
-		top: calc(50% - 1rem);
+		top: 50%;
 	}
 
 	.interval-selector-wrapper {
 		display: flex;
+	}
+
+	.pie-chart-wrapper {
+		display: flex;
+		justify-content: space-between;
+		.pie-chart-wrapper--legend--title {
+			font-weight: 600;
+		}
+		.pie-chart-wrapper--legend {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+			.pie-chart-wrapper--legend--dot {
+				border-radius: 50%;
+				display: inline-block;
+				height: 8px;
+				margin-right: 8px;
+				width: 8px;
+			}
+		}
+		.custom-tooltip {
+			transform: translateX(-50%);
+		}
+	}
+
+	.traffic-source-detail {
+		thead > tr {
+			height: 40px;
+		}
+		tbody > tr {
+			height: 30px;
+		}
 	}
 }

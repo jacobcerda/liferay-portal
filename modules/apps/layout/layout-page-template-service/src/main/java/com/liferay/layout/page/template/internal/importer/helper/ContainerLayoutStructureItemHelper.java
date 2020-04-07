@@ -15,13 +15,17 @@
 package com.liferay.layout.page.template.internal.importer.helper;
 
 import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
+import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
+import com.liferay.fragment.validator.FragmentEntryValidator;
 import com.liferay.headless.delivery.dto.v1_0.PageElement;
-import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.util.PaddingConverter;
 import com.liferay.layout.util.structure.ContainerLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Map;
 
@@ -29,52 +33,70 @@ import java.util.Map;
  * @author Jürgen Kappler
  */
 public class ContainerLayoutStructureItemHelper
-	implements LayoutStructureItemHelper {
+	extends BaseLayoutStructureItemHelper implements LayoutStructureItemHelper {
 
 	@Override
 	public LayoutStructureItem addLayoutStructureItem(
-		FragmentCollectionContributorTracker
-			fragmentCollectionContributorTracker,
-		LayoutPageTemplateEntry layoutPageTemplateEntry,
-		LayoutStructure layoutStructure, PageElement pageElement,
-		String parentItemId, int position) {
+			FragmentCollectionContributorTracker
+				fragmentCollectionContributorTracker,
+			FragmentEntryProcessorRegistry fragmentEntryProcessorRegistry,
+			FragmentEntryValidator fragmentEntryValidator, Layout layout,
+			LayoutStructure layoutStructure, PageElement pageElement,
+			String parentItemId, int position)
+		throws Exception {
 
 		ContainerLayoutStructureItem containerLayoutStructureItem =
 			(ContainerLayoutStructureItem)
 				layoutStructure.addContainerLayoutStructureItem(
 					parentItemId, position);
 
-		Map<String, Object> definitionMap =
-			(Map<String, Object>)pageElement.getDefinition();
+		Map<String, Object> definitionMap = getDefinitionMap(
+			pageElement.getDefinition());
 
 		if (definitionMap != null) {
 			containerLayoutStructureItem.setBackgroundColorCssClass(
-				(String)definitionMap.get("backgroundColorCssClass"));
+				(String)definitionMap.get("backgroundColor"));
 
 			Map<String, Object> backgroundImageMap =
 				(Map<String, Object>)definitionMap.get("backgroundImage");
 
 			if (backgroundImageMap != null) {
-				JSONObject jsonObject = JSONUtil.put(
-					"title", backgroundImageMap.get("title")
-				).put(
-					"url", backgroundImageMap.get("url")
-				);
+				JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+				Map<String, String> titleMap =
+					(Map<String, String>)backgroundImageMap.get("title");
+
+				if (titleMap != null) {
+					jsonObject.put("title", titleMap.get("value"));
+				}
+
+				Map<String, String> urlMap =
+					(Map<String, String>)backgroundImageMap.get("url");
+
+				if (urlMap != null) {
+					jsonObject.put("url", urlMap.get("value"));
+				}
 
 				containerLayoutStructureItem.setBackgroundImageJSONObject(
 					jsonObject);
 			}
 
-			Map<String, Object> layout = (Map<String, Object>)definitionMap.get(
-				"layout");
+			Map<String, Object> containerLayout =
+				(Map<String, Object>)definitionMap.get("layout");
 
 			if (layout != null) {
+				containerLayoutStructureItem.setContainerType(
+					StringUtil.toLowerCase(
+						(String)containerLayout.get("containerType")));
 				containerLayoutStructureItem.setPaddingBottom(
-					(Integer)layout.get("paddingBottom"));
+					PaddingConverter.convertToInternalValue(
+						(Integer)containerLayout.get("paddingBottom")));
 				containerLayoutStructureItem.setPaddingHorizontal(
-					(Integer)layout.get("paddingHorizontal"));
+					PaddingConverter.convertToInternalValue(
+						(Integer)containerLayout.get("paddingHorizontal")));
 				containerLayoutStructureItem.setPaddingTop(
-					(Integer)layout.get("paddingTop"));
+					PaddingConverter.convertToInternalValue(
+						(Integer)containerLayout.get("paddingTop")));
 			}
 		}
 

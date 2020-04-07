@@ -48,7 +48,7 @@ List<AssetRendererFactory<?>> classTypesAssetRendererFactories = new ArrayList<>
 	request.setAttribute("configuration.jsp-redirect", redirect);
 	%>
 
-	<liferay-ui:success key='<%= portletResource + "requestProcessed" %>' message="the-content-set-was-created-successfully" />
+	<liferay-ui:success key='<%= portletResource + "requestProcessed" %>' message="the-collection-was-created-successfully" />
 
 	<liferay-frontend:edit-form-body>
 		<liferay-frontend:form-navigator
@@ -70,7 +70,7 @@ List<AssetRendererFactory<?>> classTypesAssetRendererFactories = new ArrayList<>
 
 		<%
 		for (AssetRendererFactory<?> curRendererFactory : classTypesAssetRendererFactories) {
-			String className = assetPublisherWebUtil.getClassName(curRendererFactory);
+			String className = assetPublisherWebHelper.getClassName(curRendererFactory);
 		%>
 
 			Liferay.Util.setFormValues(form, {

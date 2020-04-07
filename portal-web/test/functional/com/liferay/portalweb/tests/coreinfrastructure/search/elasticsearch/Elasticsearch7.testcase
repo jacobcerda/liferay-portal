@@ -67,6 +67,8 @@ definition {
 
 	@priority = "4"
 	test AssertSearchInsightsExplain {
+		property portal.upstream = "quarantine";
+
 		JSONWebcontent.addWebContent(
 			content = "WC Content",
 			groupName = "Guest",
@@ -161,6 +163,7 @@ definition {
 	@priority = "5"
 	test ElasticsearchRemoteClusterSmokeTest {
 		property portal.acceptance = "true";
+		property portal.upstream = "quarantine";
 		property remote.elasticsearch.cluster.size = "2";
 		property remote.elasticsearch.enabled = "true";
 		property test.name.skip.portal.instance = "Elasticsearch7#ElasticsearchRemoteClusterSmokeTest";
@@ -220,7 +223,12 @@ definition {
 		property osgi.app.includes = "";
 		property test.name.skip.portal.instance = "Elasticsearch7#HotDeployElasticsearch7App";
 
-		var appName = "Liferay Connector to Elasticsearch 7";
+		if (IsTextEqual.isPartialText(locator1 = "HelloWorld#PORTLET_CONTENT", value1 = "Liferay Community Edition")) {
+			var appName = "Liferay CE Connector to Elasticsearch 7";
+		}
+		else {
+			var appName = "Liferay Connector to Elasticsearch 7";
+		}
 
 		AssertConsoleTextNotPresent(value1 = "The portal instance needs to be restarted");
 

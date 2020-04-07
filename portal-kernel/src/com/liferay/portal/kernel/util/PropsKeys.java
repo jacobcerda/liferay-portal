@@ -1527,25 +1527,49 @@ public interface PropsKeys {
 	public static final String LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN =
 		"layout.manage.pages.initial.children";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String LAYOUT_PARALLEL_RENDER_ENABLE =
 		"layout.parallel.render.enable";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String
 		LAYOUT_PARALLEL_RENDER_THREAD_POOL_CORE_THREAD_COUNT =
 			"layout.parallel.render.thread.pool.core.thread.count";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String
 		LAYOUT_PARALLEL_RENDER_THREAD_POOL_KEEP_ALIVE_TIME =
 			"layout.parallel.render.thread.pool.keep.alive.time";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String
 		LAYOUT_PARALLEL_RENDER_THREAD_POOL_MAX_QUEUE_SIZE =
 			"layout.parallel.render.thread.pool.max.queue.size";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String
 		LAYOUT_PARALLEL_RENDER_THREAD_POOL_MAX_THREAD_COUNT =
 			"layout.parallel.render.thread.pool.max.thread.count";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String LAYOUT_PARALLEL_RENDER_TIMEOUT =
 		"layout.parallel.render.timeout";
 
@@ -1783,6 +1807,9 @@ public interface PropsKeys {
 
 	public static final String MAIL_SESSION_MAIL_SMTP_PORT =
 		"mail.session.mail.smtp.port";
+
+	public static final String MAIL_SESSION_MAIL_SMTP_STARTTLS_ENABLE =
+		"mail.session.mail.smtp.starttls.enable";
 
 	public static final String MAIL_SESSION_MAIL_SMTP_USER =
 		"mail.session.mail.smtp.user";

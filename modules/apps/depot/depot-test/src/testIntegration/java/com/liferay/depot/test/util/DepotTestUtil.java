@@ -92,11 +92,41 @@ public class DepotTestUtil {
 		}
 	}
 
+	public static void withDepotEnabled(
+			UnsafeRunnable<Exception> unsafeRunnable)
+		throws Exception {
+
+		Dictionary<String, Object> dictionary = new HashMapDictionary<>();
+
+		dictionary.put("enabled", true);
+
+		try (ConfigurationTemporarySwapper configurationTemporarySwapper =
+				new ConfigurationTemporarySwapper(_PID, dictionary)) {
+
+			unsafeRunnable.run();
+		}
+	}
+
+	public static void withDepotUser(
+			UnsafeBiConsumer<User, Role, Exception> unsafeBiConsumer)
+		throws Exception {
+
+		_withUser(unsafeBiConsumer, RoleConstants.TYPE_DEPOT);
+	}
+
 	public static void withRegularUser(
 			UnsafeBiConsumer<User, Role, Exception> unsafeBiConsumer)
 		throws Exception {
 
-		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+		_withUser(unsafeBiConsumer, RoleConstants.TYPE_REGULAR);
+	}
+
+	private static void _withUser(
+			UnsafeBiConsumer<User, Role, Exception> unsafeBiConsumer,
+			int roleType)
+		throws Exception {
+
+		Role role = RoleTestUtil.addRole(roleType);
 		User user = UserTestUtil.addUser();
 
 		UserLocalServiceUtil.addRoleUser(role.getRoleId(), user);

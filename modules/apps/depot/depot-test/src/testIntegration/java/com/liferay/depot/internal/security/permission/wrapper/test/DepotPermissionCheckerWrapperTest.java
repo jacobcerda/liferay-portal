@@ -18,6 +18,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.depot.test.util.DepotTestUtil;
+import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ResourceConstants;
@@ -59,6 +60,22 @@ public class DepotPermissionCheckerWrapperTest {
 		new LiferayIntegrationTestRule();
 
 	@Test
+	public void testAssetLibraryAdminIsContentReviewer() throws Exception {
+		DepotEntry depotEntry = _addDepotEntry(TestPropsValues.getUserId());
+
+		DepotTestUtil.withAssetLibraryAdministrator(
+			depotEntry,
+			user -> {
+				PermissionChecker permissionChecker =
+					_permissionCheckerFactory.create(user);
+
+				Assert.assertTrue(
+					permissionChecker.isContentReviewer(
+						depotEntry.getCompanyId(), depotEntry.getGroupId()));
+			});
+	}
+
+	@Test
 	public void testHasPermissionForADepotGroupDelegatesToDepot()
 		throws Exception {
 
@@ -75,6 +92,17 @@ public class DepotPermissionCheckerWrapperTest {
 						depotEntry.getGroupId(), ActionKeys.VIEW));
 
 				RoleTestUtil.addResourcePermission(
+					role, Group.class.getName(),
+					ResourceConstants.SCOPE_COMPANY,
+					String.valueOf(TestPropsValues.getCompanyId()),
+					ActionKeys.VIEW);
+
+				Assert.assertFalse(
+					permissionChecker.hasPermission(
+						depotEntry.getGroup(), Group.class.getName(),
+						depotEntry.getGroupId(), ActionKeys.VIEW));
+
+				RoleTestUtil.addResourcePermission(
 					role, DepotEntry.class.getName(),
 					ResourceConstants.SCOPE_COMPANY,
 					String.valueOf(TestPropsValues.getCompanyId()),
@@ -84,6 +112,53 @@ public class DepotPermissionCheckerWrapperTest {
 					permissionChecker.hasPermission(
 						depotEntry.getGroup(), Group.class.getName(),
 						depotEntry.getGroupId(), ActionKeys.VIEW));
+			});
+	}
+
+	@Test
+	public void testHasPermissionForADepotGroupDoesNotDelegateToDepotForUnsupportedPermissions()
+		throws Exception {
+
+		DepotEntry depotEntry = _addDepotEntry(TestPropsValues.getUserId());
+
+		DepotTestUtil.withRegularUser(
+			(user, role) -> {
+				PermissionChecker permissionChecker =
+					_permissionCheckerFactory.create(user);
+
+				Assert.assertFalse(
+					permissionChecker.hasPermission(
+						depotEntry.getGroup(), Group.class.getName(),
+						depotEntry.getGroupId(), ActionKeys.MANAGE_LAYOUTS));
+
+				RoleTestUtil.addResourcePermission(
+					role, Group.class.getName(),
+					ResourceConstants.SCOPE_COMPANY,
+					String.valueOf(TestPropsValues.getCompanyId()),
+					ActionKeys.MANAGE_LAYOUTS);
+
+				Assert.assertFalse(
+					permissionChecker.hasPermission(
+						depotEntry.getGroup(), Group.class.getName(),
+						depotEntry.getGroupId(), ActionKeys.MANAGE_LAYOUTS));
+			});
+	}
+
+	@Test
+	public void testHasPermissionReturnsTrueForAssetLibraryOwners()
+		throws Exception {
+
+		DepotTestUtil.withRegularUser(
+			(user, role) -> {
+				DepotEntry depotEntry = _addDepotEntry(user.getUserId());
+
+				PermissionChecker permissionChecker =
+					_permissionCheckerFactory.create(user);
+
+				Assert.assertTrue(
+					permissionChecker.hasPermission(
+						depotEntry.getGroup(), DLFileEntry.class.getName(),
+						DLFileEntry.class.getName(), ActionKeys.UPDATE));
 			});
 	}
 

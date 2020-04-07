@@ -16,13 +16,12 @@ package com.liferay.portal.vulcan.internal.jaxrs.param.converter.provider;
 
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-
-import java.util.Optional;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
@@ -71,27 +70,18 @@ public class SiteParamConverterProvider
 	}
 
 	public Long getGroupId(long companyId, String siteId) {
-		if (siteId != null) {
-			Group group = _groupLocalService.fetchGroup(companyId, siteId);
+		if (siteId == null) {
+			return null;
+		}
 
-			if (group == null) {
-				group = _groupLocalService.fetchGroup(
-					GetterUtil.getLong(siteId));
-			}
+		Group group = _fetchGroup(companyId, siteId);
 
-			Group liveGroup = Optional.ofNullable(
-				group
-			).map(
-				Group::getLiveGroup
-			).orElse(
-				null
-			);
+		if (group == null) {
+			return null;
+		}
 
-			if (((group != null) && group.isSite()) ||
-				((liveGroup != null) && liveGroup.isSite())) {
-
-				return group.getGroupId();
-			}
+		if (_isDepotOrSite(group) || _isDepotOrSite(group.getLiveGroup())) {
+			return group.getGroupId();
 		}
 
 		return null;
@@ -100,6 +90,16 @@ public class SiteParamConverterProvider
 	@Override
 	public String toString(Long parameter) {
 		return String.valueOf(parameter);
+	}
+
+	private Group _fetchGroup(long companyId, String groupKey) {
+		Group group = _groupLocalService.fetchGroup(companyId, groupKey);
+
+		if (group != null) {
+			return group;
+		}
+
+		return _groupLocalService.fetchGroup(GetterUtil.getLong(groupKey));
 	}
 
 	private boolean _hasSiteIdAnnotation(Annotation[] annotations) {
@@ -111,6 +111,18 @@ public class SiteParamConverterProvider
 
 				return true;
 			}
+		}
+
+		return false;
+	}
+
+	private boolean _isDepotOrSite(Group group) {
+		if (group == null) {
+			return false;
+		}
+
+		if ((group.getType() == GroupConstants.TYPE_DEPOT) || group.isSite()) {
+			return true;
 		}
 
 		return false;

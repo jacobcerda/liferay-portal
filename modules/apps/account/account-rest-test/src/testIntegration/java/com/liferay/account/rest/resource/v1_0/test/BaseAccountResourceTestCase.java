@@ -478,6 +478,7 @@ public abstract class BaseAccountResourceTestCase {
 
 	@Test
 	public void testDeleteAccount() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Account account = testDeleteAccount_addAccount();
 
 		assertHttpResponseStatusCode(
@@ -735,6 +736,14 @@ public abstract class BaseAccountResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("organizationIds", additionalAssertFieldName)) {
+				if (account.getOrganizationIds() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("parentAccountId", additionalAssertFieldName)) {
 				if (account.getParentAccountId() == null) {
 					valid = false;
@@ -835,6 +844,17 @@ public abstract class BaseAccountResourceTestCase {
 			if (Objects.equals("name", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						account1.getName(), account2.getName())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("organizationIds", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						account1.getOrganizationIds(),
+						account2.getOrganizationIds())) {
 
 					return false;
 				}
@@ -1006,6 +1026,11 @@ public abstract class BaseAccountResourceTestCase {
 			sb.append("'");
 
 			return sb.toString();
+		}
+
+		if (entityFieldName.equals("organizationIds")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("parentAccountId")) {

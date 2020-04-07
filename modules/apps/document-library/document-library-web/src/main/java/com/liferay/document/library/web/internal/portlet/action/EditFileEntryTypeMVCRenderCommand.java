@@ -73,7 +73,8 @@ public class EditFileEntryTypeMVCRenderCommand implements MVCRenderCommand {
 				new DLEditFileEntryTypeDisplayContext(
 					_ddm, _ddmStorageLinkLocalService,
 					_ddmStructureLocalService, _language,
-					_portal.getLiferayPortletRequest(renderRequest)));
+					_portal.getLiferayPortletRequest(renderRequest),
+					_portal.getLiferayPortletResponse(renderResponse)));
 
 			long fileEntryTypeId = ParamUtil.getLong(
 				renderRequest, "fileEntryTypeId");
@@ -97,7 +98,7 @@ public class EditFileEntryTypeMVCRenderCommand implements MVCRenderCommand {
 
 			renderRequest.setAttribute(
 				WebKeys.DOCUMENT_LIBRARY_DYNAMIC_DATA_MAPPING_STRUCTURE,
-				_getDDMStructure(dlFileEntryType, themeDisplay));
+				_getDDMStructure(dlFileEntryType));
 
 			return "/document_library/edit_file_entry_type.jsp";
 		}
@@ -111,10 +112,7 @@ public class EditFileEntryTypeMVCRenderCommand implements MVCRenderCommand {
 		}
 	}
 
-	private DDMStructure _getDDMStructure(
-			DLFileEntryType dlFileEntryType, ThemeDisplay themeDisplay)
-		throws PortalException {
-
+	private DDMStructure _getDDMStructure(DLFileEntryType dlFileEntryType) {
 		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
 			dlFileEntryType.getGroupId(),
 			_portal.getClassNameId(DLFileEntryMetadata.class),
@@ -132,12 +130,6 @@ public class EditFileEntryTypeMVCRenderCommand implements MVCRenderCommand {
 				dlFileEntryType.getGroupId(),
 				_portal.getClassNameId(DLFileEntryMetadata.class),
 				dlFileEntryType.getFileEntryTypeKey());
-		}
-
-		if (ddmStructure != null) {
-			_ddmStructureModelResourcePermission.check(
-				themeDisplay.getPermissionChecker(), ddmStructure,
-				ActionKeys.UPDATE);
 		}
 
 		return ddmStructure;

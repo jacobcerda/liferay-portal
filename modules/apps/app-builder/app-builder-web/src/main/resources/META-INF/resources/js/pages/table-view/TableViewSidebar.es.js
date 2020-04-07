@@ -12,14 +12,16 @@
  * details.
  */
 
-import {DragTypes, FieldType, FieldTypeList, Sidebar} from 'data-engine-taglib';
+import {
+	DataDefinitionUtils,
+	DragTypes,
+	FieldType,
+	FieldTypeList,
+	Sidebar,
+} from 'data-engine-taglib';
 import React, {useContext, useState} from 'react';
 
 import Button from '../../components/button/Button.es';
-import {
-	getDataDefinitionField,
-	getFieldLabel,
-} from '../../utils/dataDefinition.es';
 import EditTableViewContext, {
 	UPDATE_FOCUSED_COLUMN,
 } from './EditTableViewContext.es';
@@ -35,7 +37,10 @@ const FiltersSidebarHeader = () => {
 		dispatch({payload: {fieldName: null}, type: UPDATE_FOCUSED_COLUMN});
 	};
 
-	const {fieldType} = getDataDefinitionField(dataDefinition, focusedColumn);
+	const {fieldType} = DataDefinitionUtils.getDataDefinitionField(
+		dataDefinition,
+		focusedColumn
+	);
 
 	return (
 		<Sidebar.Header className="d-flex table-view-filters-sidebar-header">
@@ -55,7 +60,10 @@ const FiltersSidebarHeader = () => {
 						dragAlignment="none"
 						draggable={false}
 						icon={fieldType}
-						label={getFieldLabel(dataDefinition, focusedColumn)}
+						label={DataDefinitionUtils.getFieldLabel(
+							dataDefinition,
+							focusedColumn
+						)}
 						name={focusedColumn}
 					/>
 				</div>
@@ -106,35 +114,42 @@ export default ({onAddFieldName, onClose}) => {
 
 	return (
 		<Sidebar
-			className="app-builder-sidebar"
+			className="app-builder-sidebar main"
 			closeable={!displayFieldFilters || sidebarClosed}
 			closed={sidebarClosed}
 			onSearch={displayFieldFilters ? false : setKeywords}
 			onToggle={onSidebarToggle}
 		>
-			{displayFieldFilters && <FiltersSidebarHeader />}
-
-			<Sidebar.Body>
-				{!displayFieldFilters && (
-					<Sidebar.Tabs
-						tabs={[
-							{
-								label: Liferay.Language.get('columns'),
-								render: () => (
-									<FieldsTabContent
-										keywords={keywords}
-										onAddFieldName={onAddFieldName}
-									/>
-								),
-							},
-							{
-								label: Liferay.Language.get('filters'),
-								render: () => <TableViewFiltersList />,
-							},
-						]}
-					/>
-				)}
-			</Sidebar.Body>
+			{displayFieldFilters ? (
+				<>
+					<FiltersSidebarHeader />
+					<Sidebar.Body>
+						<TableViewFiltersList />
+					</Sidebar.Body>
+				</>
+			) : (
+				<Sidebar.Body>
+					{!displayFieldFilters && (
+						<Sidebar.Tabs
+							tabs={[
+								{
+									label: Liferay.Language.get('columns'),
+									render: () => (
+										<FieldsTabContent
+											keywords={keywords}
+											onAddFieldName={onAddFieldName}
+										/>
+									),
+								},
+								{
+									label: Liferay.Language.get('filters'),
+									render: () => <TableViewFiltersList />,
+								},
+							]}
+						/>
+					)}
+				</Sidebar.Body>
+			)}
 		</Sidebar>
 	);
 };

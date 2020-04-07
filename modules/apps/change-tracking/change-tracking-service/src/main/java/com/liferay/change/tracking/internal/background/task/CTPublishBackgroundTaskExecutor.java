@@ -25,6 +25,7 @@ import com.liferay.change.tracking.service.CTCollectionLocalService;
 import com.liferay.change.tracking.service.CTEntryLocalService;
 import com.liferay.change.tracking.service.CTMessageLocalService;
 import com.liferay.change.tracking.service.CTProcessLocalService;
+import com.liferay.petra.lang.SafeClosable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
@@ -33,7 +34,8 @@ import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskResult;
 import com.liferay.portal.kernel.backgroundtask.BaseBackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplay;
-import com.liferay.portal.kernel.cache.PortalCacheManager;
+import com.liferay.portal.kernel.cache.MultiVMPool;
+import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
@@ -87,6 +89,12 @@ public class CTPublishBackgroundTaskExecutor
 
 		long ctCollectionId = GetterUtil.getLong(
 			taskContextMap.get("ctCollectionId"));
+
+		try (SafeClosable safeClosable =
+				CTCollectionThreadLocal.setCTCollectionId(ctCollectionId)) {
+
+			_ctServiceRegistry.onBeforePublish(ctCollectionId);
+		}
 
 		CTCollection ctCollection = _ctCollectionLocalService.getCTCollection(
 			ctCollectionId);
@@ -156,10 +164,9 @@ public class CTPublishBackgroundTaskExecutor
 		for (CTTableMapperHelper ctTableMapperHelper :
 				_ctServiceRegistry.getCTTableMapperHelpers()) {
 
-			ctTableMapperHelper.publish(ctCollectionId, _portalCacheManager);
+			ctTableMapperHelper.publish(
+				ctCollectionId, _multiVMPool.getPortalCacheManager());
 		}
-
-		_ctServiceRegistry.onAfterPublish(ctCollectionId);
 
 		Date modifiedDate = new Date();
 
@@ -170,6 +177,8 @@ public class CTPublishBackgroundTaskExecutor
 		ctCollection.setStatusDate(modifiedDate);
 
 		_ctCollectionLocalService.updateCTCollection(ctCollection);
+
+		_ctServiceRegistry.onAfterPublish(ctCollectionId);
 
 		return BackgroundTaskResult.SUCCESS;
 	}
@@ -212,6 +221,6 @@ public class CTPublishBackgroundTaskExecutor
 	private CTServiceRegistry _ctServiceRegistry;
 
 	@Reference
-	private PortalCacheManager<?, ?> _portalCacheManager;
+	private MultiVMPool _multiVMPool;
 
 }

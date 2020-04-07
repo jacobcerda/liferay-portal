@@ -16,13 +16,16 @@ package com.liferay.account.rest.internal.resource.v1_0;
 
 import com.liferay.account.constants.AccountConstants;
 import com.liferay.account.model.AccountEntry;
+import com.liferay.account.model.AccountEntryOrganizationRel;
 import com.liferay.account.rest.dto.v1_0.Account;
 import com.liferay.account.rest.internal.odata.entity.v1_0.AccountEntityModel;
 import com.liferay.account.rest.resource.v1_0.AccountResource;
 import com.liferay.account.service.AccountEntryLocalService;
+import com.liferay.account.service.AccountEntryOrganizationRelLocalService;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -98,16 +101,25 @@ public class AccountResourceImpl
 
 	@Override
 	public Account postAccount(Account account) throws Exception {
-		return _toAccount(
-			_accountEntryLocalService.addAccountEntry(
-				contextUser.getUserId(), _getParentAccountId(account),
-				account.getName(), account.getDescription(),
-				_getDomains(account), null, _getStatus(account)));
+		AccountEntry accountEntry = _accountEntryLocalService.addAccountEntry(
+			contextUser.getUserId(), _getParentAccountId(account),
+			account.getName(), account.getDescription(), _getDomains(account),
+			null, _getStatus(account));
+
+		_accountEntryOrganizationRelLocalService.
+			setAccountEntryOrganizationRels(
+				accountEntry.getAccountEntryId(), _getOrganizationIds(account));
+
+		return _toAccount(accountEntry);
 	}
 
 	@Override
 	public Account putAccount(Long accountId, Account account)
 		throws Exception {
+
+		_accountEntryOrganizationRelLocalService.
+			setAccountEntryOrganizationRels(
+				accountId, _getOrganizationIds(account));
 
 		return _toAccount(
 			_accountEntryLocalService.updateAccountEntry(
@@ -121,6 +133,16 @@ public class AccountResourceImpl
 			account.getDomains()
 		).orElse(
 			new String[0]
+		);
+	}
+
+	private long[] _getOrganizationIds(Account account) {
+		return Optional.ofNullable(
+			account.getOrganizationIds()
+		).map(
+			ArrayUtil::toArray
+		).orElse(
+			new long[0]
 		);
 	}
 
@@ -147,6 +169,11 @@ public class AccountResourceImpl
 				domains = StringUtil.split(accountEntry.getDomains());
 				id = accountEntry.getAccountEntryId();
 				name = accountEntry.getName();
+				organizationIds = transformToArray(
+					_accountEntryOrganizationRelLocalService.
+						getAccountEntryOrganizationRels(
+							accountEntry.getAccountEntryId()),
+					AccountEntryOrganizationRel::getOrganizationId, Long.class);
 				parentAccountId = accountEntry.getParentAccountEntryId();
 				status = accountEntry.getStatus();
 			}
@@ -155,6 +182,10 @@ public class AccountResourceImpl
 
 	@Reference
 	private AccountEntryLocalService _accountEntryLocalService;
+
+	@Reference
+	private AccountEntryOrganizationRelLocalService
+		_accountEntryOrganizationRelLocalService;
 
 	private final EntityModel _entityModel = new AccountEntityModel();
 

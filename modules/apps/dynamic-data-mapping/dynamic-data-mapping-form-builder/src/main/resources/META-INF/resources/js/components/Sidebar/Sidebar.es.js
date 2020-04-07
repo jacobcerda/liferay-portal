@@ -43,7 +43,7 @@ class Sidebar extends Component {
 		this._bindDragAndDrop();
 
 		this._eventHandler.add(
-			dom.on(document, 'mousedown', this._handleDocumentMouseDown, true)
+			dom.on(document, 'mousedown', this._handleDocumentMouseDown, false)
 		);
 	}
 
@@ -54,7 +54,6 @@ class Sidebar extends Component {
 			fieldTypes,
 			focusedField,
 		} = this.props;
-		const {activeTab} = this.state;
 		const {dispatch} = this.context;
 		const newFieldType = fieldTypes.find(({name}) => name === type);
 		const newSettingsContext = {
@@ -66,7 +65,6 @@ class Sidebar extends Component {
 				focusedField.fieldName
 			),
 		};
-		const sidebarTabIndex = newSettingsContext.pages.length - 1;
 		let {settingsContext} = focusedField;
 
 		if (type !== focusedField.type) {
@@ -74,14 +72,9 @@ class Sidebar extends Component {
 				settingsContext,
 				newSettingsContext
 			);
-			if (sidebarTabIndex < activeTab) {
-				this.setState({
-					activeTab: sidebarTabIndex,
-				});
-			}
 		}
 
-		dispatch('focusedFieldUpdated', {
+		dispatch('focusedFieldEvaluationEnded', {
 			...focusedField,
 			...newFieldType,
 			...getFieldProperties(
@@ -118,8 +111,10 @@ class Sidebar extends Component {
 		);
 		this._handleDragEnded = this._handleDragEnded.bind(this);
 		this._handleDragStarted = this._handleDragStarted.bind(this);
+		this._handleDragTargetEnter = this._handleDragTargetEnter.bind(this);
+		this._handleDragTargetLeave = this._handleDragTargetLeave.bind(this);
 		this._handleEvaluatorChanged = this._handleEvaluatorChanged.bind(this);
-		this._handleFieldSettingsClicked = this._handleFieldSettingsClicked.bind(
+		this._handleElementSettingsClicked = this._handleElementSettingsClicked.bind(
 			this
 		);
 		this._handlePreviousButtonClicked = this._handlePreviousButtonClicked.bind(
@@ -151,6 +146,10 @@ class Sidebar extends Component {
 
 		this._eventHandler.removeAllListeners();
 		this.disposeDragAndDrop();
+	}
+
+	getDropTargetsSelector() {
+		return '.ddm-target:not([data-drop-disabled="true"])';
 	}
 
 	getSettingsFormContext() {
@@ -221,7 +220,7 @@ class Sidebar extends Component {
 
 	refreshDragAndDrop() {
 		this._dragAndDrop.setState({
-			targets: '.ddm-target',
+			targets: this.getDropTargetsSelector(),
 		});
 	}
 
@@ -336,7 +335,7 @@ class Sidebar extends Component {
 			evaluableForm
 				.evaluate()
 				.then(pages => {
-					dispatch('focusedFieldUpdated', {
+					dispatch('focusedFieldEvaluationEnded', {
 						...focusedField,
 						settingsContext: {
 							...focusedField.settingsContext,
@@ -359,13 +358,21 @@ class Sidebar extends Component {
 			container: document.body,
 			dragPlaceholder: Drag.Placeholder.CLONE,
 			sources: '.ddm-drag-item',
-			targets: '.ddm-target',
+			targets: this.getDropTargetsSelector(),
 			useShim: false,
 		});
 
 		this._eventHandler.add(
+			this._dragAndDrop.on(Drag.Events.START, this._handleDragStarted),
 			this._dragAndDrop.on(DragDrop.Events.END, this._handleDragEnded),
-			this._dragAndDrop.on(Drag.Events.START, this._handleDragStarted)
+			this._dragAndDrop.on(
+				DragDrop.Events.TARGET_ENTER,
+				this._handleDragTargetEnter
+			),
+			this._dragAndDrop.on(
+				DragDrop.Events.TARGET_LEAVE,
+				this._handleDragTargetLeave
+			)
 		);
 	}
 
@@ -375,10 +382,10 @@ class Sidebar extends Component {
 		cancelChangesModal.show();
 	}
 
-	_deleteField(indexes) {
+	_deleteField(fieldName) {
 		const {dispatch} = this.context;
 
-		dispatch('fieldDeleted', {indexes});
+		dispatch('fieldDeleted', {fieldName});
 	}
 
 	dispatchFieldBlurred() {
@@ -404,13 +411,13 @@ class Sidebar extends Component {
 			});
 	}
 
-	_duplicateField(indexes) {
+	_duplicateField(fieldName) {
 		const {dispatch} = this.context;
 
-		dispatch('fieldDuplicated', {indexes});
+		dispatch('fieldDuplicated', {fieldName});
 	}
 
-	_fetchFieldSet(fieldSetId) {
+	_fetchElementSet(fieldSetId) {
 		const {
 			editingLanguageId,
 			fieldSetDefinitionURL,
@@ -550,13 +557,16 @@ class Sidebar extends Component {
 			return;
 		}
 
+		this._handleDragTargetLeave(data);
+
 		const {fieldTypes} = this.props;
 		const {fieldSetId} = data.source.dataset;
-		const indexes = FormSupport.getIndexes(data.target.parentElement);
+		const columnNode = dom.closest(data.target, '.col-ddm');
+		const indexes = FormSupport.getIndexes(columnNode);
 
 		if (fieldSetId) {
-			this._fetchFieldSet(fieldSetId).then(pages => {
-				dispatch('fieldSetAdded', {
+			this._fetchElementSet(fieldSetId).then(pages => {
+				dispatch('elementSetAdded', {
 					data,
 					fieldSetId,
 					fieldSetPages: pages,
@@ -568,20 +578,43 @@ class Sidebar extends Component {
 			const fieldType = fieldTypes.find(({name}) => {
 				return name === data.source.dataset.fieldTypeName;
 			});
-
-			const addedToPlaceholder = data.target.parentElement.parentElement.classList.contains(
-				'placeholder'
+			let parentFieldName;
+			const parentFieldNode = dom.closest(
+				data.target.parentElement,
+				'.ddm-field'
 			);
 
-			dispatch('fieldAdded', {
-				addedToPlaceholder,
-				data,
+			if (parentFieldNode) {
+				parentFieldName = parentFieldNode.dataset.fieldName;
+			}
+
+			const payload = {
+				data: {
+					...data,
+					fieldName: data.target.dataset.fieldName,
+					parentFieldName,
+				},
 				fieldType: {
 					...fieldType,
 					editable: true,
 				},
 				indexes,
-			});
+			};
+
+			if (dom.closest(data.target, '.col-empty')) {
+				const addedToPlaceholder = dom.closest(
+					data.target,
+					'.placeholder'
+				);
+
+				dispatch('fieldAdded', {
+					...payload,
+					addedToPlaceholder,
+				});
+			}
+			else {
+				dispatch('sectionAdded', payload);
+			}
 		}
 	}
 
@@ -591,11 +624,33 @@ class Sidebar extends Component {
 		this.close();
 	}
 
+	_handleDragTargetEnter({target}) {
+		const parentFieldNode = dom.closest(
+			target.parentElement,
+			`.ddm-field-container`
+		);
+
+		if (parentFieldNode) {
+			parentFieldNode.classList.add('active-drop-child');
+		}
+	}
+
+	_handleDragTargetLeave({target}) {
+		const parentFieldNode = dom.closest(
+			target.parentElement,
+			`.ddm-field-container`
+		);
+
+		if (parentFieldNode) {
+			parentFieldNode.classList.remove('active-drop-child');
+		}
+	}
+
 	_handleEvaluatorChanged(pages) {
 		const {dispatch} = this.context;
 		const {focusedField} = this.props;
 
-		dispatch('focusedFieldUpdated', {
+		dispatch('focusedFieldEvaluationEnded', {
 			...focusedField,
 			settingsContext: {
 				...focusedField.settingsContext,
@@ -604,8 +659,13 @@ class Sidebar extends Component {
 		});
 	}
 
-	_handleFieldSettingsClicked({data: {item}}) {
-		const {columnIndex, pageIndex, rowIndex} = this.props.focusedField;
+	_handleElementSettingsClicked({data: {item}}) {
+		const {
+			columnIndex,
+			fieldName,
+			pageIndex,
+			rowIndex,
+		} = this.props.focusedField;
 		const {settingsItem} = item;
 		const indexes = {
 			columnIndex,
@@ -615,10 +675,10 @@ class Sidebar extends Component {
 
 		if (!item.disabled) {
 			if (settingsItem === 'duplicate-field') {
-				this._duplicateField(indexes);
+				this._duplicateField(fieldName);
 			}
 			else if (settingsItem === 'delete-field') {
-				this._deleteField(indexes);
+				this._deleteField(fieldName);
 			}
 			else if (settingsItem === 'cancel-field-changes') {
 				this._cancelFieldChanges(indexes);
@@ -1033,6 +1093,13 @@ class Sidebar extends Component {
 			spritemap,
 		} = this.props;
 		const {pages, rules} = this.getSettingsFormContext();
+		const sidebarTabIndex = pages.length - 1;
+
+		if (sidebarTabIndex < activeTab) {
+			this.setState({
+				activeTab: sidebarTabIndex,
+			});
+		}
 
 		return (
 			<Form
@@ -1130,7 +1197,7 @@ class Sidebar extends Component {
 							<ClayActionsDropdown
 								events={{
 									itemClicked: this
-										._handleFieldSettingsClicked,
+										._handleElementSettingsClicked,
 								}}
 								items={fieldActions}
 								ref="fieldSettingsActions"

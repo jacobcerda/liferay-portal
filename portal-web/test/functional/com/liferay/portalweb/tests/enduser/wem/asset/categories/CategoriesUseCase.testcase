@@ -167,7 +167,7 @@ definition {
 
 		Role.definePermissionCP(
 			permissionDefinitionKey = "SITE_ADMIN_CATEGORIES_GENERAL_PERMISSIONS_ACCESS_IN_SITE_ADMINISTRATION_CHECKBOX",
-			permissionDefinitionValue = "Access in Site Administration",
+			permissionDefinitionValue = "Access in Site and Asset Library Administration",
 			permissionNavigationKey = "SITE_ADMIN_CATEGORIES",
 			permissionNavigationValue = "Categories",
 			roleTitle = "Category Role Name",
@@ -1273,7 +1273,8 @@ definition {
 	@Description ="This is for LPS-101409. Validate if select a required category when entering the page name based on a page template. Also add a step to check adding page with category successfully via json."
 	@priority ="5"
 	test SelectRequiredCategoryWhenEnterPageNameWithWidgetPageTemplate {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
+		property portal.upstream = "quarantine";
 		property testray.component.names = "Categories";
 
 		task ("Add a vocabulary with required for page") {

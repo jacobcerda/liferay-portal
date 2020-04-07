@@ -39,9 +39,9 @@ definition {
 		if (isSet(customImage)) {
 			var key_uploadFileName = "${uploadFileName}";
 
-			AssertElementPresent(locator1 = "Button#SELECT_OPEN_GRAPH_IMAGE");
+			AssertElementPresent.pauseAssertVisible(locator1 = "Button#SELECT_OPEN_GRAPH_IMAGE");
 
-			Click(locator1 = "Button#SELECT_OPEN_GRAPH_IMAGE");
+			Click.pauseClickAt(locator1 = "Button#SELECT_OPEN_GRAPH_IMAGE");
 
 			SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
@@ -51,9 +51,15 @@ definition {
 				locator1 = "TextInput#FILE",
 				value1 = "${uploadFileName}");
 
-			Pause(locator1 = "3000");
+			Pause(locator1 = "5000");
 
-			Click.pauseClickAt(locator1 = "Button#ADD");
+			AssertElementPresent.pauseAssertVisible(
+				locator1 = "ItemSelector#ADD_BUTTON",
+				value1 = "Add");
+
+			AssertClick(
+				locator1 = "ItemSelector#ADD_BUTTON",
+				value1 = "Add");
 
 			SelectFrameTop(value1 = "relative=top");
 
@@ -126,12 +132,12 @@ definition {
 		task ("Assert image configuration") {
 			AssertTextEquals.assertPartialText(
 				key_fieldLabel = "Image",
-				locator1 = "FormFields#LABEL",
+				locator1 = "FormFields#OPEN_GRAPH_LABEL",
 				value1 = "Image");
 
 			AssertTextEquals.assertPartialText(
 				key_fieldLabel = "Image Alt Description",
-				locator1 = "FormFields#LABEL",
+				locator1 = "FormFields#OPEN_GRAPH_LABEL",
 				value1 = "Image Alt Description");
 
 			AssertElementPresent(locator1 = "Button#SELECT_OPEN_GRAPH_IMAGE");

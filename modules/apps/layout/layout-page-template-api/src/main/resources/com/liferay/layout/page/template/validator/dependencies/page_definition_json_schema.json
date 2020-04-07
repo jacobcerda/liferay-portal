@@ -16,6 +16,47 @@
 			"title": "The ColumnDefinition Schema",
 			"type": "object"
 		},
+		"DropZoneDefinition": {
+			"additionalProperties": false,
+			"properties": {
+				"fragmentSettings": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/FragmentSettingsAllowed"
+						},
+						{
+							"$ref": "#/definitions/FragmentSettingsUnallowed"
+						}
+					],
+					"title": "The fragmentSettings Schema",
+					"type": "object"
+				}
+			},
+			"title": "The DropZoneDefinition Schema",
+			"type": "object"
+		},
+		"Fragment": {
+			"additionalProperties": false,
+			"properties": {
+				"collectionName": {
+					"title": "The collectionName Schema",
+					"type": "string"
+				},
+				"key": {
+					"title": "The key Schema",
+					"type": "string"
+				},
+				"name": {
+					"title": "The name Schema",
+					"type": "string"
+				}
+			},
+			"required": [
+				"key"
+			],
+			"title": "The fragment Schema",
+			"type": "object"
+		},
 		"FragmentField": {
 			"oneOf": [
 				{
@@ -50,7 +91,10 @@
 				"html": {
 					"oneOf": [
 						{
-							"$ref": "#/definitions/InlineValue"
+							"$ref": "#/definitions/FragmentInlineValue"
+						},
+						{
+							"$ref": "#/definitions/FragmentMappedValue"
 						}
 					],
 					"type": "object"
@@ -81,7 +125,10 @@
 				"text": {
 					"oneOf": [
 						{
-							"$ref": "#/definitions/InlineValue"
+							"$ref": "#/definitions/FragmentInlineValue"
+						},
+						{
+							"$ref": "#/definitions/FragmentMappedValue"
 						}
 					],
 					"type": "object"
@@ -93,17 +140,27 @@
 		"FragmentImage": {
 			"additionalProperties": false,
 			"properties": {
+				"description": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/FragmentInlineValue"
+						}
+					]
+				},
 				"title": {
 					"oneOf": [
 						{
-							"$ref": "#/definitions/InlineValue"
+							"$ref": "#/definitions/FragmentInlineValue"
 						}
 					]
 				},
 				"url": {
 					"oneOf": [
 						{
-							"$ref": "#/definitions/InlineValue"
+							"$ref": "#/definitions/FragmentInlineValue"
+						},
+						{
+							"$ref": "#/definitions/FragmentMappedValue"
 						}
 					]
 				}
@@ -111,30 +168,29 @@
 			"title": "The FragmentImage Schema",
 			"type": "object"
 		},
+		"FragmentInlineValue": {
+			"additionalProperties": false,
+			"properties": {
+				"value": {
+					"title": "The value Schema",
+					"type": "string"
+				},
+				"value_i18n": {
+					"additionalProperties": {
+						"type": "string"
+					},
+					"title": "The value_i18n Schema",
+					"type": "object"
+				}
+			},
+			"title": "The FragmentInlineValue Schema",
+			"type": "object"
+		},
 		"FragmentInstanceDefinition": {
 			"additionalProperties": false,
 			"properties": {
 				"fragment": {
-					"additionalProperties": false,
-					"properties": {
-						"fragmentCollectionName": {
-							"title": "The fragmentCollectionName Schema",
-							"type": "string"
-						},
-						"fragmentKey": {
-							"title": "The fragmentKey Schema",
-							"type": "string"
-						},
-						"fragmentName": {
-							"title": "The fragmentName Schema",
-							"type": "string"
-						}
-					},
-					"required": [
-						"fragmentKey"
-					],
-					"title": "The fragment Schema",
-					"type": "object"
+					"$ref": "#/definitions/Fragment"
 				},
 				"fragmentConfig": {
 					"title": "The fragmentConfig Schema",
@@ -168,6 +224,16 @@
 		"FragmentLink": {
 			"additionalProperties": false,
 			"properties": {
+				"href": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/FragmentInlineValue"
+						},
+						{
+							"$ref": "#/definitions/FragmentMappedValue"
+						}
+					]
+				},
 				"target": {
 					"enum": [
 						"Blank",
@@ -177,45 +243,75 @@
 					],
 					"title": "The target Schema",
 					"type": "string"
-				},
-				"value": {
-					"oneOf": [
-						{
-							"$ref": "#/definitions/InlineLink"
-						}
-					]
 				}
 			},
 			"title": "The FragmentLink Schema",
 			"type": "object"
 		},
-		"InlineLink": {
+		"FragmentMappedValue": {
 			"additionalProperties": false,
 			"properties": {
-				"href": {
-					"title": "The href Schema",
-					"type": "string"
-				}
-			},
-			"title": "The InlineLink Schema",
-			"type": "object"
-		},
-		"InlineValue": {
-			"additionalProperties": false,
-			"properties": {
-				"value": {
-					"title": "The value Schema",
-					"type": "string"
+				"defaultValue": {
+					"$ref": "#/definitions/FragmentInlineValue"
 				},
-				"value_i18n": {
-					"additionalProperties": {
-						"type": "string"
+				"mapping": {
+					"additionalProperties": false,
+					"properties": {
+						"fieldKey": {
+							"title": "The fieldKey Schema",
+							"type": "string"
+						},
+						"itemKey": {
+							"title": "The itemKey Schema",
+							"type": "string"
+						}
 					},
-					"title": "The value_i18n Schema",
+					"required": [
+						"fieldKey",
+						"itemKey"
+					],
+					"title": "The mapping Schema",
 					"type": "object"
 				}
 			},
-			"title": "The InlineValue Schema",
+			"required": [
+				"mapping"
+			],
+			"title": "The FragmentMappedValue Schema",
+			"type": "object"
+		},
+		"FragmentSettingsAllowed": {
+			"additionalProperties": false,
+			"properties": {
+				"allowedFragments": {
+					"items": {
+						"$ref": "#/definitions/Fragment"
+					},
+					"title": "The allowedFragments Schema",
+					"type": "array"
+				}
+			},
+			"required": [
+				"allowedFragments"
+			],
+			"title": "The FragmentSettingsAllowed Schema",
+			"type": "object"
+		},
+		"FragmentSettingsUnallowed": {
+			"additionalProperties": false,
+			"properties": {
+				"unallowedFragments": {
+					"items": {
+						"$ref": "#/definitions/Fragment"
+					},
+					"title": "The unallowedFragments Schema",
+					"type": "array"
+				}
+			},
+			"required": [
+				"unallowedFragments"
+			],
+			"title": "The FragmentSettingsUnallowed Schema",
 			"type": "object"
 		},
 		"PageElement": {
@@ -233,6 +329,22 @@
 						"properties": {
 							"definition": {
 								"$ref": "#/definitions/ColumnDefinition"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"type": {
+								"const": "DropZone"
+							}
+						}
+					},
+					"then": {
+						"properties": {
+							"definition": {
+								"$ref": "#/definitions/DropZoneDefinition"
 							}
 						}
 					}
@@ -358,8 +470,8 @@
 		"SectionDefinition": {
 			"additionalProperties": false,
 			"properties": {
-				"backgroundColorCssClass": {
-					"title": "The backgroundColorCssClass Schema",
+				"backgroundColor": {
+					"title": "The backgroundColor Schema",
 					"type": "string"
 				},
 				"backgroundImage": {
@@ -453,11 +565,18 @@
 				"masterPage": {
 					"additionalProperties": false,
 					"properties": {
+						"key": {
+							"title": "The key Schema",
+							"type": "string"
+						},
 						"name": {
 							"title": "The name Schema",
 							"type": "string"
 						}
 					},
+					"required": [
+						"key"
+					],
 					"title": "The masterPage Schema",
 					"type": "object"
 				},

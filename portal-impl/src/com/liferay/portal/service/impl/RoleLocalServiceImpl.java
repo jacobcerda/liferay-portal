@@ -449,32 +449,34 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 				ResourceConstants.SCOPE_INDIVIDUAL, role.getRoleId());
 		}
 
-		if ((role.getType() == RoleConstants.TYPE_ORGANIZATION) ||
+		if ((role.getType() == RoleConstants.TYPE_DEPOT) ||
+			(role.getType() == RoleConstants.TYPE_ORGANIZATION) ||
 			(role.getType() == RoleConstants.TYPE_SITE)) {
 
 			List<Group> groups = groupPersistence.findByC_S(
 				role.getCompanyId(), true);
 
 			for (Group group : groups) {
-				UnicodeProperties typeSettingsProperties =
+				UnicodeProperties typeSettingsUnicodeProperties =
 					group.getTypeSettingsProperties();
 
 				List<Long> defaultSiteRoleIds = ListUtil.fromArray(
 					StringUtil.split(
-						typeSettingsProperties.getProperty(
+						typeSettingsUnicodeProperties.getProperty(
 							"defaultSiteRoleIds"),
 						0L));
 
 				if (defaultSiteRoleIds.contains(role.getRoleId())) {
 					defaultSiteRoleIds.remove(role.getRoleId());
 
-					typeSettingsProperties.setProperty(
+					typeSettingsUnicodeProperties.setProperty(
 						"defaultSiteRoleIds",
 						ListUtil.toString(
 							defaultSiteRoleIds, StringPool.BLANK));
 
 					groupLocalService.updateGroup(
-						group.getGroupId(), typeSettingsProperties.toString());
+						group.getGroupId(),
+						typeSettingsUnicodeProperties.toString());
 				}
 			}
 
@@ -606,7 +608,9 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 			assigneesTotal += userLocalService.getRoleUsersCount(roleId);
 		}
 
-		if (type == RoleConstants.TYPE_SITE) {
+		if ((type == RoleConstants.TYPE_DEPOT) ||
+			(type == RoleConstants.TYPE_SITE)) {
+
 			DynamicQuery userGroupGroupRoleDynamicQuery =
 				userGroupGroupRoleLocalService.dynamicQuery();
 
@@ -625,8 +629,9 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 			assigneesTotal += count.intValue();
 		}
 
-		if ((type == RoleConstants.TYPE_SITE) ||
-			(type == RoleConstants.TYPE_ORGANIZATION)) {
+		if ((type == RoleConstants.TYPE_DEPOT) ||
+			(type == RoleConstants.TYPE_ORGANIZATION) ||
+			(type == RoleConstants.TYPE_SITE)) {
 
 			DynamicQuery userGroupRoleDynamicQuery =
 				userGroupRoleLocalService.dynamicQuery();

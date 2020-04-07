@@ -17,9 +17,11 @@ const PREV_TIME_SPAN = 'previous-time-span';
 const CHANGE_TIME_SPAN_OPTION = 'change-time-span-option';
 const SET_LOADING = 'set-loading';
 
-export const useChartState = ({defaultTimeSpanOption}) => {
+export const useChartState = ({defaultTimeSpanOption, publishDate}) => {
 	const [state, dispatch] = useReducer(reducer, {
+		dataSet: {histogram: [], keyList: [], totals: []},
 		loading: true,
+		publishDate,
 		timeSpanOffset: 0,
 		timeSpanOption: defaultTimeSpanOption,
 	});
@@ -89,10 +91,7 @@ function reducer(state, action) {
 			};
 			break;
 		case SET_LOADING:
-			nextState = {
-				...state,
-				loading: true,
-			};
+			nextState = setLoadingState(state);
 			break;
 		default:
 			state = nextState;
@@ -102,17 +101,66 @@ function reducer(state, action) {
 	return nextState;
 }
 
-function transformDataToDataSet(
-	key,
-	data,
-	previousDataset = {histogram: [], keyList: [], totals: []}
-) {
-	const result = mergeDataSets(data, previousDataset, key);
+/**
+ * Declares the state as loading and resets the dataSet histogram values
+ */
+function setLoadingState(state) {
+	/**
+	 * The dataSet does not need to be reset
+	 */
+	if (!state.dataSet) {
+		return {...state, loading: true};
+	}
 
-	return result;
+	const histogram = state.dataSet.histogram.map(set => {
+		const newSet = {};
+
+		const setArray = Object.entries(set);
+
+		for (const index in setArray) {
+			const [key, value] = setArray[index];
+
+			if (key === 'label') {
+				newSet[key] = value;
+			}
+			else {
+				newSet[key] = null;
+			}
+		}
+
+		return newSet;
+	});
+
+	const arrayTotals = Object.entries(state.dataSet.totals);
+
+	const totals = {};
+
+	for (const index in arrayTotals) {
+		const [key] = arrayTotals[index];
+
+		totals[key] = null;
+	}
+
+	const nextState = {
+		...state,
+		dataSet: {
+			...state.dataSet,
+			histogram,
+			totals,
+		},
+		loading: true,
+	};
+
+	return nextState;
 }
 
-function mergeDataSets(newData, previousDataSet, key) {
+function mergeDataSets({
+	key,
+	newData,
+	previousDataSet = {histogram: [], keyList: [], totals: []},
+	publishDate,
+	timeSpanComparator,
+}) {
 	const resultDataSet = {};
 
 	resultDataSet.keyList = [...previousDataSet.keyList, key];
@@ -122,10 +170,26 @@ function mergeDataSets(newData, previousDataSet, key) {
 		[key]: newData.value,
 	};
 
-	const newFormattedHistogram = newData.histogram.map(h => ({
-		[key]: h.value,
-		label: h.key,
-	}));
+	const publishDateObject = new Date(publishDate);
+
+	const newFormattedHistogram = newData.histogram.map(h => {
+		const valueDataObject = new Date(h.key);
+
+		if (
+			valueDataObject < publishDateObject &&
+			publishDateObject - valueDataObject > timeSpanComparator
+		) {
+			return {
+				[key]: null,
+				label: h.key,
+			};
+		}
+
+		return {
+			[key]: h.value,
+			label: h.key,
+		};
+	});
 
 	let start = 0;
 	const mergeHistogram = [];
@@ -162,10 +226,11 @@ function mergeDataSets(newData, previousDataSet, key) {
  * 		histogram: Array<{
  *			key: string, // '2020-01-24T00:00'
  *			value: number
- * 		}>,
+ * 		}>
  * 		values: number
  * 	},
- * 	key: string
+ * 	key: string,
+ *  timeSpanComparator: number,
  * }
  */
 function addDataSetItem(state, payload) {
@@ -177,11 +242,13 @@ function addDataSetItem(state, payload) {
 
 	return {
 		...state,
-		dataSet: transformDataToDataSet(
-			payload.key,
-			payload.dataSetItem,
-			previousDataSet
-		),
+		dataSet: mergeDataSets({
+			key: payload.key,
+			newData: payload.dataSetItem,
+			previousDataSet,
+			publishDate: state.publishDate,
+			timeSpanComparator: payload.timeSpanComparator,
+		}),
 		loading: false,
 	};
 }

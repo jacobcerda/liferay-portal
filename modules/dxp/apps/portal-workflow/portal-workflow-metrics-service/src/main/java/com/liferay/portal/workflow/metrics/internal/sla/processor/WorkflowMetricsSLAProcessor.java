@@ -40,6 +40,7 @@ import com.liferay.portal.search.hits.SearchHits;
 import com.liferay.portal.search.sort.SortOrder;
 import com.liferay.portal.search.sort.Sorts;
 import com.liferay.portal.workflow.metrics.model.WorkflowMetricsSLADefinitionVersion;
+import com.liferay.portal.workflow.metrics.search.index.name.WorkflowMetricsIndexNameBuilder;
 import com.liferay.portal.workflow.metrics.sla.calendar.WorkflowMetricsSLACalendar;
 import com.liferay.portal.workflow.metrics.sla.calendar.WorkflowMetricsSLACalendarTracker;
 import com.liferay.portal.workflow.metrics.sla.processor.WorkflowMetricsSLAStatus;
@@ -180,7 +181,8 @@ public class WorkflowMetricsSLAProcessor {
 		SearchSearchRequest searchSearchRequest = new SearchSearchRequest();
 
 		searchSearchRequest.setIndexNames(
-			"workflow-metrics-sla-instance-results");
+			_slaInstanceResultWorkflowMetricsIndexNameBuilder.getIndexName(
+				workflowMetricsSLADefinitionVersion.getCompanyId()));
 		searchSearchRequest.setQuery(
 			new BooleanQueryImpl() {
 				{
@@ -257,7 +259,8 @@ public class WorkflowMetricsSLAProcessor {
 					StringBundler.concat(
 						"createDate", StringPool.UNDERLINE, "Number")),
 				SortOrder.ASC));
-		searchSearchRequest.setIndexNames("workflow-metrics-tokens");
+		searchSearchRequest.setIndexNames(
+			_taskWorkflowMetricsIndexNameBuilder.getIndexName(companyId));
 		searchSearchRequest.setQuery(
 			new BooleanQueryImpl() {
 				{
@@ -528,13 +531,13 @@ public class WorkflowMetricsSLAProcessor {
 		while (iterator.hasNext() && !workflowMetricsSLAStopwatch.isStopped()) {
 			Document document = iterator.next();
 
-			long taskId = document.getLong("taskId");
+			long nodeId = document.getLong("nodeId");
 
 			TaskInterval taskInterval = _toTaskInterval(
 				document, lastCheckLocalDateTime, null);
 
-			if (pauseTimeMarkers.containsKey(taskId) &&
-				!stopTimeMarkers.containsKey(taskId)) {
+			if (pauseTimeMarkers.containsKey(nodeId) &&
+				!stopTimeMarkers.containsKey(nodeId)) {
 
 				workflowMetricsSLAStopwatch.pause(
 					taskInterval._startLocalDateTime);
@@ -545,13 +548,13 @@ public class WorkflowMetricsSLAProcessor {
 				}
 			}
 
-			if (startTimeMarkers.containsKey(taskId)) {
-				if (Objects.equals(startTimeMarkers.get(taskId), "enter")) {
+			if (startTimeMarkers.containsKey(nodeId)) {
+				if (Objects.equals(startTimeMarkers.get(nodeId), "enter")) {
 					workflowMetricsSLAStopwatch.run(
 						taskInterval._startLocalDateTime);
 				}
 				else if (Objects.equals(
-							startTimeMarkers.get(taskId), "leave") &&
+							startTimeMarkers.get(nodeId), "leave") &&
 						 (taskInterval._endLocalDateTime != null)) {
 
 					workflowMetricsSLAStopwatch.run(
@@ -559,12 +562,12 @@ public class WorkflowMetricsSLAProcessor {
 				}
 			}
 
-			if (stopTimeMarkers.containsKey(taskId)) {
-				if (Objects.equals(stopTimeMarkers.get(taskId), "enter")) {
+			if (stopTimeMarkers.containsKey(nodeId)) {
+				if (Objects.equals(stopTimeMarkers.get(nodeId), "enter")) {
 					workflowMetricsSLAStopwatch.stop(
 						taskInterval._startLocalDateTime);
 				}
-				else if (Objects.equals(stopTimeMarkers.get(taskId), "leave") &&
+				else if (Objects.equals(stopTimeMarkers.get(nodeId), "leave") &&
 						 (taskInterval._endLocalDateTime != null)) {
 
 					workflowMetricsSLAStopwatch.stop(
@@ -607,6 +610,7 @@ public class WorkflowMetricsSLAProcessor {
 				setLastCheckLocalDateTime(
 					workflowMetricsSLAInstanceResult.
 						getLastCheckLocalDateTime());
+				setNodeId(document.getLong("nodeId"));
 				setOnTime(
 					WorkflowMetricsSLAProcessor.this.isOnTime(
 						document, nowLocalDateTime,
@@ -615,9 +619,8 @@ public class WorkflowMetricsSLAProcessor {
 				setProcessId(workflowMetricsSLAInstanceResult.getProcessId());
 				setSLADefinitionId(
 					workflowMetricsSLAInstanceResult.getSLADefinitionId());
+				setTaskName(document.getString("name"));
 				setTaskId(document.getLong("taskId"));
-				setTaskName(document.getString("taskName"));
-				setTokenId(document.getLong("tokenId"));
 				setWorkflowMetricsSLAStatus(
 					_getWorkflowMetricsSLAStatus(
 						document, workflowMetricsSLAInstanceResult));
@@ -783,8 +786,18 @@ public class WorkflowMetricsSLAProcessor {
 	@Reference
 	private SearchRequestExecutor _searchRequestExecutor;
 
+	@Reference(
+		target = "(workflow.metrics.index.entity.name=sla-instance-result)"
+	)
+	private WorkflowMetricsIndexNameBuilder
+		_slaInstanceResultWorkflowMetricsIndexNameBuilder;
+
 	@Reference
 	private Sorts _sorts;
+
+	@Reference(target = "(workflow.metrics.index.entity.name=task)")
+	private WorkflowMetricsIndexNameBuilder
+		_taskWorkflowMetricsIndexNameBuilder;
 
 	@Reference
 	private WorkflowMetricsSLACalendarTracker

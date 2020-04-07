@@ -35,6 +35,8 @@ definition {
 	@description = "This ensures that a depot image can be used through Blogs on a connected site."
 	@priority = "5"
 	test AddImageViaBlogs {
+		property portal.upstream = "quarantine";
+
 		DepotNavigator.openDepotAdmin();
 
 		DepotNavigator.gotoDepot(
@@ -57,6 +59,8 @@ definition {
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "site-name");
 
 		BlogsNavigator.gotoAddEntry();
+
+		Pause(locator1 = "3000");
 
 		BlogsNavigator.gotoSelectFile();
 
@@ -88,6 +92,8 @@ definition {
 	@description = "This ensures that a depot image can be used through page creation on a connected site."
 	@priority = "5"
 	test AddImageViaContentPage {
+		property portal.upstream = "quarantine";
+
 		DepotNavigator.openDepotAdmin();
 
 		DepotNavigator.gotoDepot(
@@ -111,9 +117,10 @@ definition {
 
 		ContentPages.addPage(pageName = "Test Content Page Name");
 
-		PageEditor.addLayoutSection(columnCount = "2");
+		PageEditor.addLayoutSection(dropTarget = "//div[contains(@class,'page-editor__root page-editor__topper')]");
 
-		PageEditor.selectLayoutSectionImage(
+		PageEditor.editLayoutSection(
+			backgroundImage = "Manual Selection",
 			depotName = "Test Depot Name",
 			imageFileName = "Document_1.jpeg");
 
@@ -123,12 +130,14 @@ definition {
 
 		AssertElementPresent(
 			key_imageName = "Document_1.jpeg",
-			locator1 = "Fragment#FRAGMENT_LAYOUT_BACKGROUND_IMAGE");
+			locator1 = "Fragment#FRAGMENT_SECTION_BACKGROUND_IMAGE");
 	}
 
 	@description = "This test covers LPS-105401. It ensures that a depot image can be used on a connected staging site."
 	@priority = "5"
 	test AddImageViaStagedSite {
+		property portal.upstream = "quarantine";
+
 		JSONLayout.addPublicLayout(
 			groupName = "Site Name",
 			layoutName = "Test Page");
@@ -202,6 +211,8 @@ definition {
 	@description = "This ensures that a depot image can be used through web content on a connected site."
 	@priority = "5"
 	test AddImageViaWebContent {
+		property portal.upstream = "quarantine";
+
 		DepotNavigator.openDepotAdmin();
 
 		DepotNavigator.gotoDepot(

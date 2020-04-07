@@ -13,7 +13,6 @@
  */
 
 import {ClayInput} from '@clayui/form';
-import PropTypes from 'prop-types';
 import React, {useCallback, useState} from 'react';
 
 import {ImageSelector} from '../../../common/components/ImageSelector';
@@ -22,9 +21,10 @@ import {getEditableItemPropTypes} from '../../../prop-types/index';
 import {BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/backgroundImageFragmentEntryProcessor';
 import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/editableFragmentEntryProcessor';
 import {EDITABLE_TYPES} from '../../config/constants/editableTypes';
+import selectEditableValueContent from '../../selectors/selectEditableValueContent';
 import selectPrefixedSegmentsExperienceId from '../../selectors/selectPrefixedSegmentsExperienceId';
 import {useDispatch, useSelector} from '../../store/index';
-import updateEditableValues from '../../thunks/updateEditableValues';
+import updateEditableValuesThunk from '../../thunks/updateEditableValues';
 
 export function ImagePropertiesPanel({item}) {
 	const {editableId, editableType, fragmentEntryLinkId} = item;
@@ -48,7 +48,18 @@ export function ImagePropertiesPanel({item}) {
 		editableConfig.alt
 	);
 
-	const updateRowConfig = useCallback(
+	const imageUrl = useSelector(state => {
+		const url = selectEditableValueContent(
+			state,
+			fragmentEntryLinkId,
+			editableId,
+			processoryKey
+		);
+
+		return url === editableValue.defaultValue ? '' : url;
+	});
+
+	const updateEditableValues = useCallback(
 		newConfig => {
 			const editableValues =
 				state.fragmentEntryLinks[fragmentEntryLinkId].editableValues;
@@ -69,7 +80,7 @@ export function ImagePropertiesPanel({item}) {
 			};
 
 			dispatch(
-				updateEditableValues({
+				updateEditableValuesThunk({
 					editableValues: nextEditableValues,
 					fragmentEntryLinkId,
 					segmentsExperienceId: state.segmentsExperienceId,
@@ -87,7 +98,10 @@ export function ImagePropertiesPanel({item}) {
 		]
 	);
 
-	const [debounceUpdateRowConfig] = useDebounceCallback(updateRowConfig, 500);
+	const [debounceUpdateEditableValues] = useDebounceCallback(
+		updateEditableValues,
+		500
+	);
 
 	const onImageChange = (imageTitle, imageUrl) => {
 		const {editableValues} = state.fragmentEntryLinks[fragmentEntryLinkId];
@@ -102,10 +116,22 @@ export function ImagePropertiesPanel({item}) {
 
 		let nextEditableValue = {};
 
-		if (state.segmentsExperienceId) {
+		setImageDescription('');
+
+		const nextEditableValueConfig = {
+			...editableValue.config,
+			alt: '',
+			imageTitle: '',
+		};
+
+		if (imageTitle) {
+			nextEditableValueConfig.imageTitle = imageTitle;
+		}
+
+		if (prefixedSegmentsExperienceId) {
 			nextEditableValue = {
 				...editableValue,
-				config: {...editableValue.config, imageTitle},
+				config: nextEditableValueConfig,
 				[prefixedSegmentsExperienceId]: {
 					...editableValue[prefixedSegmentsExperienceId],
 					[state.languageId]: imageUrl,
@@ -115,7 +141,7 @@ export function ImagePropertiesPanel({item}) {
 		else {
 			nextEditableValue = {
 				...editableValue,
-				config: {...editableValue.config, imageTitle},
+				config: nextEditableValueConfig,
 				[state.languageId]: imageUrl,
 			};
 		}
@@ -132,7 +158,7 @@ export function ImagePropertiesPanel({item}) {
 		};
 
 		dispatch(
-			updateEditableValues({
+			updateEditableValuesThunk({
 				editableValues: nextEditableValues,
 				fragmentEntryLinkId,
 				segmentsExperienceId: state.segmentsExperienceId,
@@ -143,7 +169,7 @@ export function ImagePropertiesPanel({item}) {
 	return (
 		<>
 			<ImageSelector
-				imageTitle={editableConfig.imageTitle}
+				imageTitle={editableConfig.imageTitle || imageUrl}
 				label={Liferay.Language.get('image')}
 				onClearButtonPressed={() => onImageChange('', '')}
 				onImageSelected={image => onImageChange(image.title, image.url)}
@@ -159,7 +185,7 @@ export function ImagePropertiesPanel({item}) {
 						onChange={event => {
 							setImageDescription(event.target.value);
 
-							debounceUpdateRowConfig({
+							debounceUpdateEditableValues({
 								alt: event.target.value,
 							});
 						}}
@@ -174,10 +200,5 @@ export function ImagePropertiesPanel({item}) {
 }
 
 ImagePropertiesPanel.propTypes = {
-	item: getEditableItemPropTypes({
-		config: PropTypes.shape({
-			alt: PropTypes.string,
-			imageTitle: PropTypes.string,
-		}),
-	}),
+	item: getEditableItemPropTypes().isRequired,
 };

@@ -245,6 +245,26 @@ public class FragmentCompositionLocalServiceImpl
 	}
 
 	@Override
+	public FragmentComposition moveFragmentComposition(
+			long fragmentCompositionId, long fragmentCollectionId)
+		throws PortalException {
+
+		FragmentComposition fragmentComposition =
+			fragmentCompositionPersistence.findByPrimaryKey(
+				fragmentCompositionId);
+
+		if (fragmentComposition.getFragmentCollectionId() ==
+				fragmentCollectionId) {
+
+			return fragmentComposition;
+		}
+
+		fragmentComposition.setFragmentCollectionId(fragmentCollectionId);
+
+		return fragmentCompositionPersistence.update(fragmentComposition);
+	}
+
+	@Override
 	public FragmentComposition updateFragmentComposition(
 			long fragmentCompositionId, long previewFileEntryId)
 		throws PortalException {
@@ -283,6 +303,25 @@ public class FragmentCompositionLocalServiceImpl
 		fragmentComposition.setStatusByUserId(userId);
 		fragmentComposition.setStatusByUserName(user.getFullName());
 		fragmentComposition.setStatusDate(new Date());
+
+		fragmentComposition = fragmentCompositionPersistence.update(
+			fragmentComposition);
+
+		return fragmentComposition;
+	}
+
+	@Override
+	public FragmentComposition updateFragmentComposition(
+			long fragmentCompositionId, String name)
+		throws PortalException {
+
+		FragmentComposition fragmentComposition =
+			fragmentCompositionPersistence.findByPrimaryKey(
+				fragmentCompositionId);
+
+		validate(name);
+
+		fragmentComposition.setName(name);
 
 		fragmentComposition = fragmentCompositionPersistence.update(
 			fragmentComposition);

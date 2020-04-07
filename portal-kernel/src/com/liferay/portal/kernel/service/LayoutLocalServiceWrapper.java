@@ -844,6 +844,25 @@ public class LayoutLocalServiceWrapper
 	}
 
 	/**
+	 * Returns all the layouts that match the type and belong to the group,
+	 * including the ones marked as System.
+	 *
+	 * @param groupId the primary key of the group
+	 * @param privateLayout whether the layout is private to the group
+	 * @param type the type of the layouts (optiona.lly {@link
+	 LayoutConstants#TYPE_PORTLET})
+	 * @return the matching layouts, or an empty list if no matches were
+	 found
+	 */
+	@Override
+	public java.util.List<Layout> getAllLayouts(
+			long groupId, boolean privateLayout, String type)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutLocalService.getAllLayouts(groupId, privateLayout, type);
+	}
+
+	/**
 	 * Returns the primary key of the default layout for the group.
 	 *
 	 * @param groupId the primary key of the group
@@ -1218,6 +1237,31 @@ public class LayoutLocalServiceWrapper
 	}
 
 	/**
+	 * Returns a range of all the layouts belonging to the group.
+	 *
+	 * @param groupId the primary key of the group
+	 * @param userId the primary key of the user
+	 * @param privateLayout whether the layout is private to the group
+	 * @param keywords keywords
+	 * @param types layout types
+	 * @param start the lower bound of the range of layouts
+	 * @param end the upper bound of the range of layouts (not inclusive)
+	 * @param obc the comparator to order the layouts
+	 * @return the matching layouts, or <code>null</code> if no matches were
+	 found
+	 */
+	@Override
+	public java.util.List<Layout> getLayouts(
+			long groupId, long userId, boolean privateLayout, String keywords,
+			String[] types, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator<Layout> obc)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutLocalService.getLayouts(
+			groupId, userId, privateLayout, keywords, types, start, end, obc);
+	}
+
+	/**
 	 * Returns the layout references for all the layouts that belong to the
 	 * company and belong to the portlet that matches the preferences.
 	 *
@@ -1371,8 +1415,23 @@ public class LayoutLocalServiceWrapper
 	}
 
 	@Override
+	public int getLayoutsCount(long groupId, boolean privateLayout) {
+		return _layoutLocalService.getLayoutsCount(groupId, privateLayout);
+	}
+
+	@Override
 	public int getLayoutsCount(long groupId, long masterLayoutPlid) {
 		return _layoutLocalService.getLayoutsCount(groupId, masterLayoutPlid);
+	}
+
+	@Override
+	public int getLayoutsCount(
+			long groupId, long userId, boolean privateLayout, String keywords,
+			String[] types)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutLocalService.getLayoutsCount(
+			groupId, userId, privateLayout, keywords, types);
 	}
 
 	@Override

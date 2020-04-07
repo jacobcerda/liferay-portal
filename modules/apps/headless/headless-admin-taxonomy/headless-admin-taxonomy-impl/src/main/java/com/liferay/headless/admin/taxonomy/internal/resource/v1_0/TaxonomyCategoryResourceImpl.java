@@ -44,6 +44,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
@@ -59,10 +60,9 @@ import com.liferay.portlet.asset.service.permission.AssetCategoryPermission;
 
 import java.sql.Timestamp;
 
-import java.util.AbstractMap;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MultivaluedMap;
@@ -138,9 +138,25 @@ public class TaxonomyCategoryResourceImpl
 			Pagination pagination, Sort[] sorts)
 		throws Exception {
 
-		long assetCategoryId = _getAssetCategoryId(parentTaxonomyCategoryId);
+		AssetCategory assetCategory = _getAssetCategory(
+			parentTaxonomyCategoryId);
 
 		return _getCategoriesPage(
+			HashMapBuilder.<String, Map<String, String>>put(
+				"add-category",
+				addAction(
+					"ADD_CATEGORY", assetCategory.getCategoryId(),
+					AssetCategory.class.getName(), assetCategory.getUserId(),
+					"postTaxonomyCategoryTaxonomyCategory",
+					assetCategory.getGroupId())
+			).put(
+				"get",
+				addAction(
+					"VIEW", assetCategory.getCategoryId(),
+					AssetCategory.class.getName(), assetCategory.getUserId(),
+					"getTaxonomyCategoryTaxonomyCategoriesPage",
+					assetCategory.getGroupId())
+			).build(),
 			booleanQuery -> {
 				BooleanFilter booleanFilter =
 					booleanQuery.getPreBooleanFilter();
@@ -148,10 +164,10 @@ public class TaxonomyCategoryResourceImpl
 				booleanFilter.add(
 					new TermFilter(
 						Field.ASSET_PARENT_CATEGORY_ID,
-						String.valueOf(assetCategoryId)),
+						String.valueOf(assetCategory.getCategoryId())),
 					BooleanClauseOccur.MUST);
 			},
-			search, filter, pagination, sorts);
+			filter, search, pagination, sorts);
 	}
 
 	@Override
@@ -160,27 +176,38 @@ public class TaxonomyCategoryResourceImpl
 			Pagination pagination, Sort[] sorts)
 		throws Exception {
 
-		return _getCategoriesPage(
-			booleanQuery -> {
-				if (taxonomyVocabularyId != null) {
-					BooleanFilter booleanFilter =
-						booleanQuery.getPreBooleanFilter();
+		AssetVocabulary assetVocabulary = _assetVocabularyService.getVocabulary(
+			taxonomyVocabularyId);
 
-					booleanFilter.add(
-						new TermFilter(
-							Field.ASSET_PARENT_CATEGORY_ID,
-							String.valueOf(
-								AssetCategoryConstants.
-									DEFAULT_PARENT_CATEGORY_ID)),
-						BooleanClauseOccur.MUST);
-					booleanFilter.add(
-						new TermFilter(
-							Field.ASSET_VOCABULARY_ID,
-							String.valueOf(taxonomyVocabularyId)),
-						BooleanClauseOccur.MUST);
-				}
+		return _getCategoriesPage(
+			HashMapBuilder.<String, Map<String, String>>put(
+				"add-category",
+				addAction(
+					"ADD_CATEGORY", assetVocabulary,
+					"postTaxonomyVocabularyTaxonomyCategory")
+			).put(
+				"get",
+				addAction(
+					"VIEW", assetVocabulary,
+					"getTaxonomyVocabularyTaxonomyCategoriesPage")
+			).build(),
+			booleanQuery -> {
+				BooleanFilter booleanFilter =
+					booleanQuery.getPreBooleanFilter();
+
+				booleanFilter.add(
+					new TermFilter(
+						Field.ASSET_PARENT_CATEGORY_ID,
+						String.valueOf(
+							AssetCategoryConstants.DEFAULT_PARENT_CATEGORY_ID)),
+					BooleanClauseOccur.MUST);
+				booleanFilter.add(
+					new TermFilter(
+						Field.ASSET_VOCABULARY_ID,
+						String.valueOf(taxonomyVocabularyId)),
+					BooleanClauseOccur.MUST);
 			},
-			search, filter, pagination, sorts);
+			filter, search, pagination, sorts);
 	}
 
 	@Override
@@ -208,14 +235,15 @@ public class TaxonomyCategoryResourceImpl
 			LocalizedMapUtil.patch(
 				assetCategory.getDescriptionMap(),
 				contextAcceptLanguage.getPreferredLocale(),
-				taxonomyCategory.getDescription()));
+				taxonomyCategory.getDescription(),
+				taxonomyCategory.getDescription_i18n()));
 		assetCategory.setExternalReferenceCode(
 			taxonomyCategory.getExternalReferenceCode());
 		assetCategory.setTitleMap(
 			LocalizedMapUtil.patch(
 				assetCategory.getTitleMap(),
 				contextAcceptLanguage.getPreferredLocale(),
-				taxonomyCategory.getName()));
+				taxonomyCategory.getName(), taxonomyCategory.getName_i18n()));
 
 		AssetCategoryPermission.check(
 			PermissionThreadLocal.getPermissionChecker(),
@@ -260,20 +288,22 @@ public class TaxonomyCategoryResourceImpl
 
 		AssetCategory assetCategory = _getAssetCategory(taxonomyCategoryId);
 
+		_validateI18n(
+			false, assetCategory.getDefaultLanguageId(), taxonomyCategory);
+
 		assetCategory.setDescriptionMap(
-			LocalizedMapUtil.merge(
-				assetCategory.getDescriptionMap(),
-				new AbstractMap.SimpleEntry<>(
-					contextAcceptLanguage.getPreferredLocale(),
-					taxonomyCategory.getDescription())));
+			LocalizedMapUtil.getLocalizedMap(
+				contextAcceptLanguage.getPreferredLocale(),
+				taxonomyCategory.getDescription(),
+				taxonomyCategory.getDescription_i18n(),
+				assetCategory.getTitleMap()));
 		assetCategory.setExternalReferenceCode(
 			taxonomyCategory.getExternalReferenceCode());
 		assetCategory.setTitleMap(
-			LocalizedMapUtil.merge(
-				assetCategory.getTitleMap(),
-				new AbstractMap.SimpleEntry<>(
-					contextAcceptLanguage.getPreferredLocale(),
-					taxonomyCategory.getName())));
+			LocalizedMapUtil.getLocalizedMap(
+				contextAcceptLanguage.getPreferredLocale(),
+				taxonomyCategory.getName(), taxonomyCategory.getName_i18n(),
+				assetCategory.getTitleMap()));
 
 		AssetCategoryPermission.check(
 			PermissionThreadLocal.getPermissionChecker(),
@@ -288,25 +318,17 @@ public class TaxonomyCategoryResourceImpl
 			long taxonomyCategoryId, long taxonomyVocabularyId)
 		throws Exception {
 
-		if (!LocaleUtil.equals(
-				LocaleUtil.fromLanguageId(languageId),
-				contextAcceptLanguage.getPreferredLocale())) {
-
-			String w3cLanguageId = LocaleUtil.toW3cLanguageId(languageId);
-
-			throw new BadRequestException(
-				"Taxonomy categories can only be created with the default " +
-					"language " + w3cLanguageId);
-		}
+		_validateI18n(true, languageId, taxonomyCategory);
 
 		AssetCategory assetCategory = _assetCategoryService.addCategory(
 			groupId, taxonomyCategoryId,
-			Collections.singletonMap(
+			LocalizedMapUtil.getLocalizedMap(
 				contextAcceptLanguage.getPreferredLocale(),
-				taxonomyCategory.getName()),
-			Collections.singletonMap(
+				taxonomyCategory.getName(), taxonomyCategory.getName_i18n()),
+			LocalizedMapUtil.getLocalizedMap(
 				contextAcceptLanguage.getPreferredLocale(),
-				taxonomyCategory.getDescription()),
+				taxonomyCategory.getDescription(),
+				taxonomyCategory.getDescription_i18n()),
 			taxonomyVocabularyId, null,
 			ServiceContextUtil.createServiceContext(
 				groupId, taxonomyCategory.getViewableByAsString()));
@@ -350,13 +372,14 @@ public class TaxonomyCategoryResourceImpl
 	}
 
 	private Page<TaxonomyCategory> _getCategoriesPage(
+			Map<String, Map<String, String>> actions,
 			UnsafeConsumer<BooleanQuery, Exception> booleanQueryUnsafeConsumer,
-			String search, Filter filter, Pagination pagination, Sort[] sorts)
+			Filter filter, String keywords, Pagination pagination, Sort[] sorts)
 		throws Exception {
 
 		return SearchUtil.search(
-			Collections.emptyMap(), booleanQueryUnsafeConsumer, filter,
-			AssetCategory.class, search, pagination,
+			actions, booleanQueryUnsafeConsumer, filter, AssetCategory.class,
+			keywords, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ASSET_CATEGORY_ID),
 			searchContext -> searchContext.setCompanyId(
@@ -413,11 +436,54 @@ public class TaxonomyCategoryResourceImpl
 
 		return _taxonomyCategoryDTOConverter.toDTO(
 			new DefaultDTOConverterContext(
-				contextAcceptLanguage.isAcceptAllLanguages(), new HashMap<>(),
+				contextAcceptLanguage.isAcceptAllLanguages(),
+				HashMapBuilder.<String, Map<String, String>>put(
+					"add-category",
+					addAction(
+						"ADD_CATEGORY", assetCategory,
+						"postTaxonomyCategoryTaxonomyCategory")
+				).put(
+					"delete",
+					addAction("DELETE", assetCategory, "deleteTaxonomyCategory")
+				).put(
+					"get",
+					addAction("VIEW", assetCategory, "getTaxonomyCategory")
+				).put(
+					"replace",
+					addAction("UPDATE", assetCategory, "putTaxonomyCategory")
+				).put(
+					"update",
+					addAction("UPDATE", assetCategory, "patchTaxonomyCategory")
+				).build(),
 				_dtoConverterRegistry, assetCategory.getCategoryId(),
 				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
 				contextUser),
 			assetCategory);
+	}
+
+	private void _validateI18n(
+		boolean add, String languageId, TaxonomyCategory taxonomyCategory) {
+
+		Locale defaultLocale = LocaleUtil.fromLanguageId(languageId);
+
+		if (LocaleUtil.equals(
+				defaultLocale, contextAcceptLanguage.getPreferredLocale())) {
+
+			return;
+		}
+
+		Map<String, String> localizedNames = taxonomyCategory.getName_i18n();
+
+		if ((add && (localizedNames == null)) ||
+			(!add && (localizedNames != null) &&
+			 !localizedNames.containsKey(defaultLocale.toLanguageTag()))) {
+
+			String w3cLanguageId = LocaleUtil.toW3cLanguageId(defaultLocale);
+
+			throw new BadRequestException(
+				"Taxonomy categories must include the default language " +
+					w3cLanguageId);
+		}
 	}
 
 	private static final EntityModel _entityModel = new CategoryEntityModel();

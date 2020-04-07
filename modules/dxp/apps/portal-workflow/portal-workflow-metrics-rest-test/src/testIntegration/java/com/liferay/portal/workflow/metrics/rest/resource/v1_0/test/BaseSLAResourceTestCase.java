@@ -305,6 +305,7 @@ public abstract class BaseSLAResourceTestCase {
 
 	@Test
 	public void testDeleteSLA() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		SLA sla = testDeleteSLA_addSLA();
 
 		assertHttpResponseStatusCode(

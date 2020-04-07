@@ -14,8 +14,8 @@
 
 package com.liferay.depot.web.internal.servlet.taglib;
 
+import com.liferay.depot.configuration.DepotConfiguration;
 import com.liferay.depot.web.internal.display.context.DepotAdminMembershipsDisplayContext;
-import com.liferay.depot.web.internal.util.DepotSupportChecker;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -50,7 +50,7 @@ public class UserMembershipsPostJSPDynamicInclude
 			HttpServletResponse httpServletResponse, String key)
 		throws IOException {
 
-		if (!_depotSupportChecker.isEnabled()) {
+		if (!_depotConfiguration.isEnabled()) {
 			return;
 		}
 
@@ -107,7 +107,7 @@ public class UserMembershipsPostJSPDynamicInclude
 		UserMembershipsPostJSPDynamicInclude.class);
 
 	@Reference
-	private DepotSupportChecker _depotSupportChecker;
+	private DepotConfiguration _depotConfiguration;
 
 	@Reference
 	private ItemSelector _itemSelector;

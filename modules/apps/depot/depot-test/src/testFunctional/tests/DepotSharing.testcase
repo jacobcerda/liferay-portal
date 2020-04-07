@@ -45,6 +45,8 @@ definition {
 	@description = "This test asserts that users get the proper notification based on depot sharing permissions granted to him."
 	@priority = "5"
 	test AssertNotifications {
+		property portal.upstream = "quarantine";
+
 		DepotNavigator.openDepotAdmin();
 
 		DepotNavigator.gotoDepot(
@@ -67,6 +69,12 @@ definition {
 			depotName = "Test Depot Name",
 			portlet = "Documents and Media");
 
+		LexiconEntry.changeDisplayStyle(displayStyle = "Cards");
+
+		AssertVisible(
+			key_dmDocumentTitle = "Document_1.doc",
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_SHARED");
+
 		DepotNavigator.gotoShare(dmDocumentTitle = "Document_1.png");
 
 		Asset.share(
@@ -80,12 +88,30 @@ definition {
 			depotName = "Test Depot Name",
 			portlet = "Documents and Media");
 
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		AssertVisible(
+			key_dmDocumentTitle = "Document_1.png",
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_SHARED");
+
 		DepotNavigator.gotoShare(dmDocumentTitle = "Document_1.odt");
 
 		Asset.share(
 			sharingPermissions = "Comment",
 			userEmailAddress = "userea@liferay.com",
 			userName = "userfn userln");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepot(
+			depotName = "Test Depot Name",
+			portlet = "Documents and Media");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertVisible(
+			key_dmDocumentTitle = "Document_1.odt",
+			locator1 = "DocumentsAndMedia#TABLE_DOCUMENT_SHARED");
 
 		User.logoutPG();
 
@@ -132,6 +158,12 @@ definition {
 			dmDocumentTitle = "Document_1.doc",
 			groupName = "Test Depot Name");
 
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepot(
+			depotName = "Test Depot Name",
+			portlet = "Documents and Media");
+
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
 		Click(
@@ -162,6 +194,12 @@ definition {
 			dmDocumentTitle = "Document_1.txt",
 			groupName = "Test Depot Name");
 
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepot(
+			depotName = "Test Depot Name",
+			portlet = "Documents and Media");
+
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
 		Click(
@@ -178,6 +216,12 @@ definition {
 			dmDocumentDescription = "DM Document Description",
 			dmDocumentTitle = "Document_1.doc",
 			groupName = "Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepot(
+			depotName = "Test Depot Name",
+			portlet = "Documents and Media");
 
 		DepotNavigator.gotoShare(dmDocumentTitle = "Document_1.doc");
 
@@ -305,6 +349,12 @@ definition {
 			dmDocumentTitle = "Document_1.doc",
 			groupName = "Test Depot Name");
 
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepot(
+			depotName = "Test Depot Name",
+			portlet = "Documents and Media");
+
 		DepotNavigator.gotoShare(dmDocumentTitle = "Document_1.doc");
 
 		Asset.share(
@@ -332,6 +382,8 @@ definition {
 			portlet = "Documents and Media");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Document_1.doc");
+
+		DMDocumentSharing.viewSharedFlag(detailsView = "true");
 
 		DMDocumentSharing.viewCollaborators(collaboratorList = "userfn,userfn2");
 

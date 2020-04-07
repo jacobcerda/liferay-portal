@@ -1116,7 +1116,9 @@ AUI.add(
 
 					var dataType = instance.get('dataType');
 
-					if (dataType) {
+					var fields = instance.get('fields');
+
+					if (dataType || fields.length) {
 						instance.updateLocalizationMap(
 							instance.get('displayLocale')
 						);
@@ -1131,8 +1133,6 @@ AUI.add(
 							);
 						}
 					}
-
-					var fields = instance.get('fields');
 
 					if (fields.length) {
 						fieldJSON.nestedFieldValues = AArray.invoke(
@@ -1160,6 +1160,12 @@ AUI.add(
 							localizationMap[locale]
 						) {
 							localizationMap[locale] = value;
+						}
+
+						for (var key in localizationMap) {
+							if (!localizationMap[key]) {
+								localizationMap[key] = '';
+							}
 						}
 					}
 					else {
@@ -4067,16 +4073,6 @@ AUI.add(
 				_onSubmitForm() {
 					var instance = this;
 
-					instance.toJSON();
-
-					instance.fillEmptyLocales(
-						instance,
-						instance.get('fields'),
-						instance.get('availableLanguageIds')
-					);
-
-					instance.finalizeRepeatableFieldLocalizations();
-
 					instance.updateDDMFormInputValue();
 				},
 
@@ -4520,6 +4516,16 @@ AUI.add(
 
 				updateDDMFormInputValue() {
 					var instance = this;
+
+					instance.toJSON();
+
+					instance.fillEmptyLocales(
+						instance,
+						instance.get('fields'),
+						instance.get('availableLanguageIds')
+					);
+
+					instance.finalizeRepeatableFieldLocalizations();
 
 					var ddmFormValuesInput = instance.get('ddmFormValuesInput');
 

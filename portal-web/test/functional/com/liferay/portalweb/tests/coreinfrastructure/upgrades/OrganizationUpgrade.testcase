@@ -49,6 +49,33 @@ definition {
 	}
 
 	@priority = "5"
+	test AddOrganizationAfterUpgrade720 {
+		property data.archive.type = "data-archive-portal";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.version = "7.2.0";
+
+		Upgrade.addOrganization();
+	}
+
+	@priority = "5"
+	test AddOrganizationAfterUpgrade721 {
+		property data.archive.type = "data-archive-portal";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.version = "7.2.1";
+
+		Upgrade.addOrganization();
+	}
+
+	@priority = "5"
+	test AddOrganizationAfterUpgrade730 {
+		property data.archive.type = "data-archive-portal";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.version = "7.3.0";
+
+		Upgrade.addOrganization();
+	}
+
+	@priority = "5"
 	test AddOrganizationAfterUpgrade7110 {
 		property data.archive.type = "data-archive-portal";
 		property portal.version = "7.1.10";
@@ -57,9 +84,25 @@ definition {
 	}
 
 	@priority = "5"
+	test AddOrganizationAfterUpgrade7210 {
+		property data.archive.type = "data-archive-portal";
+		property portal.version = "7.2.10";
+
+		Upgrade.addOrganization();
+	}
+
+	@priority = "5"
 	test AddOrganizationAfterUpgrade70106 {
 		property data.archive.type = "data-archive-portal";
 		property portal.version = "7.0.10.6";
+
+		Upgrade.addOrganization();
+	}
+
+	@priority = "5"
+	test AddOrganizationAfterUpgrade72101 {
+		property data.archive.type = "data-archive-portal";
+		property portal.version = "7.2.10.1";
 
 		Upgrade.addOrganization();
 	}
@@ -109,6 +152,34 @@ definition {
 	}
 
 	@priority = "5"
+	test AddUserandSuborganizationAfterUpgrade720 {
+		property data.archive.type = "data-archive-admin-org-with-user";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.version = "7.2.0";
+
+		Upgrade.addUserAndSuborganization();
+	}
+
+	@priority = "5"
+	test AddUserandSuborganizationAfterUpgrade721 {
+		property data.archive.type = "data-archive-admin-org-with-user";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.version = "7.2.1";
+
+		Upgrade.addUserAndSuborganization();
+	}
+
+	@ignore = "true"
+	@priority = "5"
+	test AddUserandSuborganizationAfterUpgrade730 {
+		property data.archive.type = "data-archive-admin-org-with-user";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.version = "7.3.0";
+
+		Upgrade.addUserAndSuborganization();
+	}
+
+	@priority = "5"
 	test AddUserandSuborganizationAfterUpgrade7110 {
 		property data.archive.type = "data-archive-admin-org-with-user";
 		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
@@ -118,10 +189,28 @@ definition {
 	}
 
 	@priority = "5"
+	test AddUserandSuborganizationAfterUpgrade7210 {
+		property data.archive.type = "data-archive-admin-org-with-user";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.2.10";
+
+		Upgrade.addUserAndSuborganization();
+	}
+
+	@priority = "5"
 	test AddUserandSuborganizationAfterUpgrade70106 {
 		property data.archive.type = "data-archive-admin-org-with-user";
 		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "7.0.10.6";
+
+		Upgrade.addUserAndSuborganization();
+	}
+
+	@priority = "5"
+	test AddUserandSuborganizationAfterUpgrade72101 {
+		property data.archive.type = "data-archive-admin-org-with-user";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.2.10.1";
 
 		Upgrade.addUserAndSuborganization();
 	}

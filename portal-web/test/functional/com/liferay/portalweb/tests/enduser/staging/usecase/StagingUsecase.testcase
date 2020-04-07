@@ -184,6 +184,8 @@ definition {
 	@description = "This is a use case for LPS-71786"
 	@priority = "3"
 	test AssertDeletedAssetLinkRemovedFromLiveSite {
+		property portal.upstream = "quarantine";
+
 		Navigator.gotoStagedSitePage(
 			pageName = "Staging Test Page",
 			siteName = "Site Name");
@@ -282,6 +284,8 @@ definition {
 	@description = "This is a use case for LPS-72145."
 	@priority = "4"
 	test AssertDeletedPollsOnLivingSiteWithoutPublishToLive {
+		property portal.upstream = "quarantine";
+
 		Navigator.gotoStagedSitePage(
 			pageName = "Staging Test Page",
 			siteName = "Site Name");
@@ -575,7 +579,7 @@ definition {
 
 	@priority = "5"
 	test ImportLARsOnStagedSite {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 		property testray.component.names = "Training";
 
 		LAR.importSiteCP(
@@ -633,6 +637,12 @@ definition {
 		Portlet.deletePG(portletName = "Web Content Display");
 
 		Portlet.deletePG(portletName = "Web Content Display");
+
+		takeScreenshot();
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
 
 		Navigator.gotoStagedSitePage(
 			pageName = "Home",
@@ -746,7 +756,7 @@ definition {
 
 	@priority = "5"
 	test PublishPortlet {
-		property portal.acceptance = "true";
+		property portal.upstream = "quarantine";
 		property testray.component.names = "Training";
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
@@ -1093,6 +1103,7 @@ definition {
 			webContentTitle = "Web Content Title 2");
 	}
 
+	@ignore = "true"
 	@priority = "4"
 	test StagingPublishChildSiteWithReference {
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
@@ -1300,6 +1311,7 @@ definition {
 	@priority = "5"
 	test TrashEntryReferencePublishing {
 		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "StagingUsecase#TrashEntryReferencePublishing";
 		property testray.component.names = "Training";
 
 		Navigator.gotoStagedSitePage(

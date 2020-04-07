@@ -184,18 +184,13 @@ if (portletTitleBasedNavigation) {
 		<c:if test="<%= (lock != null) && DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.UPDATE) %>">
 			<c:choose>
 				<c:when test="<%= fileEntry.hasLock() %>">
-					<div class="alert alert-success">
+					<div class="alert alert-info">
 						<c:choose>
 							<c:when test="<%= lock.isNeverExpires() %>">
 								<liferay-ui:message key="you-now-have-an-indefinite-lock-on-this-document" />
 							</c:when>
 							<c:otherwise>
-
-								<%
-								String lockExpirationTime = StringUtil.toLowerCase(LanguageUtil.getTimeDescription(request, DLFileEntryConstants.LOCK_EXPIRATION_TIME));
-								%>
-
-								<liferay-ui:message arguments="<%= lockExpirationTime %>" key="you-now-have-a-lock-on-this-document" translateArguments="<%= false %>" />
+								<liferay-ui:message arguments="<%= StringUtil.toLowerCase(LanguageUtil.getTimeDescription(request, DLFileEntryConstants.LOCK_EXPIRATION_TIME)) %>" key="you-now-have-a-lock-on-this-document" translateArguments="<%= false %>" />
 							</c:otherwise>
 						</c:choose>
 					</div>

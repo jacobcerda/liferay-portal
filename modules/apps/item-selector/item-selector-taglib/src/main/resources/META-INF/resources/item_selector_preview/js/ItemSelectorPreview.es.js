@@ -130,7 +130,7 @@ const ItemSelectorPreview = ({
 				uri: editItemURL,
 				urlParams: {
 					entityURL: currentItem.url,
-					saveFileDescription: currentItem.description,
+					saveFileEntryId: currentItem.fileentryid,
 					saveFileName: itemTitle,
 					saveParamName: 'imageSelectorFileName',
 					saveURL: uploadItemURL,
@@ -214,6 +214,7 @@ const ItemSelectorPreview = ({
 		};
 
 		const editedItem = {
+			fileentryid: currentItem.fileentryid,
 			metadata: JSON.stringify(editedItemMetadata),
 			returntype: uploadItemReturnType,
 			title: itemData.title,

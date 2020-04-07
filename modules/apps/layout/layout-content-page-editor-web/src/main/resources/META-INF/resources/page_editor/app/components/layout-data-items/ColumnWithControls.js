@@ -12,14 +12,13 @@
  * details.
  */
 
-import ClayButton from '@clayui/button';
 import React, {useContext, useEffect, useMemo} from 'react';
 
 import {
 	LayoutDataPropTypes,
 	getLayoutDataItemPropTypes,
 } from '../../../prop-types/index';
-import selectShowLayoutItemTopper from '../../selectors/selectShowLayoutItemTopper';
+import selectCanUpdateLayoutContent from '../../selectors/selectCanUpdateLayoutContent';
 import {useSelector} from '../../store/index';
 import {useIsActive} from '../Controls';
 import TopperEmpty from '../TopperEmpty';
@@ -29,7 +28,9 @@ import {ResizingContext} from './RowWithControls';
 const ColumnWithControls = React.forwardRef(
 	({children, item, layoutData}, ref) => {
 		const isActive = useIsActive();
-		const showLayoutItemTopper = useSelector(selectShowLayoutItemTopper);
+		const canUpdateLayoutContent = useSelector(
+			selectCanUpdateLayoutContent
+		);
 
 		const parentItemIsActive = useMemo(
 			() =>
@@ -85,8 +86,8 @@ const ColumnWithControls = React.forwardRef(
 				{parentItemIsActive && !columnInfo.isLastColumn ? (
 					<div>
 						{children}
-						<ClayButton
-							className="page-editor__col__resizer"
+						<button
+							className="btn-primary page-editor__col__resizer"
 							onMouseDown={onResizeButtonMouseDown}
 						/>
 					</div>
@@ -96,7 +97,7 @@ const ColumnWithControls = React.forwardRef(
 			</Column>
 		);
 
-		return showLayoutItemTopper ? (
+		return canUpdateLayoutContent ? (
 			<TopperEmpty item={item} layoutData={layoutData}>
 				{() => content}
 			</TopperEmpty>

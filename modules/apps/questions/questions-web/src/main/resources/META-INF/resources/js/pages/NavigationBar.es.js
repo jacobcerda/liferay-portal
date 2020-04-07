@@ -12,98 +12,80 @@
  * details.
  */
 
-import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
-import {ClayInput} from '@clayui/form';
-import ClayIcon from '@clayui/icon';
 import ClayLink from '@clayui/link';
 import ClayNavigationBar from '@clayui/navigation-bar';
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {withRouter} from 'react-router-dom';
 
 import {AppContext} from '../AppContext.es';
-import {useDebounceCallback} from '../utils/utils.es';
+import {historyPushWithSlug} from '../utils/utils.es';
 
-export default withRouter(({history, location, searchChange}) => {
-	const context = useContext(AppContext);
+export default withRouter(
+	({
+		history,
+		location,
+		match: {
+			params: {sectionTitle},
+		},
+	}) => {
+		const isActive = value => location.pathname.includes(value);
 
-	const [debounceCallback] = useDebounceCallback(value => {
-		searchChange(value);
-	}, 500);
+		const context = useContext(AppContext);
 
-	const navigate = href => {
-		history.push(href);
-	};
+		useEffect(() => {
+			if (sectionTitle) {
+				context.setSection(sectionTitle);
+			}
+		}, [context, sectionTitle]);
 
-	const isActive = value => location.pathname.includes('/' + value);
+		const historyPushParser = historyPushWithSlug(history.push);
 
-	return (
-		<div className="align-items-center d-flex justify-content-between">
-			<ClayNavigationBar triggerLabel="Questions">
-				<ClayNavigationBar.Item
-					active={isActive('questions')}
-					onClick={() => navigate('/questions')}
-				>
-					<ClayLink className="nav-link" displayType="unstyled">
-						{Liferay.Language.get('questions')}
-					</ClayLink>
-				</ClayNavigationBar.Item>
+		return (
+			<section className="border-bottom questions-section questions-section-nav">
+				<div className="questions-container">
+					<div className="row">
+						{location.pathname !== '/' && (
+							<div className="align-items-center col d-flex justify-content-between">
+								<ClayNavigationBar triggerLabel="Questions">
+									<ClayNavigationBar.Item
+										active={!isActive('activity')}
+										onClick={() =>
+											historyPushParser(
+												`/questions/${context.section}`
+											)
+										}
+									>
+										<ClayLink
+											className="nav-link"
+											displayType="unstyled"
+										>
+											{Liferay.Language.get('questions')}
+										</ClayLink>
+									</ClayNavigationBar.Item>
 
-				<ClayNavigationBar.Item
-					active={isActive('tags')}
-					onClick={() => navigate('/tags')}
-				>
-					<ClayLink className="nav-link" displayType="unstyled">
-						{Liferay.Language.get('tags')}
-					</ClayLink>
-				</ClayNavigationBar.Item>
-			</ClayNavigationBar>
-
-			<div className="d-flex">
-				<ClayInput.Group>
-					<ClayInput.GroupItem>
-						<ClayInput
-							className="form-control input-group-inset input-group-inset-after"
-							onChange={event =>
-								debounceCallback(event.target.value)
-							}
-							placeholder={Liferay.Language.get('search')}
-							type="text"
-						/>
-
-						<ClayInput.GroupInsetItem after tag="span">
-							<ClayButtonWithIcon
-								displayType="unstyled"
-								symbol="search"
-								type="submit"
-							/>
-						</ClayInput.GroupInsetItem>
-					</ClayInput.GroupItem>
-				</ClayInput.Group>
-
-				{context.canCreateThread && (
-					<>
-						<ClayButton
-							className="c-ml-3 d-none d-sm-block text-nowrap"
-							displayType="primary"
-							onClick={() => navigate('/questions/new')}
-						>
-							{Liferay.Language.get('ask-question')}
-						</ClayButton>
-
-						<ClayButton
-							className="btn-monospaced d-block d-sm-none position-fixed question-button shadow"
-							displayType="primary"
-							onClick={() => navigate('/questions/new')}
-						>
-							<ClayIcon symbol="pencil" />
-
-							<span className="sr-only">
-								{Liferay.Language.get('ask-question')}
-							</span>
-						</ClayButton>
-					</>
-				)}
-			</div>
-		</div>
-	);
-});
+									<ClayNavigationBar.Item
+										active={isActive('activity')}
+										onClick={() =>
+											historyPushParser(
+												`/activity/${context.userId}`
+											)
+										}
+									>
+										<ClayLink
+											className="nav-link"
+											displayType="unstyled"
+										>
+											{Liferay.Language.get(
+												'my-activity'
+											)}
+										</ClayLink>
+									</ClayNavigationBar.Item>
+								</ClayNavigationBar>
+							</div>
+						)}
+					</div>
+				</div>
+			</section>
+		);
+	}
+);

@@ -1,0 +1,19 @@
+@import 'atlas-variables';
+
+.card-page-item-asset {
+	max-width: 50%;
+}
+
+.fragment-composition-sticker {
+	background-color: $indigo;
+	color: $white;
+}
+
+.fragment-entry-sticker {
+	background-color: $teal;
+	color: $white;
+
+	.lexicon-icon {
+		font-size: 22px;
+	}
+}

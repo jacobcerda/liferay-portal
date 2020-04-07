@@ -16,20 +16,21 @@ import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {
 	LayoutDataPropTypes,
 	getLayoutDataItemPropTypes,
 } from '../../prop-types/index';
 import {switchSidebarPanel} from '../actions/index';
-import {LAYOUT_DATA_ITEM_TYPE_LABELS} from '../config/constants/layoutDataItemTypeLabels';
 import {LAYOUT_DATA_ITEM_TYPES} from '../config/constants/layoutDataItemTypes';
 import {config} from '../config/index';
-import selectShowLayoutItemRemoveButton from '../selectors/selectShowLayoutItemRemoveButton';
+import selectCanUpdateLayoutContent from '../selectors/selectCanUpdateLayoutContent';
 import {useDispatch, useSelector} from '../store/index';
 import deleteItem from '../thunks/deleteItem';
 import moveItem from '../thunks/moveItem';
+import useDragAndDrop, {TARGET_POSITION} from '../utils/useDragAndDrop';
+import {useToControlsId} from './CollectionItemContext';
 import {
 	useActiveItemId,
 	useHoverItem,
@@ -38,13 +39,14 @@ import {
 	useIsSelected,
 	useSelectItem,
 } from './Controls';
+import getLabelName from './layout-data-items/getLabelName';
 import hasDropZoneChild from './layout-data-items/hasDropZoneChild';
-import useDragAndDrop, {
-	DragDropManagerImpl,
-	TARGET_POSITION,
-} from './useDragAndDrop';
 
 const TOPPER_BAR_HEIGHT = 24;
+
+const itemIsMappedCollection = item =>
+	item.type === LAYOUT_DATA_ITEM_TYPES.collection &&
+	'collection' in item.config;
 
 const TopperListItem = React.forwardRef(
 	({children, className, expand, ...props}, ref) => (
@@ -77,14 +79,24 @@ export default function Topper({children, item, itemRef, layoutData}) {
 	const isHovered = useIsHovered();
 	const isSelected = useIsSelected();
 	const selectItem = useSelectItem();
+	const toControlsId = useToControlsId();
 
 	const {
-		store: {dropTargetItemId, targetPosition},
-	} = useContext(DragDropManagerImpl);
-
-	const {canDrop, drag, drop, isDragging, isOver} = useDragAndDrop({
+		canDrop,
+		drag,
+		drop,
+		isDragging,
+		isOver,
+		state: {
+			dropItem,
+			dropTargetItemId,
+			droppable,
+			targetPositionWithMiddle,
+			targetPositionWithoutMiddle,
+		},
+	} = useDragAndDrop({
 		containerRef,
-		item,
+		dropTargetItem: item,
 		layoutData,
 		onDragEnd: data =>
 			dispatch(
@@ -95,12 +107,18 @@ export default function Topper({children, item, itemRef, layoutData}) {
 			),
 	});
 
+	const targetPosition =
+		item.type === LAYOUT_DATA_ITEM_TYPES.fragment ||
+		item.type === LAYOUT_DATA_ITEM_TYPES.collection
+			? targetPositionWithoutMiddle
+			: targetPositionWithMiddle;
+
 	const itemIsRemovable = useMemo(() => isRemovable(item, layoutData), [
 		item,
 		layoutData,
 	]);
 	const showRemoveButton =
-		useSelector(selectShowLayoutItemRemoveButton) && itemIsRemovable;
+		useSelector(selectCanUpdateLayoutContent) && itemIsRemovable;
 
 	const childrenElement = children({canDrop, isOver});
 
@@ -110,28 +128,6 @@ export default function Topper({children, item, itemRef, layoutData}) {
 
 	const [isInset, setIsInset] = useState(false);
 	const [windowScrollPosition, setWindowScrollPosition] = useState(0);
-
-	const getName = (item, fragmentEntryLinks) => {
-		let name;
-
-		if (item.type === LAYOUT_DATA_ITEM_TYPES.fragment) {
-			name = fragmentEntryLinks[item.config.fragmentEntryLinkId].name;
-		}
-		else if (item.type === LAYOUT_DATA_ITEM_TYPES.container) {
-			name = LAYOUT_DATA_ITEM_TYPE_LABELS.container;
-		}
-		else if (item.type === LAYOUT_DATA_ITEM_TYPES.column) {
-			name = LAYOUT_DATA_ITEM_TYPE_LABELS.column;
-		}
-		else if (item.type === LAYOUT_DATA_ITEM_TYPES.dropZone) {
-			name = LAYOUT_DATA_ITEM_TYPE_LABELS.dropZone;
-		}
-		else if (item.type === LAYOUT_DATA_ITEM_TYPES.row) {
-			name = LAYOUT_DATA_ITEM_TYPE_LABELS.row;
-		}
-
-		return name;
-	};
 
 	const fragmentShouldBeHovered = () => {
 		const [activeItemfragmentEntryLinkId] = activeItemId
@@ -150,7 +146,7 @@ export default function Topper({children, item, itemRef, layoutData}) {
 
 		return (
 			item.type === LAYOUT_DATA_ITEM_TYPES.fragment &&
-			(hoveredItemId === item.itemId || (childIsActive && childIsHovered))
+			(isHovered(item.itemId) || (childIsActive && childIsHovered))
 		);
 	};
 
@@ -186,22 +182,37 @@ export default function Topper({children, item, itemRef, layoutData}) {
 		}
 	}, [itemRef, layoutData, windowScrollPosition]);
 
+	const isDraggableInPosition = position =>
+		targetPosition === position &&
+		dropTargetItemId === toControlsId(item.itemId);
+
+	const dataAdvice =
+		!droppable && isDraggableInPosition(TARGET_POSITION.MIDDLE)
+			? Liferay.Util.sub(
+					Liferay.Language.get('a-x-cannot-be-dropped-inside-a-x'),
+					[
+						getLabelName(dropItem, fragmentEntryLinks),
+						getLabelName(item, fragmentEntryLinks),
+					]
+			  )
+			: null;
+
 	return (
 		<div
-			className={classNames({
+			className={classNames('page-editor__topper', {
 				active: isSelected(item.itemId),
-				'drag-over-bottom':
-					targetPosition === TARGET_POSITION.BOTTOM &&
-					dropTargetItemId === item.itemId,
-				'drag-over-middle':
-					targetPosition === TARGET_POSITION.MIDDLE &&
-					dropTargetItemId === item.itemId,
-				'drag-over-top':
-					targetPosition === TARGET_POSITION.TOP &&
-					dropTargetItemId === item.itemId,
+				'drag-over-bottom': isDraggableInPosition(
+					TARGET_POSITION.BOTTOM
+				),
+				'drag-over-middle': isDraggableInPosition(
+					TARGET_POSITION.MIDDLE
+				),
+				'drag-over-top': isDraggableInPosition(TARGET_POSITION.TOP),
 				dragged: isDragging,
 				hovered: isHovered(item.itemId) || fragmentShouldBeHovered(),
-				'page-editor__topper': true,
+				'not-droppable':
+					!droppable && isDraggableInPosition(TARGET_POSITION.MIDDLE),
+				'page-editor__topper--mapped': itemIsMappedCollection(item),
 			})}
 			onClick={event => {
 				event.stopPropagation();
@@ -212,7 +223,9 @@ export default function Topper({children, item, itemRef, layoutData}) {
 
 				const multiSelect = event.shiftKey;
 
-				selectItem(item.itemId, {multiSelect});
+				if (activeItemId !== item.itemId) {
+					selectItem(item.itemId, {multiSelect});
+				}
 			}}
 			onMouseLeave={event => {
 				event.stopPropagation();
@@ -239,6 +252,9 @@ export default function Topper({children, item, itemRef, layoutData}) {
 			<div
 				className={classNames('page-editor__topper__bar', 'tbar', {
 					'page-editor__topper__bar--inset': isInset,
+					'page-editor__topper__bar--mapped': itemIsMappedCollection(
+						item
+					),
 				})}
 			>
 				<ul className="tbar-nav">
@@ -255,7 +271,7 @@ export default function Topper({children, item, itemRef, layoutData}) {
 						className="page-editor__topper__title"
 						expand
 					>
-						{getName(item, fragmentEntryLinks) ||
+						{getLabelName(item, fragmentEntryLinks) ||
 							Liferay.Language.get('element')}
 					</TopperListItem>
 					{item.type === LAYOUT_DATA_ITEM_TYPES.fragment && (
@@ -308,7 +324,11 @@ export default function Topper({children, item, itemRef, layoutData}) {
 			</div>
 
 			<div className="page-editor__topper__content" ref={drop}>
-				{childrenElement}
+				{dataAdvice
+					? React.cloneElement(childrenElement, {
+							data: {'data-advice': dataAdvice},
+					  })
+					: childrenElement}
 			</div>
 		</div>
 	);

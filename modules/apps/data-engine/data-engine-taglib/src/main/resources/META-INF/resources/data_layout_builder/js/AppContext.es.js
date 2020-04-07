@@ -17,9 +17,12 @@ import {createContext} from 'react';
 
 import {
 	ADD_CUSTOM_OBJECT_FIELD,
+	ADD_DATA_LAYOUT_RULE,
 	DELETE_DATA_DEFINITION_FIELD,
 	DELETE_DATA_LAYOUT_FIELD,
 	EDIT_CUSTOM_OBJECT_FIELD,
+	SWITCH_SIDEBAR_PANEL,
+	UPDATE_CONFIG,
 	UPDATE_DATA_DEFINITION,
 	UPDATE_DATA_LAYOUT,
 	UPDATE_DATA_LAYOUT_NAME,
@@ -37,6 +40,15 @@ import generateDataDefinitionFieldName from './utils/generateDataDefinitionField
 const AppContext = createContext();
 
 const initialState = {
+	config: {
+		allowFieldSets: false,
+		allowRules: false,
+		disabledProperties: [],
+		disabledTabs: [],
+		multiPage: true,
+		ruleSettings: {},
+		unimplementedProperties: [],
+	},
 	dataDefinition: {
 		dataDefinitionFields: [],
 		name: {},
@@ -44,15 +56,18 @@ const initialState = {
 	dataDefinitionId: 0,
 	dataLayout: {
 		dataLayoutPages: [],
+		dataRules: [],
 		name: {},
 		paginationMode: 'wizard',
 	},
 	dataLayoutId: 0,
 	editingLanguageId: themeDisplay.getLanguageId(),
+	fieldSets: [],
 	fieldTypes: [],
-	fieldsets: [],
 	focusedCustomObjectField: {},
 	focusedField: {},
+	sidebarOpen: true,
+	sidebarPanelId: 'fields',
 };
 
 const addCustomObjectField = ({
@@ -62,7 +77,9 @@ const addCustomObjectField = ({
 	fieldTypes,
 }) => {
 	const fieldType = fieldTypes.find(({name}) => name === fieldTypeName);
-	const dataDefinitionField = dataLayoutBuilder.getDefinitionField(fieldType);
+	const dataDefinitionField = dataLayoutBuilder.getDataDefinitionField(
+		fieldType
+	);
 
 	return {
 		...dataDefinitionField,
@@ -149,7 +166,7 @@ const setDataDefinitionFields = (
 	const newFields = [];
 
 	visitor.mapFields(field => {
-		const definitionField = dataLayoutBuilder.getDefinitionField(field);
+		const definitionField = dataLayoutBuilder.getDataDefinitionField(field);
 
 		newFields.push(definitionField);
 	});
@@ -165,7 +182,7 @@ const setDataDefinitionFields = (
 
 const setDataLayout = dataLayoutBuilder => {
 	const {pages} = dataLayoutBuilder.getStore();
-	const {layout} = dataLayoutBuilder.getDefinitionAndLayout(pages);
+	const {layout} = dataLayoutBuilder.getDataDefinitionAndDataLayout(pages);
 
 	return layout;
 };
@@ -194,9 +211,33 @@ const createReducer = dataLayoutBuilder => {
 					},
 					focusedCustomObjectField: {
 						...newCustomObjectField,
-						settingsContext: dataLayoutBuilder.getFieldSettingsContext(
+						settingsContext: dataLayoutBuilder.getDDMFormFieldSettingsContext(
 							newCustomObjectField
 						),
+					},
+				};
+			}
+			case ADD_DATA_LAYOUT_RULE: {
+				const {dataRule} = action.payload;
+				const {
+					dataLayout: {dataRules},
+				} = state;
+
+				if (
+					Object.prototype.hasOwnProperty.call(
+						dataRule,
+						'logical-operator'
+					)
+				) {
+					dataRule['logicalOperator'] = dataRule['logical-operator'];
+					delete dataRule['logical-operator'];
+				}
+
+				return {
+					...state,
+					dataLayout: {
+						...state.dataLayout,
+						dataRules: dataRules.concat(dataRule),
 					},
 				};
 			}
@@ -241,7 +282,7 @@ const createReducer = dataLayoutBuilder => {
 									dataDefinitionField.name ===
 									focusedCustomObjectField.name
 								) {
-									return dataLayoutBuilder.getDefinitionField(
+									return dataLayoutBuilder.getDataDefinitionField(
 										editedFocusedCustomObjectField
 									);
 								}
@@ -254,6 +295,15 @@ const createReducer = dataLayoutBuilder => {
 						...editedFocusedCustomObjectField,
 						settingsContext,
 					},
+				};
+			}
+			case SWITCH_SIDEBAR_PANEL: {
+				const {sidebarOpen, sidebarPanelId} = action.payload;
+
+				return {
+					...state,
+					sidebarOpen,
+					sidebarPanelId,
 				};
 			}
 			case UPDATE_DATA_DEFINITION: {
@@ -300,15 +350,15 @@ const createReducer = dataLayoutBuilder => {
 
 				return {
 					...state,
-					fieldTypes: fieldTypes.filter(({system}) => !system),
+					fieldTypes,
 				};
 			}
 			case UPDATE_FIELDSETS: {
-				const {fieldsets} = action.payload;
+				const {fieldSets} = action.payload;
 
 				return {
 					...state,
-					fieldsets,
+					fieldSets,
 				};
 			}
 			case UPDATE_FOCUSED_CUSTOM_OBJECT_FIELD: {
@@ -318,7 +368,7 @@ const createReducer = dataLayoutBuilder => {
 				if (Object.keys(dataDefinitionField).length > 0) {
 					focusedCustomObjectField = {
 						...dataDefinitionField,
-						settingsContext: dataLayoutBuilder.getFieldSettingsContext(
+						settingsContext: dataLayoutBuilder.getDDMFormFieldSettingsContext(
 							dataDefinitionField
 						),
 					};
@@ -355,6 +405,14 @@ const createReducer = dataLayoutBuilder => {
 				return {
 					...state,
 					focusedField: {},
+				};
+			}
+			case UPDATE_CONFIG: {
+				const {config} = action.payload;
+
+				return {
+					...state,
+					config: config || state.config,
 				};
 			}
 			case UPDATE_IDS: {

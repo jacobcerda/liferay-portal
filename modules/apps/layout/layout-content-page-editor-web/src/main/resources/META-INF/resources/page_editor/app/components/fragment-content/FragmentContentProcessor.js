@@ -12,55 +12,61 @@
  * details.
  */
 
+import PropTypes from 'prop-types';
 import {useEffect, useMemo} from 'react';
 
-import {BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/backgroundImageFragmentEntryProcessor';
-import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/editableFragmentEntryProcessor';
-import {EDITABLE_TYPES} from '../../config/constants/editableTypes';
 import {config} from '../../config/index';
-import Processors from '../../processors/index';
 import selectPrefixedSegmentsExperienceId from '../../selectors/selectPrefixedSegmentsExperienceId';
+import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
 import {useDispatch, useSelector} from '../../store/index';
 import updateEditableValues from '../../thunks/updateEditableValues';
-import {useActiveItemId} from '../Controls';
 import {
 	useEditableProcessorClickPosition,
 	useEditableProcessorUniqueId,
+	useIsProcessorEnabled,
 	useSetEditableProcessorUniqueId,
 } from './EditableProcessorContext';
-import getAllEditables from './getAllEditables';
-import getEditableElementId from './getEditableElementId';
 import getEditableUniqueId from './getEditableUniqueId';
 
 export default function FragmentContentProcessor({
-	element,
+	editables,
 	fragmentEntryLinkId,
 }) {
-	const activeItemId = useActiveItemId();
 	const dispatch = useDispatch();
 	const editableProcessorClickPosition = useEditableProcessorClickPosition();
 	const editableProcessorUniqueId = useEditableProcessorUniqueId();
 	const setEditableProcessorUniqueId = useSetEditableProcessorUniqueId();
+	const isProcessorEnabled = useIsProcessorEnabled();
 	const languageId = useSelector(
 		state => state.languageId || config.defaultLanguageId
 	);
-	const segmentsExperienceId = useSelector(
+	const prefixedSegmentsExperienceId = useSelector(
 		selectPrefixedSegmentsExperienceId
 	);
+	const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
 
-	const editableElement = useMemo(
-		() =>
-			element
-				? getAllEditables(element).find(
-						editableElement =>
-							getEditableUniqueId(
-								fragmentEntryLinkId,
-								getEditableElementId(editableElement)
-							) === editableProcessorUniqueId
-				  )
-				: null,
-		[editableProcessorUniqueId, element, fragmentEntryLinkId]
-	);
+	const editable = useMemo(() => {
+		let enabledEditable = {
+			editableId: null,
+			editableValueNamespace: null,
+			element: null,
+			processor: null,
+		};
+
+		if (editables) {
+			enabledEditable =
+				editables.find(editable =>
+					isProcessorEnabled(
+						getEditableUniqueId(
+							fragmentEntryLinkId,
+							editable.editableId
+						)
+					)
+				) || enabledEditable;
+		}
+
+		return enabledEditable;
+	}, [editables, isProcessorEnabled, fragmentEntryLinkId]);
 
 	const editableValues = useSelector(
 		state =>
@@ -69,40 +75,30 @@ export default function FragmentContentProcessor({
 	);
 
 	useEffect(() => {
-		setEditableProcessorUniqueId(null);
-	}, [activeItemId, setEditableProcessorUniqueId]);
-
-	useEffect(() => {
-		if (!editableElement || !editableValues) {
+		if (!editable.element || !editableValues) {
 			return;
 		}
 
-		const editableId = getEditableElementId(editableElement);
-		const editableType =
-			editableElement.getAttribute('type') ||
-			EDITABLE_TYPES.backgroundImage;
+		const editableValue =
+			editableValues[editable.editableValueNamespace][
+				editable.editableId
+			];
 
-		const processorKey =
-			editableType === EDITABLE_TYPES.backgroundImage
-				? BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR
-				: EDITABLE_FRAGMENT_ENTRY_PROCESSOR;
-
-		const editableValue = editableValues[processorKey][editableId];
-		const processor = Processors[editableType] || Processors.fallback;
-
-		processor.createEditor(
-			editableElement,
+		editable.processor.createEditor(
+			editable.element,
 			value => {
 				let nextEditableValue = {
 					...editableValue,
 				};
 
-				if (segmentsExperienceId) {
+				if (prefixedSegmentsExperienceId) {
 					nextEditableValue = {
 						...nextEditableValue,
 
-						[segmentsExperienceId]: {
-							...(nextEditableValue[segmentsExperienceId] || {}),
+						[prefixedSegmentsExperienceId]: {
+							...(nextEditableValue[
+								prefixedSegmentsExperienceId
+							] || {}),
 							[languageId]: value,
 						},
 					};
@@ -118,11 +114,11 @@ export default function FragmentContentProcessor({
 					updateEditableValues({
 						editableValues: {
 							...editableValues,
-							[EDITABLE_FRAGMENT_ENTRY_PROCESSOR]: {
+							[editable.editableValueNamespace]: {
 								...editableValues[
-									EDITABLE_FRAGMENT_ENTRY_PROCESSOR
+									editable.editableValueNamespace
 								],
-								[editableId]: nextEditableValue,
+								[editable.editableId]: nextEditableValue,
 							},
 						},
 						fragmentEntryLinkId,
@@ -131,7 +127,11 @@ export default function FragmentContentProcessor({
 				);
 			},
 			() => {
-				processor.destroyEditor(editableElement, editableValue.config);
+				editable.processor.destroyEditor(
+					editable.element,
+					editableValue.config
+				);
+
 				setEditableProcessorUniqueId(null);
 			},
 			editableProcessorClickPosition
@@ -139,20 +139,39 @@ export default function FragmentContentProcessor({
 
 		return () => {
 			if (!editableProcessorUniqueId) {
-				processor.destroyEditor(editableElement, editableValue.config);
+				editable.processor.destroyEditor(
+					editable.element,
+					editableValue.config
+				);
 			}
 		};
 	}, [
 		dispatch,
-		editableElement,
+		editable.editableId,
+		editable.editableValueNamespace,
+		editable.element,
+		editable.processor,
 		editableProcessorClickPosition,
 		editableProcessorUniqueId,
 		editableValues,
 		fragmentEntryLinkId,
 		languageId,
+		prefixedSegmentsExperienceId,
 		segmentsExperienceId,
 		setEditableProcessorUniqueId,
 	]);
 
 	return null;
 }
+
+FragmentContentProcessor.propTypes = {
+	editables: PropTypes.arrayOf(
+		PropTypes.shape({
+			editableId: PropTypes.string.isRequired,
+			editableValueNamespace: PropTypes.string.isRequired,
+			element: PropTypes.instanceOf(HTMLElement).isRequired,
+			processor: PropTypes.object,
+		})
+	),
+	fragmentEntryLinkId: PropTypes.string.isRequired,
+};

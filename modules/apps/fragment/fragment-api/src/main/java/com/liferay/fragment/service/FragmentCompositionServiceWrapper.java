@@ -140,12 +140,31 @@ public class FragmentCompositionServiceWrapper
 
 	@Override
 	public com.liferay.fragment.model.FragmentComposition
+			moveFragmentComposition(
+				long fragmentCompositionId, long fragmentCollectionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentCompositionService.moveFragmentComposition(
+			fragmentCompositionId, fragmentCollectionId);
+	}
+
+	@Override
+	public com.liferay.fragment.model.FragmentComposition
 			updateFragmentComposition(
 				long fragmentCompositionId, long previewFileEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentCompositionService.updateFragmentComposition(
 			fragmentCompositionId, previewFileEntryId);
+	}
+
+	@Override
+	public com.liferay.fragment.model.FragmentComposition
+			updateFragmentComposition(long fragmentCompositionId, String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentCompositionService.updateFragmentComposition(
+			fragmentCompositionId, name);
 	}
 
 	@Override

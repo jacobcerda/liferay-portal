@@ -14,6 +14,18 @@
 
 package com.liferay.layout.content.page.editor.web.internal.util.layout.structure;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+
 import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
 import com.liferay.fragment.renderer.FragmentRendererTracker;
 import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
@@ -63,6 +75,20 @@ public class LayoutStructureUtil {
 		return ArrayUtil.toLongArray(fragmentEntryLinkIds);
 	}
 
+	public static LayoutStructure getLayoutStructure(
+			long groupId, long plid, long segmentsExperienceId)
+		throws PortalException {
+
+		LayoutPageTemplateStructure layoutPageTemplateStructure =
+			LayoutPageTemplateStructureLocalServiceUtil.
+				fetchLayoutPageTemplateStructure(
+					groupId, PortalUtil.getClassNameId(Layout.class.getName()),
+					plid, true);
+
+		return LayoutStructure.of(
+			layoutPageTemplateStructure.getData(segmentsExperienceId));
+	}
+
 	public static String getLayoutStructureItemJSON(
 			FragmentCollectionContributorTracker
 				fragmentCollectionContributorTracker,
@@ -83,11 +109,24 @@ public class LayoutStructureUtil {
 
 		PageElement pageElement = PageDefinitionConverterUtil.toPageElement(
 			fragmentCollectionContributorTracker,
-			fragmentEntryConfigurationParser, fragmentRendererTracker,
+			fragmentEntryConfigurationParser, fragmentRendererTracker, groupId,
 			layoutStructure, layoutStructure.getLayoutStructureItem(itemId),
-			saveInlineContent, saveMappingConfiguration);
+			saveInlineContent, saveMappingConfiguration, segmentsExperienceId);
 
-		return pageElement.toString();
+		try {
+			SimpleFilterProvider simpleFilterProvider =
+				new SimpleFilterProvider();
+
+			FilterProvider filterProvider = simpleFilterProvider.addFilter(
+				"Liferay.Vulcan", SimpleBeanPropertyFilter.serializeAll());
+
+			ObjectWriter objectWriter = _objectMapper.writer(filterProvider);
+
+			return objectWriter.writeValueAsString(pageElement);
+		}
+		catch (Exception exception) {
+			throw new PortalException(exception);
+		}
 	}
 
 	public static JSONObject updateLayoutPageTemplateData(
@@ -115,5 +154,18 @@ public class LayoutStructureUtil {
 
 		return dataJSONObject;
 	}
+
+	private static final ObjectMapper _objectMapper = new ObjectMapper() {
+		{
+			configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+			configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+			setDateFormat(new ISO8601DateFormat());
+			setSerializationInclusion(JsonInclude.Include.NON_NULL);
+			setVisibility(
+				PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+			setVisibility(
+				PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
+		}
+	};
 
 }

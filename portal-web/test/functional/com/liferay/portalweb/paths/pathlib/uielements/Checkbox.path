@@ -64,6 +64,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANY_CHECKBOX_CHECKED</td>
+	<td>//label[contains(.,'${checkboxName}')]/input[@type='checkbox' and @checked]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>BLOGS_ENTRY</td>
 	<td>//input[contains(@id,'BlogsEntry')]</td>
 	<td></td>
@@ -359,7 +364,7 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ALLowed_FRAGMENT</td>
+	<td>ALLOWED_FRAGMENT</td>
 	<td>//label[contains(.,'${key_fragmentName}')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
@@ -478,7 +483,11 @@
 	<td>//label[contains(.,'${key_checkboxOption}')]/input[@type='checkbox']/../span</td>
 	<td></td>
 </tr>
-
+<tr>
+	<td>UPLOAD_FILE_ENTRY</td>
+	<td>//li[contains(@class,'upload-file')]//input[@type='checkbox' and contains(@data-title,'${key_fileName}')]</td>
+	<td></td>
+</tr>
 </tbody>
 </table>
 </body>

@@ -22,6 +22,7 @@ const AssigneeFilter = ({
 	options = {},
 	prefixKey = '',
 	processId,
+	staticData,
 }) => {
 	const defaultOptions = {
 		hideControl: false,
@@ -29,26 +30,32 @@ const AssigneeFilter = ({
 		position: 'left',
 		withSelectionTitle: false,
 		withoutRouteParams: false,
+		withoutUnassigned: false,
 	};
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	options = useMemo(() => ({...defaultOptions, ...options}), [options]);
 
-	const staticItems = useMemo(
-		() => [
-			{
-				dividerAfter: true,
-				id: -1,
-				key: '-1',
-				name: Liferay.Language.get('unassigned'),
-			},
-		],
+	const unassigned = useMemo(
+		() => ({
+			dividerAfter: true,
+			id: -1,
+			key: '-1',
+			name: Liferay.Language.get('unassigned'),
+		}),
 		[]
+	);
+
+	const staticItems = useMemo(
+		() => (!options.withoutUnassigned ? [unassigned] : []),
+		[options.withoutUnassigned, unassigned]
 	);
 
 	const {items, selectedItems} = useFilterFetch({
 		filterKey,
 		prefixKey,
+		requestMethod: 'post',
 		requestUrl: `/processes/${processId}/assignee-users?page=0&pageSize=0`,
+		staticData,
 		staticItems,
 		withoutRouteParams: options.withoutRouteParams,
 	});
@@ -64,7 +71,7 @@ const AssigneeFilter = ({
 
 	return (
 		<Filter
-			dataTestId="assigneeFilter"
+			data-testid="assigneeFilter"
 			defaultItem={defaultItem}
 			elementClasses={className}
 			filterKey={filterKey}

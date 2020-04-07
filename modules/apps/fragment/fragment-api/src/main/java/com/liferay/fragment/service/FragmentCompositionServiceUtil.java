@@ -128,12 +128,29 @@ public class FragmentCompositionServiceUtil {
 	}
 
 	public static com.liferay.fragment.model.FragmentComposition
+			moveFragmentComposition(
+				long fragmentCompositionId, long fragmentCollectionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().moveFragmentComposition(
+			fragmentCompositionId, fragmentCollectionId);
+	}
+
+	public static com.liferay.fragment.model.FragmentComposition
 			updateFragmentComposition(
 				long fragmentCompositionId, long previewFileEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().updateFragmentComposition(
 			fragmentCompositionId, previewFileEntryId);
+	}
+
+	public static com.liferay.fragment.model.FragmentComposition
+			updateFragmentComposition(long fragmentCompositionId, String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateFragmentComposition(
+			fragmentCompositionId, name);
 	}
 
 	public static com.liferay.fragment.model.FragmentComposition

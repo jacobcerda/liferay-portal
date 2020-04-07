@@ -17,7 +17,12 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect");
+PortletURL portletURL = renderResponse.createRenderURL();
+
+portletURL.setParameter("mvcRenderCommandName", "/view_configuration_screen");
+portletURL.setParameter("configurationScreenKey", "synced-sites");
+
+String redirect = portletURL.toString();
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(ParamUtil.getString(request, "backURL", redirect));
@@ -42,12 +47,7 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(resourceBundle, "
 </div>
 
 <aui:form action="<%= addChannelURL %>" method="post" name="fm">
-	<liferay-portlet:renderURL varImpl="selectSitesURL">
-		<portlet:param name="mvcRenderCommandName" value="/view_configuration_screen" />
-		<portlet:param name="configurationScreenKey" value="synced-sites" />
-	</liferay-portlet:renderURL>
-
-	<aui:input name="redirect" type="hidden" value="<%= selectSitesURL %>" />
+	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 
 	<div class="portlet-analytics-settings sheet sheet-lg">
 		<h2 class="autofit-row">
@@ -77,7 +77,7 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(resourceBundle, "
 		</div>
 
 		<%
-		GroupDisplayContext groupDisplayContext = new GroupDisplayContext(renderRequest, renderResponse);
+		GroupDisplayContext groupDisplayContext = new GroupDisplayContext("/analytics_settings/add_channel", renderRequest, renderResponse);
 		%>
 
 		<clay:management-toolbar
@@ -113,10 +113,14 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(resourceBundle, "
 					value="<%= HtmlUtil.escape(groupDisplayContext.getChannelName(group.getGroupId())) %>"
 				/>
 
+				<%
+				List<Group> childrenGroups = group.getChildren(true);
+				%>
+
 				<liferay-ui:search-container-column-text
 					cssClass="table-cell-expand-smaller table-cell-ws-nowrap"
 					name="child-sites"
-					value="<%= String.valueOf(group.getChildrenWithLayoutsCount(true)) %>"
+					value="<%= String.valueOf(childrenGroups.size()) %>"
 				/>
 			</liferay-ui:search-container-row>
 
@@ -128,15 +132,45 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(resourceBundle, "
 
 		<div class="text-right">
 			<aui:button-row>
-				<liferay-portlet:renderURL varImpl="cancel">
-					<portlet:param name="mvcRenderCommandName" value="/view_configuration_screen" />
-					<portlet:param name="configurationScreenKey" value="synced-sites" />
-				</liferay-portlet:renderURL>
+				<aui:button href="<%= redirect %>" value="cancel" />
 
-				<aui:button href="<%= cancel.toString() %>" value="cancel" />
-
-				<aui:button type="submit" value="done" />
+				<aui:button disabled="<%= true %>" id="add-channel-button" type="submit" value="done" />
 			</aui:button-row>
 		</div>
 	</div>
 </aui:form>
+
+<aui:script use="liferay-search-container">
+	var searchContainer = Liferay.SearchContainer.get(
+		'<portlet:namespace />selectGroups'
+	);
+
+	function <portlet:namespace />handleSubmitButton(selectedItems) {
+		var button = document.getElementById(
+			'<portlet:namespace />add-channel-button'
+		);
+
+		if (selectedItems.isEmpty()) {
+			button.classList.add('disabled');
+			button.setAttribute('disabled', 'disabled');
+		}
+		else {
+			button.classList.remove('disabled');
+			button.removeAttribute('disabled');
+		}
+	}
+
+	searchContainer.on('rowToggled', function(event) {
+		return <portlet:namespace />handleSubmitButton(
+			event.elements.allSelectedElements
+		);
+	});
+
+	Liferay.componentReady('<portlet:namespace />selectGroups').then(function(
+		searchContainer
+	) {
+		return <portlet:namespace />handleSubmitButton(
+			searchContainer.select.getAllSelectedElements()
+		);
+	});
+</aui:script>

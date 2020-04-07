@@ -25,7 +25,7 @@ import {LAYOUT_DATA_ITEM_TYPES} from '../../config/constants/layoutDataItemTypes
 import InfoItemService from '../../services/InfoItemService';
 import {useDispatch} from '../../store/index';
 
-const Container = React.forwardRef(({children, className, item}, ref) => {
+const Container = React.forwardRef(({children, className, data, item}, ref) => {
 	const {
 		backgroundColorCssClass,
 		backgroundImage,
@@ -69,6 +69,7 @@ const Container = React.forwardRef(({children, className, item}, ref) => {
 
 	return (
 		<div
+			{...data}
 			className={classNames(
 				className,
 				`pb-${paddingBottom} pt-${paddingTop}`,

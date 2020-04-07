@@ -18,9 +18,12 @@ import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil.HttpRequestMe
 
 import java.io.IOException;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.json.JSONObject;
 
@@ -29,38 +32,38 @@ import org.json.JSONObject;
  */
 public class SpiraProject extends BaseSpiraArtifact {
 
-	public static SpiraProject getSpiraProjectByID(int projectID) {
-		if (_spiraProjects.containsKey(projectID)) {
-			return _spiraProjects.get(projectID);
-		}
+	public static SpiraProject getSpiraProjectByID(final int projectID) {
+		List<SpiraProject> spiraProjects = getSpiraArtifacts(
+			SpiraProject.class,
+			new Supplier<List<JSONObject>>() {
 
-		Map<String, String> urlPathReplacements = new HashMap<>();
+				@Override
+				public List<JSONObject> get() {
+					return _requestSpiraProjectByID(projectID);
+				}
 
-		urlPathReplacements.put("project_id", String.valueOf(projectID));
+			},
+			new Function<JSONObject, SpiraProject>() {
 
-		try {
-			SpiraProject spiraProject = new SpiraProject(
-				SpiraRestAPIUtil.requestJSONObject(
-					"projects/{project_id}", null, urlPathReplacements,
-					HttpRequestMethod.GET, null));
+				@Override
+				public SpiraProject apply(JSONObject jsonObject) {
+					return new SpiraProject(jsonObject);
+				}
 
-			_spiraProjects.put(spiraProject.getID(), spiraProject);
-		}
-		catch (IOException ioException) {
-			throw new RuntimeException(ioException);
-		}
+			},
+			new SearchQuery.SearchParameter(ID_KEY, projectID));
 
-		return _spiraProjects.get(projectID);
+		return spiraProjects.get(0);
 	}
 
-	@Override
-	public int getID() {
-		return jsonObject.getInt("ProjectId");
+	public Integer getProjectTemplateID() {
+		return jsonObject.getInt("ProjectTemplateId");
 	}
 
-	public SpiraRelease getSpiraReleaseByID(int releaseID) throws IOException {
+	public SpiraRelease getSpiraReleaseByID(int releaseID) {
 		List<SpiraRelease> spiraReleases = SpiraRelease.getSpiraReleases(
-			this, new SearchParameter("ReleaseId", releaseID));
+			this,
+			new SearchQuery.SearchParameter(SpiraRelease.ID_KEY, releaseID));
 
 		if (spiraReleases.size() > 1) {
 			throw new RuntimeException("Duplicate release ID " + releaseID);
@@ -73,9 +76,7 @@ public class SpiraProject extends BaseSpiraArtifact {
 		return spiraReleases.get(0);
 	}
 
-	public SpiraRelease getSpiraReleaseByPath(String releasePath)
-		throws IOException {
-
+	public SpiraRelease getSpiraReleaseByPath(String releasePath) {
 		List<SpiraRelease> spiraReleases = getSpiraReleasesByPath(releasePath);
 
 		if (spiraReleases.size() > 1) {
@@ -89,19 +90,17 @@ public class SpiraProject extends BaseSpiraArtifact {
 		return spiraReleases.get(0);
 	}
 
-	public List<SpiraRelease> getSpiraReleasesByPath(String releasePath)
-		throws IOException {
-
+	public List<SpiraRelease> getSpiraReleasesByPath(String releasePath) {
 		return SpiraRelease.getSpiraReleases(
-			this, new SearchParameter("Path", releasePath));
+			this, new SearchQuery.SearchParameter("Path", releasePath));
 	}
 
-	public SpiraTestCaseObject getSpiraTestCaseByID(int testCaseID)
-		throws IOException {
-
+	public SpiraTestCaseObject getSpiraTestCaseByID(int testCaseID) {
 		List<SpiraTestCaseObject> spiraTestCases =
 			SpiraTestCaseObject.getSpiraTestCases(
-				this, new SearchParameter("TestCaseId", testCaseID));
+				this,
+				new SearchQuery.SearchParameter(
+					SpiraTestCaseObject.ID_KEY, testCaseID));
 
 		if (spiraTestCases.size() > 1) {
 			throw new RuntimeException("Duplicate test case ID " + testCaseID);
@@ -114,9 +113,7 @@ public class SpiraProject extends BaseSpiraArtifact {
 		return spiraTestCases.get(0);
 	}
 
-	public SpiraTestCaseObject getSpiraTestCaseByPath(String testCasePath)
-		throws IOException {
-
+	public SpiraTestCaseObject getSpiraTestCaseByPath(String testCasePath) {
 		List<SpiraTestCaseObject> spiraTestCases = getSpiraTestCasesByPath(
 			testCasePath);
 
@@ -133,13 +130,14 @@ public class SpiraProject extends BaseSpiraArtifact {
 		return spiraTestCases.get(0);
 	}
 
-	public SpiraTestCaseFolder getSpiraTestCaseFolderByID(int testCaseFolderID)
-		throws IOException {
+	public SpiraTestCaseFolder getSpiraTestCaseFolderByID(
+		int testCaseFolderID) {
 
 		List<SpiraTestCaseFolder> spiraTestCaseFolders =
 			SpiraTestCaseFolder.getSpiraTestCaseFolders(
 				this,
-				new SearchParameter("TestCaseFolderId", testCaseFolderID));
+				new SearchQuery.SearchParameter(
+					SpiraTestCaseFolder.ID_KEY, testCaseFolderID));
 
 		if (spiraTestCaseFolders.size() > 1) {
 			throw new RuntimeException(
@@ -155,8 +153,7 @@ public class SpiraProject extends BaseSpiraArtifact {
 	}
 
 	public SpiraTestCaseFolder getSpiraTestCaseFolderByPath(
-			String testCaseFolderPath)
-		throws IOException {
+		String testCaseFolderPath) {
 
 		List<SpiraTestCaseFolder> spiraTestCaseFolders =
 			getSpiraTestCaseFoldersByPath(testCaseFolderPath);
@@ -175,62 +172,146 @@ public class SpiraProject extends BaseSpiraArtifact {
 	}
 
 	public List<SpiraTestCaseFolder> getSpiraTestCaseFoldersByPath(
-			String testCaseFolderPath)
-		throws IOException {
+		String testCaseFolderPath) {
 
 		return SpiraTestCaseFolder.getSpiraTestCaseFolders(
-			this, new SearchParameter("Path", testCaseFolderPath));
+			this, new SearchQuery.SearchParameter("Path", testCaseFolderPath));
 	}
 
 	public List<SpiraTestCaseObject> getSpiraTestCasesByPath(
-			String testCasePath)
-		throws IOException {
+		String testCasePath) {
 
 		return SpiraTestCaseObject.getSpiraTestCases(
-			this, new SearchParameter("Path", testCasePath));
+			this, new SearchQuery.SearchParameter("Path", testCasePath));
 	}
 
-	protected SpiraRelease getSpiraReleaseByIndentLevel(String indentLevel)
-		throws IOException {
+	public SpiraTestCaseType getSpiraTestCaseTypeByName(
+		String testCaseTypeName) {
 
-		List<SpiraRelease> spiraReleases = SpiraRelease.getSpiraReleases(
-			this, new SearchParameter("IndentLevel", indentLevel));
+		List<SpiraTestCaseType> spiraTestCaseTypes =
+			SpiraTestCaseType.getSpiraTestCaseTypes(
+				this,
+				new SearchQuery.SearchParameter("Name", testCaseTypeName));
 
-		if (spiraReleases.size() > 1) {
-			throw new RuntimeException("Duplicate indent level " + indentLevel);
+		if (spiraTestCaseTypes.size() > 1) {
+			throw new RuntimeException(
+				"Duplicate test case type name " + testCaseTypeName);
 		}
 
-		if (spiraReleases.isEmpty()) {
-			throw new RuntimeException("Missing indent level " + indentLevel);
+		if (spiraTestCaseTypes.isEmpty()) {
+			throw new RuntimeException(
+				"Missing test case type name " + testCaseTypeName);
 		}
 
-		return spiraReleases.get(0);
+		return spiraTestCaseTypes.get(0);
 	}
 
-	protected SpiraTestCaseFolder getSpiraTestCaseFolderByIndentLevel(
-			String indentLevel)
-		throws IOException {
+	public SpiraTestSet getSpiraTestSetByID(int testSetID) {
+		List<SpiraTestSet> spiraTestSets = SpiraTestSet.getSpiraTestSets(
+			this,
+			new SearchQuery.SearchParameter(SpiraTestSet.ID_KEY, testSetID));
 
-		List<SpiraTestCaseFolder> spiraTestCaseFolders =
-			SpiraTestCaseFolder.getSpiraTestCaseFolders(
-				this, new SearchParameter("IndentLevel", indentLevel));
-
-		if (spiraTestCaseFolders.size() > 1) {
-			throw new RuntimeException("Duplicate indent level " + indentLevel);
+		if (spiraTestSets.size() > 1) {
+			throw new RuntimeException("Duplicate test set ID " + testSetID);
 		}
 
-		if (spiraTestCaseFolders.isEmpty()) {
-			throw new RuntimeException("Missing indent level " + indentLevel);
+		if (spiraTestSets.isEmpty()) {
+			throw new RuntimeException("Missing test set ID " + testSetID);
 		}
 
-		return spiraTestCaseFolders.get(0);
+		return spiraTestSets.get(0);
+	}
+
+	public SpiraTestSet getSpiraTestSetByPath(String testSetPath) {
+		List<SpiraTestSet> spiraTestSets = getSpiraTestSetsByPath(testSetPath);
+
+		if (spiraTestSets.size() > 1) {
+			throw new RuntimeException(
+				"Duplicate test set path " + testSetPath);
+		}
+
+		if (spiraTestSets.isEmpty()) {
+			throw new RuntimeException("Missing test set path " + testSetPath);
+		}
+
+		return spiraTestSets.get(0);
+	}
+
+	public SpiraTestSetFolder getSpiraTestSetFolderByID(int testSetFolderID) {
+		List<SpiraTestSetFolder> spiraTestSetFolders =
+			SpiraTestSetFolder.getSpiraTestSetFolders(
+				this,
+				new SearchQuery.SearchParameter(
+					SpiraTestSetFolder.ID_KEY, testSetFolderID));
+
+		if (spiraTestSetFolders.size() > 1) {
+			throw new RuntimeException(
+				"Duplicate test set folder ID " + testSetFolderID);
+		}
+
+		if (spiraTestSetFolders.isEmpty()) {
+			throw new RuntimeException(
+				"Missing test set folder ID " + testSetFolderID);
+		}
+
+		return spiraTestSetFolders.get(0);
+	}
+
+	public SpiraTestSetFolder getSpiraTestSetFolderByPath(
+		String testSetFolderPath) {
+
+		List<SpiraTestSetFolder> spiraTestSetFolders =
+			getSpiraTestSetFoldersByPath(testSetFolderPath);
+
+		if (spiraTestSetFolders.size() > 1) {
+			throw new RuntimeException(
+				"Duplicate test set folder path " + testSetFolderPath);
+		}
+
+		if (spiraTestSetFolders.isEmpty()) {
+			throw new RuntimeException(
+				"Missing test set folder path " + testSetFolderPath);
+		}
+
+		return spiraTestSetFolders.get(0);
+	}
+
+	public List<SpiraTestSetFolder> getSpiraTestSetFoldersByPath(
+		String testCaseSetPath) {
+
+		return SpiraTestSetFolder.getSpiraTestSetFolders(
+			this, new SearchQuery.SearchParameter("Path", testCaseSetPath));
+	}
+
+	public List<SpiraTestSet> getSpiraTestSetsByPath(String testSetPath) {
+		return SpiraTestSet.getSpiraTestSets(
+			this, new SearchQuery.SearchParameter("Path", testSetPath));
+	}
+
+	protected static final String ARTIFACT_TYPE_NAME = "project";
+
+	protected static final String ID_KEY = "ProjectId";
+
+	private static List<JSONObject> _requestSpiraProjectByID(
+		Integer projectID) {
+
+		Map<String, String> urlPathReplacements = new HashMap<>();
+
+		urlPathReplacements.put("project_id", String.valueOf(projectID));
+
+		try {
+			return Collections.singletonList(
+				SpiraRestAPIUtil.requestJSONObject(
+					"projects/{project_id}", null, urlPathReplacements,
+					HttpRequestMethod.GET, null));
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
 	}
 
 	private SpiraProject(JSONObject jsonObject) {
 		super(jsonObject);
 	}
-
-	private static final Map<Integer, SpiraProject> _spiraProjects =
-		new HashMap<>();
 
 }

@@ -172,18 +172,19 @@ message.
 	</target>
 
 	<target name="clean">
-		<if>
-			<equals arg1="${org.gradle.daemon}" arg2="true" />
-			<then>
-				<gradle-execute dir="." forcedcacheenabled="false" task="">
-					<arg value="--stop" />
-				</gradle-execute>
-			</then>
-		</if>
+		<gradle-stop-daemon />
 
-		<execute>
-			${build.git.clean.command}
-		</execute>
+		<if>
+			<available file="${project.dir}/.git" />
+			<then>
+				<execute>
+					${build.git.clean.command}
+				</execute>
+			</then>
+			<else>
+				<echo>Do not clean project because it is not in a Git repository.</echo>
+			</else>
+		</if>
 
 		<clean-liferay-home />
 
@@ -191,8 +192,9 @@ message.
 	</target>
 
 	<target name="compile">
-		<setup-libs />
 		<setup-sdk />
+
+		<setup-libs />
 		<setup-yarn />
 
 		<gradle-execute dir="modules/core" task="deploy">
@@ -1305,7 +1307,7 @@ print AdminControl.invoke(appManager, 'startApplication', 'liferay-portal')
 			<arg value="testIntegrationClasses" />
 		</gradle-execute>
 
-		<gradle-execute dir="modules/sdk/gradle-util" failonerror="false" forcedcacheenabled="false" setupbinariescache="false" task="findbugsMain">
+		<gradle-execute dir="modules/sdk/gradle-util" failonerror="false" forcedcacheenabled="false" setupbinariescache="false" task="spotbugsMain">
 			<arg value="--continue" />
 			<arg value="--parallel" />
 		</gradle-execute>

@@ -17,7 +17,7 @@
 <%@ include file="/display/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect", ParamUtil.getString(PortalUtil.getOriginalServletRequest(request), "redirect", currentURL));
+String redirect = ParamUtil.getString(request, "redirect", currentURL);
 
 long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 %>

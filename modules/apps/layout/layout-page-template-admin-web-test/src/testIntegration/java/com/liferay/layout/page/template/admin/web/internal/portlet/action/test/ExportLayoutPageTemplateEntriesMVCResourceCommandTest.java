@@ -51,6 +51,7 @@ import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.io.File;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
@@ -132,11 +133,13 @@ public class ExportLayoutPageTemplateEntriesMVCResourceCommandTest {
 			layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
 			fileEntry.getFileEntryId());
 
+		long[] layoutPageTemplateEntryIds = {
+			layoutPageTemplateEntry.getLayoutPageTemplateEntryId()
+		};
+
 		File file = ReflectionTestUtil.invoke(
-			_mvcResourceCommand, "getFile",
-			new Class<?>[] {ResourceRequest.class},
-			_getMockResourceRequest(
-				layoutPageTemplateEntry.getLayoutPageTemplateEntryId()));
+			_mvcResourceCommand, "getFile", new Class<?>[] {long[].class},
+			layoutPageTemplateEntryIds);
 
 		try (ZipFile zipFile = new ZipFile(file)) {
 			Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
@@ -149,6 +152,71 @@ public class ExportLayoutPageTemplateEntriesMVCResourceCommandTest {
 
 			Assert.assertEquals(4, zipFile.size());
 		}
+	}
+
+	@Test
+	public void testGetFileNameMultiplePageTemplates() {
+		long[] layoutPageTemplateEntryIds = {
+			RandomTestUtil.randomLong(), RandomTestUtil.randomLong()
+		};
+
+		String fileName = ReflectionTestUtil.invoke(
+			_mvcResourceCommand, "getFileName", new Class<?>[] {long[].class},
+			layoutPageTemplateEntryIds);
+
+		Assert.assertTrue(fileName.startsWith("page-templates-"));
+		Assert.assertTrue(fileName.endsWith(".zip"));
+	}
+
+	@Test
+	public void testGetFileNameSinglePageTemplate() throws Exception {
+		LayoutPageTemplateCollection layoutPageTemplateCollection =
+			_layoutPageTemplateCollectionLocalService.
+				addLayoutPageTemplateCollection(
+					TestPropsValues.getUserId(), _group.getGroupId(),
+					"Page Template Collection One", StringPool.BLANK,
+					_serviceContext);
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
+				_serviceContext.getUserId(), _serviceContext.getScopeGroupId(),
+				layoutPageTemplateCollection.
+					getLayoutPageTemplateCollectionId(),
+				"Page Template One",
+				LayoutPageTemplateEntryTypeConstants.TYPE_BASIC, 0,
+				WorkflowConstants.STATUS_DRAFT, _serviceContext);
+
+		long[] layoutPageTemplateEntryIds = {
+			layoutPageTemplateEntry.getLayoutPageTemplateEntryId()
+		};
+
+		String fileName = ReflectionTestUtil.invoke(
+			_mvcResourceCommand, "getFileName", new Class<?>[] {long[].class},
+			layoutPageTemplateEntryIds);
+
+		Assert.assertTrue(
+			fileName.startsWith(
+				"page-template-" +
+					layoutPageTemplateEntry.getLayoutPageTemplateEntryKey() +
+						"-"));
+		Assert.assertTrue(fileName.endsWith(".zip"));
+	}
+
+	@Test
+	public void testGetLayoutPageTemplateEntryIdsSinglePageTemplate() {
+		long expectedLayoutPageTemplateEntryId = RandomTestUtil.randomLong();
+
+		long[] actualLayoutPageTemplateEntryIds = ReflectionTestUtil.invoke(
+			_mvcResourceCommand, "getLayoutPageTemplateEntryIds",
+			new Class<?>[] {ResourceRequest.class},
+			_getMockResourceRequest(expectedLayoutPageTemplateEntryId));
+
+		Assert.assertEquals(
+			Arrays.toString(actualLayoutPageTemplateEntryIds), 1,
+			actualLayoutPageTemplateEntryIds.length);
+		Assert.assertEquals(
+			expectedLayoutPageTemplateEntryId,
+			actualLayoutPageTemplateEntryIds[0]);
 	}
 
 	private MockResourceRequest _getMockResourceRequest(
@@ -238,7 +306,7 @@ public class ExportLayoutPageTemplateEntriesMVCResourceCommandTest {
 		if (_isPageDefinitionFile(zipEntry.getName())) {
 			_validateContent(
 				StringUtil.read(zipFile.getInputStream(zipEntry)),
-				"expected_page_definition.json");
+				"expected_page_template_page_definition.json");
 		}
 
 		if (_isPageTemplateCollectionFile(zipEntry.getName())) {

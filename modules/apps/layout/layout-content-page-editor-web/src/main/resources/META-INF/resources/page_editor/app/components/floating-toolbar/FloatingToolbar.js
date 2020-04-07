@@ -115,11 +115,26 @@ export default function FloatingToolbar({
 	}, []);
 
 	useEffect(() => {
+		if (!itemRef.current) {
+			return;
+		}
+
+		const {marginRight: itemRefMarginRight} = getComputedStyle(
+			itemRef.current
+		);
+
+		if (show && parseInt(itemRefMarginRight, 10) < 0) {
+			toolbarRef.current.style.transform = `translate(${itemRefMarginRight})`;
+		}
+	}, [itemRef, show]);
+
+	useEffect(() => {
 		alignElement(toolbarRef, itemRef, () => {
 			alignElement(panelRef, toolbarRef);
 		});
 	}, [
 		alignElement,
+		item.config,
 		itemRef,
 		panelId,
 		show,
@@ -132,44 +147,51 @@ export default function FloatingToolbar({
 			'.page-editor__sidebar__content'
 		);
 
-		const handleTransitionEnd = event => {
-			if (event.target === sidebarElement) {
-				alignElement(toolbarRef, itemRef, () => {
-					alignElement(panelRef, toolbarRef);
-				});
-				setHidden(false);
-			}
-		};
+		if (sidebarElement) {
+			const handleTransitionEnd = event => {
+				if (event.target === sidebarElement) {
+					alignElement(toolbarRef, itemRef, () => {
+						alignElement(panelRef, toolbarRef);
+					});
+					setHidden(false);
+				}
+			};
 
-		const handleTransitionStart = event => {
-			if (event.target === sidebarElement) {
-				setHidden(true);
-			}
-		};
+			const handleTransitionStart = event => {
+				if (event.target === sidebarElement) {
+					setHidden(true);
+				}
+			};
 
-		sidebarElement.addEventListener('transitionend', handleTransitionEnd);
-		sidebarElement.addEventListener(
-			'transitionstart',
-			handleTransitionStart
-		);
-
-		return () => {
-			sidebarElement.removeEventListener(
+			sidebarElement.addEventListener(
 				'transitionend',
 				handleTransitionEnd
 			);
-
-			sidebarElement.removeEventListener(
+			sidebarElement.addEventListener(
 				'transitionstart',
 				handleTransitionStart
 			);
-		};
+
+			return () => {
+				sidebarElement.removeEventListener(
+					'transitionend',
+					handleTransitionEnd
+				);
+
+				sidebarElement.removeEventListener(
+					'transitionstart',
+					handleTransitionStart
+				);
+			};
+		}
 	}, [alignElement, item, itemRef]);
 
 	useEffect(() => {
-		const sideNavigation = Liferay.SideNavigation.instance(
-			document.querySelector('.product-menu-toggle')
-		);
+		const sideNavigation =
+			Liferay.sideNavigation &&
+			Liferay.SideNavigation.instance(
+				document.querySelector('.product-menu-toggle')
+			);
 
 		const handleTransitionEnd = () => {
 			alignElement(toolbarRef, itemRef, () => {
@@ -271,10 +293,9 @@ export default function FloatingToolbar({
 				{PanelComponent &&
 					createPortal(
 						<div
-							className={classNames(
-								EDITABLE_FLOATING_TOOLBAR_CLASSNAMES.panel,
-								'p-2 position-fixed'
-							)}
+							className={
+								EDITABLE_FLOATING_TOOLBAR_CLASSNAMES.panel
+							}
 							ref={panelRef}
 						>
 							<div
@@ -309,7 +330,7 @@ FloatingToolbar.propTypes = {
 		getLayoutDataItemPropTypes(),
 	]),
 	itemRef: PropTypes.shape({current: PropTypes.instanceOf(Element)}),
-	onButtonClick: PropTypes.func.isRequired,
+	onButtonClick: PropTypes.func,
 };
 
 /**

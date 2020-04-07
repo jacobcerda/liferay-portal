@@ -54,9 +54,7 @@ function render(element, value, config = {}) {
 	}
 
 	if (image) {
-		if (value.alt) {
-			image.alt = value.alt;
-		}
+		image.alt = value.alt || config.alt || image.alt;
 
 		if (config.href) {
 			if (image.parentElement instanceof HTMLAnchorElement) {
@@ -74,7 +72,12 @@ function render(element, value, config = {}) {
 			}
 		}
 
-		image.src = value.url || value;
+		const imageValue =
+			value && typeof value !== 'string' ? value.url : value;
+
+		if (imageValue) {
+			image.src = imageValue;
+		}
 	}
 }
 

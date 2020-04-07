@@ -347,6 +347,10 @@ public interface FragmentCompositionLocalService
 			long userId, long groupId, String folderName)
 		throws PortalException;
 
+	public FragmentComposition moveFragmentComposition(
+			long fragmentCompositionId, long fragmentCollectionId)
+		throws PortalException;
+
 	/**
 	 * Updates the fragment composition in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -365,6 +369,10 @@ public interface FragmentCompositionLocalService
 			long userId, long fragmentCompositionId, String name,
 			String description, String data, long previewFileEntryId,
 			int status)
+		throws PortalException;
+
+	public FragmentComposition updateFragmentComposition(
+			long fragmentCompositionId, String name)
 		throws PortalException;
 
 }

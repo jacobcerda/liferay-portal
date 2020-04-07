@@ -112,25 +112,20 @@ definition {
 
 		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		if (isSet(siteName)) {
-			AssertClick(
-				key_breadcrumbName = "sites",
-				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
-				value1 = "sites");
+		AssertClick(
+			key_breadcrumbName = "Sites and Libraries",
+			locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+			value1 = "Sites and Libraries");
 
-			LexiconCard.clickCard(card = "${siteName}");
+		if (isSet(siteName)) {
+			LexiconCard.clickCardTitleLink(card = "${siteName}");
 		}
 
 		if (isSet(depotName)) {
 			AssertClick(
-				key_breadcrumbName = "sites",
-				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
-				value1 = "sites");
-
-			AssertClick(
-				key_groupTab = "Repository",
+				key_groupTab = "Asset Library",
 				locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
-				value1 = "Repository");
+				value1 = "Asset Library");
 
 			LexiconCard.clickCard(card = "${depotName}");
 		}
@@ -241,11 +236,17 @@ definition {
 				value1 = "${viewableBy}");
 		}
 
+		AssertElementPresent(
+			locator1 = "Button#PUBLISH",
+			value1 = "Publish");
+
 		AssertClick(
 			locator1 = "Button#PUBLISH",
 			value1 = "Publish");
 
-		AssertElementPresent(locator1 = "DocumentsAndMedia#BREADCRUMB_HOME");
+		Pause(locator1 = "3000");
+
+		AssertElementPresent.pauseAssertVisible(locator1 = "DocumentsAndMedia#BREADCRUMB_HOME");
 
 		AssertElementPresent(locator1 = "Message#SUCCESS");
 	}
@@ -734,6 +735,18 @@ definition {
 		AssertElementPresent(locator1 = "Message#SUCCESS");
 	}
 
+	macro downloadCP {
+		Click.waitForMenuToggleJSClick(
+			key_rowEntry = "${dmDocumentTitle}",
+			locator1 = "Icon#ROW_VERTICAL_ELLIPSIS");
+
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "MenuItem#DOWNLOAD",
+			value1 = "Download");
+
+		DownloadTempFile();
+	}
+
 	macro downloadPG {
 		var key_dmDocumentTitle = "${dmDocumentTitle}";
 
@@ -1141,7 +1154,15 @@ definition {
 				locator1 = "Button#ANY",
 				value1 = "Select This Folder");
 		}
+
 		else {
+			if (IsElementPresent(locator1 = "//div[contains(@class,'portlet-body')]//form//ol[contains(@class,'breadcrumb')]//a[contains(.,'Home')]")) {
+				AssertClick(
+					key_breadcrumbName = "Home",
+					locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER",
+					value1 = "Home");
+			}
+
 			var key_dmFolderName = "${dmFolderName}";
 
 			AssertClick(
@@ -1541,7 +1562,7 @@ definition {
 			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
 			value1 = "${dmDocumentTitle}");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		AssertElementPresent(locator1 = "Message#CHECKOUT_SUCCESS");
 
 		AssertClick(
 			locator1 = "Button#EDIT",

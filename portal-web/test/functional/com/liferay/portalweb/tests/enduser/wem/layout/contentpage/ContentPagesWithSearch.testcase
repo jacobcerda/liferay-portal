@@ -57,10 +57,8 @@ definition {
 	@description = "This is a test for LPS-78928. Content pages will appear when users filter search results by page facet."
 	@priority = "5"
 	test FilterByPageFacet {
-
-		// Ignore test from acceptance until POSHI-48 resolved
-
-		property portal.acceptance = "false";
+		property portal.acceptance = "true";
+		property portal.upstream = "quarantine";
 
 		task ("Add a Static Text fragment to the content page") {
 			PageEditor.addFragment(
@@ -177,10 +175,7 @@ definition {
 	@description = "This is a test for LPS-78928. Editable text in content pages is searchable."
 	@priority = "5"
 	test SearchEditableText {
-
-		// Ignore test from acceptance until POSHI-48 resolved
-
-		property portal.acceptance = "false";
+		property portal.acceptance = "true";
 
 		task ("Add a Rich Text fragment to the content page") {
 			PageEditor.addFragment(
@@ -210,6 +205,7 @@ definition {
 
 		task ("Edit the Rich Text fragment's editable text") {
 			PageEditor.editFragmentText(
+				contributed = "false",
 				fragmentName = "Rich Text",
 				id = "rich-text",
 				text = "New editable fragment text");

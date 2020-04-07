@@ -57,6 +57,10 @@ public class AnalyticsMessageSenderClientImpl
 
 	@Override
 	public Object send(String body, long companyId) throws Exception {
+		if (!_analyticsConfigurationTracker.isActive()) {
+			return null;
+		}
+
 		AnalyticsConfiguration analyticsConfiguration =
 			_analyticsConfigurationTracker.getAnalyticsConfiguration(companyId);
 
@@ -77,6 +81,10 @@ public class AnalyticsMessageSenderClientImpl
 
 	@Override
 	public void validateConnection(long companyId) throws Exception {
+		if (!_analyticsConfigurationTracker.isActive()) {
+			return;
+		}
+
 		AnalyticsConfiguration analyticsConfiguration =
 			_analyticsConfigurationTracker.getAnalyticsConfiguration(companyId);
 
@@ -116,11 +124,13 @@ public class AnalyticsMessageSenderClientImpl
 			httpUriRequest = httpPost;
 		}
 
-		httpUriRequest.setHeader("Content-Type", "application/json");
-		httpUriRequest.setHeader("OSB-Asah-Data-Source-ID", dataSourceId);
-		httpUriRequest.setHeader(
-			"OSB-Asah-Faro-Backend-Security-Signature",
-			faroBackendSecuritySignature);
+		if (httpUriRequest != null) {
+			httpUriRequest.setHeader("Content-Type", "application/json");
+			httpUriRequest.setHeader("OSB-Asah-Data-Source-ID", dataSourceId);
+			httpUriRequest.setHeader(
+				"OSB-Asah-Faro-Backend-Security-Signature",
+				faroBackendSecuritySignature);
+		}
 
 		return httpUriRequest;
 	}
@@ -149,7 +159,8 @@ public class AnalyticsMessageSenderClientImpl
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to remove analytics preferences for company " +
-						companyId);
+						companyId,
+					exception);
 			}
 		}
 
@@ -161,7 +172,8 @@ public class AnalyticsMessageSenderClientImpl
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to remove analytics configuration for company " +
-						companyId);
+						companyId,
+					exception);
 			}
 		}
 	}

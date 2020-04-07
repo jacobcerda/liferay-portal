@@ -15,7 +15,7 @@
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, {useCallback} from 'react';
 
 import {
 	ConfigurationFieldPropTypes,
@@ -24,6 +24,7 @@ import {
 import {FRAGMENT_CONFIGURATION_FIELD_TYPES} from '../../config/constants/fragmentConfigurationFieldTypes';
 import {FREEMARKER_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/freemarkerFragmentEntryProcessor';
 import selectPrefixedSegmentsExperienceId from '../../selectors/selectPrefixedSegmentsExperienceId';
+import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
 import {useDispatch, useSelector} from '../../store/index';
 import updateFragmentConfiguration from '../../thunks/updateFragmentConfiguration';
 
@@ -66,7 +67,8 @@ export const FragmentConfigurationPanel = ({item}) => {
 		state => state.fragmentEntryLinks[item.config.fragmentEntryLinkId]
 	);
 
-	const segmentsExperienceId = useSelector(
+	const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
+	const prefixedSegmentsExperienceId = useSelector(
 		selectPrefixedSegmentsExperienceId
 	);
 
@@ -74,51 +76,58 @@ export const FragmentConfigurationPanel = ({item}) => {
 	const defaultConfigurationValues =
 		fragmentEntryLink.defaultConfigurationValues;
 
-	const configurationValues = segmentsExperienceId
-		? {
-				...defaultConfigurationValues,
-				...fragmentEntryLink.editableValues[
-					FREEMARKER_FRAGMENT_ENTRY_PROCESSOR
-				][segmentsExperienceId],
-		  }
-		: {
-				...defaultConfigurationValues,
-				...fragmentEntryLink.editableValues[
-					FREEMARKER_FRAGMENT_ENTRY_PROCESSOR
-				],
-		  };
-
 	const onRestoreButtonClick = () => {
 		dispatch(
 			updateFragmentConfiguration({
 				configurationValues: defaultConfigurationValues,
 				fragmentEntryLink,
+				prefixedSegmentsExperienceId,
 				segmentsExperienceId,
 			})
 		);
 	};
 
-	const onValueSelect = (name, value) => {
-		const nextConfigurationValues = {
-			...configurationValues,
-			[name]: value,
-		};
-
-		dispatch(
-			updateFragmentConfiguration({
-				configurationValues: nextConfigurationValues,
+	const onValueSelect = useCallback(
+		(name, value) => {
+			const configurationValues = getConfigurationValues(
+				defaultConfigurationValues,
 				fragmentEntryLink,
-				segmentsExperienceId,
-			})
-		);
-	};
+				prefixedSegmentsExperienceId
+			);
+
+			const nextConfigurationValues = {
+				...configurationValues,
+				[name]: value,
+			};
+
+			dispatch(
+				updateFragmentConfiguration({
+					configurationValues: nextConfigurationValues,
+					fragmentEntryLink,
+					prefixedSegmentsExperienceId,
+					segmentsExperienceId,
+				})
+			);
+		},
+		[
+			defaultConfigurationValues,
+			dispatch,
+			fragmentEntryLink,
+			prefixedSegmentsExperienceId,
+			segmentsExperienceId,
+		]
+	);
 
 	return (
 		<>
 			{configuration.fieldSets.map((fieldSet, index) => {
 				return (
 					<FieldSet
-						configurationValues={configurationValues}
+						configurationValues={getConfigurationValues(
+							defaultConfigurationValues,
+							fragmentEntryLink,
+							prefixedSegmentsExperienceId
+						)}
 						fields={fieldSet.fields}
 						key={index}
 						label={fieldSet.label}
@@ -155,3 +164,23 @@ const RestoreButton = ({onRestoreButtonClick}) => (
 RestoreButton.propTypes = {
 	onRestoreButtonClick: PropTypes.func.isRequired,
 };
+
+function getConfigurationValues(
+	defaultConfigurationValues,
+	fragmentEntryLink,
+	prefixedSegmentsExperienceId
+) {
+	return prefixedSegmentsExperienceId
+		? {
+				...defaultConfigurationValues,
+				...fragmentEntryLink.editableValues[
+					FREEMARKER_FRAGMENT_ENTRY_PROCESSOR
+				][prefixedSegmentsExperienceId],
+		  }
+		: {
+				...defaultConfigurationValues,
+				...fragmentEntryLink.editableValues[
+					FREEMARKER_FRAGMENT_ENTRY_PROCESSOR
+				],
+		  };
+}

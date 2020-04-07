@@ -26,6 +26,7 @@ import com.liferay.asset.list.service.AssetListEntryLocalServiceUtil;
 import com.liferay.asset.list.service.AssetListEntryServiceUtil;
 import com.liferay.asset.list.util.AssetListPortletUtil;
 import com.liferay.asset.list.web.internal.security.permission.resource.AssetListPermission;
+import com.liferay.asset.util.AssetRendererFactoryClassProvider;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
@@ -58,8 +59,10 @@ import javax.servlet.http.HttpServletRequest;
 public class AssetListDisplayContext {
 
 	public AssetListDisplayContext(
+		AssetRendererFactoryClassProvider assetRendererFactoryClassProvider,
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
+		_assetRendererFactoryClassProvider = assetRendererFactoryClassProvider;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 
@@ -131,7 +134,7 @@ public class AssetListDisplayContext {
 
 		SearchContainer assetListEntriesSearchContainer = new SearchContainer(
 			_renderRequest, _renderResponse.createRenderURL(), null,
-			"there-are-no-content-sets");
+			"there-are-no-collections");
 
 		assetListEntriesSearchContainer.setRowChecker(
 			new EmptyOnClickRowChecker(_renderResponse));
@@ -210,12 +213,12 @@ public class AssetListDisplayContext {
 		if (getAssetListEntryType() ==
 				AssetListEntryTypeConstants.TYPE_DYNAMIC) {
 
-			title = "new-dynamic-content-set";
+			title = "new-dynamic-collection";
 		}
 		else if (getAssetListEntryType() ==
 					AssetListEntryTypeConstants.TYPE_MANUAL) {
 
-			title = "new-manual-content-set";
+			title = "new-manual-collection";
 		}
 
 		return LanguageUtil.get(_httpServletRequest, title);
@@ -241,7 +244,10 @@ public class AssetListDisplayContext {
 	}
 
 	public String getClassName(AssetRendererFactory<?> assetRendererFactory) {
-		String className = assetRendererFactory.getClassName();
+		Class<? extends AssetRendererFactory> clazz =
+			_assetRendererFactoryClassProvider.getClass(assetRendererFactory);
+
+		String className = clazz.getName();
 
 		int pos = className.lastIndexOf(StringPool.PERIOD);
 
@@ -377,7 +383,7 @@ public class AssetListDisplayContext {
 
 	private String _getAddAssetListTitle(String title) {
 		return LanguageUtil.format(
-			_httpServletRequest, "add-x-content-set", title, true);
+			_httpServletRequest, "add-x-collection", title, true);
 	}
 
 	private PortletURL _getAssetListContentURL() {
@@ -428,6 +434,8 @@ public class AssetListDisplayContext {
 	private AssetListEntry _assetListEntry;
 	private Long _assetListEntryId;
 	private Integer _assetListEntryType;
+	private final AssetRendererFactoryClassProvider
+		_assetRendererFactoryClassProvider;
 	private final HttpServletRequest _httpServletRequest;
 	private String _keywords;
 	private String _orderByCol;

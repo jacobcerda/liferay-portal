@@ -15,14 +15,19 @@
 package com.liferay.account.rest.internal.graphql.mutation.v1_0;
 
 import com.liferay.account.rest.dto.v1_0.Account;
+import com.liferay.account.rest.dto.v1_0.AccountRole;
 import com.liferay.account.rest.dto.v1_0.AccountUser;
 import com.liferay.account.rest.resource.v1_0.AccountResource;
+import com.liferay.account.rest.resource.v1_0.AccountRoleResource;
 import com.liferay.account.rest.resource.v1_0.AccountUserResource;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+
+import java.util.function.BiFunction;
 
 import javax.annotation.Generated;
 
@@ -47,6 +52,14 @@ public class Mutation {
 
 		_accountResourceComponentServiceObjects =
 			accountResourceComponentServiceObjects;
+	}
+
+	public static void setAccountRoleResourceComponentServiceObjects(
+		ComponentServiceObjects<AccountRoleResource>
+			accountRoleResourceComponentServiceObjects) {
+
+		_accountRoleResourceComponentServiceObjects =
+			accountRoleResourceComponentServiceObjects;
 	}
 
 	public static void setAccountUserResourceComponentServiceObjects(
@@ -147,6 +160,53 @@ public class Mutation {
 				callbackURL, object));
 	}
 
+	@GraphQLField(description = "Adds a role for the account")
+	public AccountRole createAccountRole(
+			@GraphQLName("accountId") Long accountId,
+			@GraphQLName("accountRole") AccountRole accountRole)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_accountRoleResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			accountRoleResource -> accountRoleResource.postAccountRole(
+				accountId, accountRole));
+	}
+
+	@GraphQLField(description = "Unassigns account users to the account role")
+	public boolean deleteAccountRoleUserAssociation(
+			@GraphQLName("accountId") Long accountId,
+			@GraphQLName("accountRoleId") Long accountRoleId,
+			@GraphQLName("accountUserId") Long accountUserId)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_accountRoleResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			accountRoleResource ->
+				accountRoleResource.deleteAccountRoleUserAssociation(
+					accountId, accountRoleId, accountUserId));
+
+		return true;
+	}
+
+	@GraphQLField(description = "Assigns account users to the account role")
+	public boolean createAccountRoleUserAssociation(
+			@GraphQLName("accountId") Long accountId,
+			@GraphQLName("accountRoleId") Long accountRoleId,
+			@GraphQLName("accountUserId") Long accountUserId)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_accountRoleResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			accountRoleResource ->
+				accountRoleResource.postAccountRoleUserAssociation(
+					accountId, accountRoleId, accountUserId));
+
+		return true;
+	}
+
 	@GraphQLField(
 		description = "Creates a user and assigns them to the account"
 	)
@@ -212,6 +272,18 @@ public class Mutation {
 	}
 
 	private void _populateResourceContext(
+			AccountRoleResource accountRoleResource)
+		throws Exception {
+
+		accountRoleResource.setContextAcceptLanguage(_acceptLanguage);
+		accountRoleResource.setContextCompany(_company);
+		accountRoleResource.setContextHttpServletRequest(_httpServletRequest);
+		accountRoleResource.setContextHttpServletResponse(_httpServletResponse);
+		accountRoleResource.setContextUriInfo(_uriInfo);
+		accountRoleResource.setContextUser(_user);
+	}
+
+	private void _populateResourceContext(
 			AccountUserResource accountUserResource)
 		throws Exception {
 
@@ -225,11 +297,14 @@ public class Mutation {
 
 	private static ComponentServiceObjects<AccountResource>
 		_accountResourceComponentServiceObjects;
+	private static ComponentServiceObjects<AccountRoleResource>
+		_accountRoleResourceComponentServiceObjects;
 	private static ComponentServiceObjects<AccountUserResource>
 		_accountUserResourceComponentServiceObjects;
 
 	private AcceptLanguage _acceptLanguage;
 	private com.liferay.portal.kernel.model.Company _company;
+	private BiFunction<Object, String, Sort[]> _sortsBiFunction;
 	private com.liferay.portal.kernel.model.User _user;
 	private HttpServletRequest _httpServletRequest;
 	private HttpServletResponse _httpServletResponse;

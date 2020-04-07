@@ -60,6 +60,17 @@ public class IndexedFieldsFixture {
 
 	public IndexedFieldsFixture(
 		ResourcePermissionLocalService resourcePermissionLocalService,
+		SearchEngineHelper searchEngineHelper,
+		DocumentBuilderFactory documentBuilderFactory) {
+
+		_resourcePermissionLocalService = resourcePermissionLocalService;
+		_searchEngineHelper = searchEngineHelper;
+		_uidFactory = null;
+		_documentBuilderFactory = documentBuilderFactory;
+	}
+
+	public IndexedFieldsFixture(
+		ResourcePermissionLocalService resourcePermissionLocalService,
 		SearchEngineHelper searchEngineHelper, UIDFactory uidFactory,
 		DocumentBuilderFactory documentBuilderFactory) {
 
@@ -134,7 +145,12 @@ public class IndexedFieldsFixture {
 		Document document = documentBuilder.build();
 
 		map.put(Field.UID, document.getString(Field.UID));
-		map.put("uidm", document.getString("uidm"));
+
+		String uidm = document.getString("uidm");
+
+		if (uidm != null) {
+			map.put("uidm", uidm);
+		}
 	}
 
 	public void populateUID(
@@ -169,6 +185,19 @@ public class IndexedFieldsFixture {
 		if (_isSearchEngineSolr()) {
 			document.remove("score");
 		}
+	}
+
+	public Document postProcessDocument(Document document) {
+		if (_isSearchEngineSolr()) {
+			DocumentBuilder documentBuilder = _documentBuilderFactory.builder(
+				document);
+
+			documentBuilder.unsetValue("score");
+
+			return documentBuilder.build();
+		}
+
+		return document;
 	}
 
 	protected void populateRoleIds(

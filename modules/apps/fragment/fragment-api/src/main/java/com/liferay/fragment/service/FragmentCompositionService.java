@@ -104,8 +104,16 @@ public interface FragmentCompositionService extends BaseService {
 	 */
 	public String getOSGiServiceIdentifier();
 
+	public FragmentComposition moveFragmentComposition(
+			long fragmentCompositionId, long fragmentCollectionId)
+		throws PortalException;
+
 	public FragmentComposition updateFragmentComposition(
 			long fragmentCompositionId, long previewFileEntryId)
+		throws PortalException;
+
+	public FragmentComposition updateFragmentComposition(
+			long fragmentCompositionId, String name)
 		throws PortalException;
 
 	public FragmentComposition updateFragmentComposition(

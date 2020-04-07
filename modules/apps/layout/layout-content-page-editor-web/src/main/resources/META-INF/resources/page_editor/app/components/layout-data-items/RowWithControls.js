@@ -39,8 +39,7 @@ import updateColSize from '../../actions/updateColSize';
 import {LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS} from '../../config/constants/layoutDataFloatingToolbarButtons';
 import {LAYOUT_DATA_ITEM_DEFAULT_CONFIGURATIONS} from '../../config/constants/layoutDataItemDefaultConfigurations';
 import {LAYOUT_DATA_ITEM_TYPES} from '../../config/constants/layoutDataItemTypes';
-import {config} from '../../config/index';
-import selectShowLayoutItemTopper from '../../selectors/selectShowLayoutItemTopper';
+import selectCanUpdateLayoutContent from '../../selectors/selectCanUpdateLayoutContent';
 import {useDispatch, useSelector} from '../../store/index';
 import duplicateItem from '../../thunks/duplicateItem';
 import resizeColumns from '../../thunks/resizeColumns';
@@ -76,7 +75,9 @@ const RowWithControls = React.forwardRef(
 		});
 
 		const state = useSelector(state => state);
-		const showLayoutItemTopper = useSelector(selectShowLayoutItemTopper);
+		const canUpdateLayoutContent = useSelector(
+			selectCanUpdateLayoutContent
+		);
 
 		const rowRef = useRef(null);
 		const rowRect = getRect(rowRef.current);
@@ -177,12 +178,9 @@ const RowWithControls = React.forwardRef(
 
 		if (!hasDropZoneChild(item, layoutData)) {
 			buttons.push(LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS.duplicateItem);
-
-			if (config.fragmentCompositionsEnabled) {
-				buttons.push(
-					LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS.saveFragmentComposition
-				);
-			}
+			buttons.push(
+				LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS.saveFragmentComposition
+			);
 		}
 
 		buttons.push(LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS.rowConfiguration);
@@ -239,7 +237,7 @@ const RowWithControls = React.forwardRef(
 			</Row>
 		);
 
-		return showLayoutItemTopper ? (
+		return canUpdateLayoutContent ? (
 			<Topper item={item} itemRef={ref} layoutData={layoutData}>
 				{() => content}
 			</Topper>

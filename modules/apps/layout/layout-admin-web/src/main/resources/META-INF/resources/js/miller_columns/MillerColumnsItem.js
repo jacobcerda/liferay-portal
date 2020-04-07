@@ -118,17 +118,20 @@ const MillerColumnsItem = ({
 		const dropdownActions = [];
 
 		actions.forEach(action => {
-			if (!action.quickAction && action.url) {
+			if (!action.quickAction) {
+				const onClick = action.handler || actionHandlers[action.id];
+
 				dropdownActions.push({
 					...action,
-					handler:
-						action.handler || actionHandlers[action.id] || noop,
+					handler: () =>
+						onClick && onClick({actionURL: action.url, namespace}),
+					href: onClick ? null : action.url,
 				});
 			}
 		});
 
 		return dropdownActions;
-	}, [actions, actionHandlers]);
+	}, [actions, actionHandlers, namespace]);
 
 	const quickActions = useMemo(() => {
 		const quickActions = [];
@@ -315,7 +318,8 @@ const MillerColumnsItem = ({
 						<ClayDropDown.ItemList>
 							{dropdownActions.map(action => (
 								<ClayDropDown.Item
-									href={action.url}
+									disabled={!action.url}
+									href={action.href}
 									id={action.id}
 									key={action.id}
 									onClick={action.handler}

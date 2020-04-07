@@ -26,6 +26,7 @@ import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
 import com.liferay.headless.delivery.dto.v1_0.ColumnDefinition;
+import com.liferay.headless.delivery.dto.v1_0.DropZoneDefinition;
 import com.liferay.headless.delivery.dto.v1_0.Fragment;
 import com.liferay.headless.delivery.dto.v1_0.FragmentField;
 import com.liferay.headless.delivery.dto.v1_0.FragmentFieldBackgroundImage;
@@ -33,10 +34,9 @@ import com.liferay.headless.delivery.dto.v1_0.FragmentFieldHTML;
 import com.liferay.headless.delivery.dto.v1_0.FragmentFieldImage;
 import com.liferay.headless.delivery.dto.v1_0.FragmentFieldText;
 import com.liferay.headless.delivery.dto.v1_0.FragmentImage;
+import com.liferay.headless.delivery.dto.v1_0.FragmentInlineValue;
 import com.liferay.headless.delivery.dto.v1_0.FragmentInstanceDefinition;
 import com.liferay.headless.delivery.dto.v1_0.FragmentLink;
-import com.liferay.headless.delivery.dto.v1_0.InlineLink;
-import com.liferay.headless.delivery.dto.v1_0.InlineValue;
 import com.liferay.headless.delivery.dto.v1_0.PageDefinition;
 import com.liferay.headless.delivery.dto.v1_0.PageElement;
 import com.liferay.headless.delivery.dto.v1_0.RowDefinition;
@@ -127,6 +127,110 @@ public class PageDefinitionConverterUtilTest {
 	}
 
 	@Test
+	public void testToPageDefinitionDropZoneAllowedFragments()
+		throws Exception {
+
+		_addLayoutPageTemplateStructure(
+			"layout_data_drop_zone_allowed_fragments.json", new HashMap<>());
+
+		Layout layout = _layoutLocalService.fetchLayout(
+			_layoutPageTemplateEntry.getPlid());
+
+		PageDefinition pageDefinition =
+			PageDefinitionConverterUtil.toPageDefinition(
+				_fragmentCollectionContributorTracker,
+				_fragmentEntryConfigurationParser, _fragmentRendererTracker,
+				layout);
+
+		PageElement rootPageElement = pageDefinition.getPageElement();
+
+		Assert.assertEquals(PageElement.Type.ROOT, rootPageElement.getType());
+
+		PageElement[] pageElements = rootPageElement.getPageElements();
+
+		Assert.assertEquals(
+			Arrays.toString(pageElements), 1, pageElements.length);
+
+		PageElement dropZonePageElement = pageElements[0];
+
+		Assert.assertEquals(
+			PageElement.Type.DROP_ZONE, dropZonePageElement.getType());
+
+		DropZoneDefinition dropZoneDefinition =
+			(DropZoneDefinition)dropZonePageElement.getDefinition();
+
+		Map<String, Fragment[]> fragmentSettingsMap =
+			(Map<String, Fragment[]>)dropZoneDefinition.getFragmentSettings();
+
+		Fragment[] allowedFragments = fragmentSettingsMap.get(
+			"allowedFragments");
+
+		Assert.assertEquals(
+			Arrays.toString(allowedFragments), 3, allowedFragments.length);
+
+		Assert.assertEquals(
+			"BASIC_COMPONENT-button", allowedFragments[0].getKey());
+		Assert.assertEquals(
+			"BASIC_COMPONENT-card", allowedFragments[1].getKey());
+		Assert.assertEquals(
+			"com.liferay.fragment.internal.renderer." +
+				"ContentObjectFragmentRenderer",
+			allowedFragments[2].getKey());
+	}
+
+	@Test
+	public void testToPageDefinitionDropZoneUnallowedFragments()
+		throws Exception {
+
+		_addLayoutPageTemplateStructure(
+			"layout_data_drop_zone_unallowed_fragments.json", new HashMap<>());
+
+		Layout layout = _layoutLocalService.fetchLayout(
+			_layoutPageTemplateEntry.getPlid());
+
+		PageDefinition pageDefinition =
+			PageDefinitionConverterUtil.toPageDefinition(
+				_fragmentCollectionContributorTracker,
+				_fragmentEntryConfigurationParser, _fragmentRendererTracker,
+				layout);
+
+		PageElement rootPageElement = pageDefinition.getPageElement();
+
+		Assert.assertEquals(PageElement.Type.ROOT, rootPageElement.getType());
+
+		PageElement[] pageElements = rootPageElement.getPageElements();
+
+		Assert.assertEquals(
+			Arrays.toString(pageElements), 1, pageElements.length);
+
+		PageElement dropZonePageElement = pageElements[0];
+
+		Assert.assertEquals(
+			PageElement.Type.DROP_ZONE, dropZonePageElement.getType());
+
+		DropZoneDefinition dropZoneDefinition =
+			(DropZoneDefinition)dropZonePageElement.getDefinition();
+
+		Map<String, Fragment[]> fragmentSettingsMap =
+			(Map<String, Fragment[]>)dropZoneDefinition.getFragmentSettings();
+
+		Fragment[] unallowedFragments = fragmentSettingsMap.get(
+			"unallowedFragments");
+
+		Assert.assertEquals(
+			Arrays.toString(unallowedFragments), 3, unallowedFragments.length);
+
+		Assert.assertEquals(
+			"BASIC_COMPONENT-button", unallowedFragments[0].getKey());
+		Assert.assertEquals(
+			"BASIC_COMPONENT-card", unallowedFragments[1].getKey());
+		Assert.assertEquals(
+			"com.liferay.fragment.internal.renderer." +
+				"ContentObjectFragmentRenderer",
+			unallowedFragments[2].getKey());
+	}
+
+	@Test
 	public void testToPageDefinitionFragmentConfig() throws Exception {
 		FragmentInstanceDefinition fragmentInstanceDefinition =
 			_getFragmentInstanceDefinition(
@@ -138,14 +242,9 @@ public class PageDefinitionConverterUtilTest {
 		Map<String, Object> fragmentConfigMap =
 			fragmentInstanceDefinition.getFragmentConfig();
 
-		Assert.assertEquals("center", fragmentConfigMap.get("textAlign"));
 		Assert.assertEquals(4, fragmentConfigMap.get("level"));
-
-		Map<String, String> textColorMap =
-			(Map<String, String>)fragmentConfigMap.get("textColor");
-
-		Assert.assertEquals("danger", textColorMap.get("cssClass"));
-		Assert.assertEquals("rgb(171, 16, 16)", textColorMap.get("rgbValue"));
+		Assert.assertEquals("center", fragmentConfigMap.get("textAlign"));
+		Assert.assertEquals("danger", fragmentConfigMap.get("textColor"));
 	}
 
 	@Test
@@ -160,8 +259,25 @@ public class PageDefinitionConverterUtilTest {
 		FragmentFieldBackgroundImage fragmentFieldBackgroundImage =
 			(FragmentFieldBackgroundImage)fragmentField.getValue();
 
-		_validateFragmentImage(
+		_validateFragmentBackgroundImage(
 			fragmentFieldBackgroundImage.getBackgroundImage());
+	}
+
+	@Test
+	public void testToPageDefinitionFragmentFieldBackgroundImageTitle()
+		throws Exception {
+
+		FragmentField fragmentField = _getFragmentField(
+			"editable_values_fragment_field_background_image_title.json",
+			"my-background-image",
+			"<div data-lfr-background-image-id=\"my-background-image\"></div>");
+
+		FragmentFieldBackgroundImage fragmentFieldBackgroundImage =
+			(FragmentFieldBackgroundImage)fragmentField.getValue();
+
+		_validateFragmentBackgroundImageWithTitle(
+			fragmentFieldBackgroundImage.getBackgroundImage(),
+			"My Background Image Title");
 	}
 
 	@Test
@@ -188,6 +304,20 @@ public class PageDefinitionConverterUtilTest {
 			(FragmentFieldImage)fragmentField.getValue();
 
 		_validateFragmentImage(fragmentFieldImage.getFragmentImage());
+	}
+
+	@Test
+	public void testToPageDefinitionFragmentFieldImageTitle() throws Exception {
+		FragmentField fragmentField = _getFragmentField(
+			"editable_values_fragment_field_image_title.json", "my-image",
+			"<lfr-editable id=\"my-image\" type=\"image\"><img/>" +
+				"</lfr-editable>");
+
+		FragmentFieldImage fragmentFieldImage =
+			(FragmentFieldImage)fragmentField.getValue();
+
+		_validateFragmentImageWithTitle(
+			fragmentFieldImage.getFragmentImage(), "My Image Title");
 	}
 
 	@Test
@@ -329,34 +459,62 @@ public class PageDefinitionConverterUtilTest {
 		PageElement[] pageElements = rootPageElement.getPageElements();
 
 		Assert.assertEquals(
-			Arrays.toString(pageElements), 1, pageElements.length);
+			Arrays.toString(pageElements), 2, pageElements.length);
 
-		PageElement sectionPageElement = pageElements[0];
-
-		Assert.assertEquals(
-			PageElement.Type.SECTION, sectionPageElement.getType());
-
-		SectionDefinition sectionDefinition =
-			(SectionDefinition)sectionPageElement.getDefinition();
+		PageElement sectionPageElement1 = pageElements[0];
 
 		Assert.assertEquals(
-			"primary", sectionDefinition.getBackgroundColorCssClass());
+			PageElement.Type.SECTION, sectionPageElement1.getType());
 
-		FragmentImage fragmentImage = sectionDefinition.getBackgroundImage();
+		SectionDefinition sectionDefinition1 =
+			(SectionDefinition)sectionPageElement1.getDefinition();
 
-		Assert.assertNull(fragmentImage.getTitle());
+		Assert.assertEquals("primary", sectionDefinition1.getBackgroundColor());
+
+		FragmentImage fragmentImage1 = sectionDefinition1.getBackgroundImage();
+
+		FragmentInlineValue titleFragmentInlineValue =
+			(FragmentInlineValue)fragmentImage1.getTitle();
+
 		Assert.assertEquals(
-			"http://myexample.com/myexample.png", fragmentImage.getUrl());
+			"My Example1 Background Image Title",
+			titleFragmentInlineValue.getValue());
+
+		FragmentInlineValue urlFragmentInlineValue1 =
+			(FragmentInlineValue)fragmentImage1.getUrl();
+
+		Assert.assertEquals(
+			"http://myexample1.com/myexample1.png",
+			urlFragmentInlineValue1.getValue());
 
 		com.liferay.headless.delivery.dto.v1_0.Layout sectionLayout =
-			sectionDefinition.getLayout();
+			sectionDefinition1.getLayout();
 
 		Assert.assertEquals("Fluid", sectionLayout.getContainerTypeAsString());
 		Assert.assertEquals(
-			Integer.valueOf(5), sectionLayout.getPaddingBottom());
+			Integer.valueOf(8), sectionLayout.getPaddingBottom());
 		Assert.assertEquals(
-			Integer.valueOf(6), sectionLayout.getPaddingHorizontal());
-		Assert.assertEquals(Integer.valueOf(4), sectionLayout.getPaddingTop());
+			Integer.valueOf(4), sectionLayout.getPaddingHorizontal());
+		Assert.assertEquals(Integer.valueOf(1), sectionLayout.getPaddingTop());
+
+		PageElement sectionPageElement2 = pageElements[1];
+
+		Assert.assertEquals(
+			PageElement.Type.SECTION, sectionPageElement2.getType());
+
+		SectionDefinition sectionDefinition2 =
+			(SectionDefinition)sectionPageElement2.getDefinition();
+
+		FragmentImage fragmentImage2 = sectionDefinition2.getBackgroundImage();
+
+		Assert.assertNull(fragmentImage2.getTitle());
+
+		FragmentInlineValue urlFragmentInlineValue2 =
+			(FragmentInlineValue)fragmentImage2.getUrl();
+
+		Assert.assertEquals(
+			"http://myexample2.com/myexample2.png",
+			urlFragmentInlineValue2.getValue());
 	}
 
 	private void _addLayoutPageTemplateStructure(
@@ -387,10 +545,9 @@ public class PageDefinitionConverterUtilTest {
 		Fragment fragment = fragmentInstanceDefinition.getFragment();
 
 		Assert.assertEquals(
-			_fragmentCollection.getName(),
-			fragment.getFragmentCollectionName());
-		Assert.assertEquals(fragmentEntryKey, fragment.getFragmentKey());
-		Assert.assertEquals(fragmentName, fragment.getFragmentName());
+			_fragmentCollection.getName(), fragment.getCollectionName());
+		Assert.assertEquals(fragmentEntryKey, fragment.getKey());
+		Assert.assertEquals(fragmentName, fragment.getName());
 
 		FragmentField[] fragmentFields =
 			fragmentInstanceDefinition.getFragmentFields();
@@ -466,14 +623,55 @@ public class PageDefinitionConverterUtilTest {
 			FileUtil.getBytes(getClass(), "dependencies/" + fileName));
 	}
 
+	private void _validateFragmentBackgroundImage(FragmentImage fragmentImage) {
+		Assert.assertNull(fragmentImage.getDescription());
+		Assert.assertNull(fragmentImage.getTitle());
+
+		FragmentInlineValue urlFragmentInlineValue =
+			(FragmentInlineValue)fragmentImage.getUrl();
+
+		Assert.assertNull(urlFragmentInlineValue.getValue());
+
+		Map<String, String> urlI18nMap = urlFragmentInlineValue.getValue_i18n();
+
+		Assert.assertEquals(
+			"http://myexample.com/myexample.png", urlI18nMap.get("en_US"));
+		Assert.assertEquals(
+			"http://miejemplo.es/miejemplo.png", urlI18nMap.get("es_ES"));
+	}
+
+	private void _validateFragmentBackgroundImageWithTitle(
+		FragmentImage fragmentImage, String title) {
+
+		Assert.assertNull(fragmentImage.getDescription());
+
+		FragmentInlineValue titleFragmentInlineValue =
+			(FragmentInlineValue)fragmentImage.getTitle();
+
+		Assert.assertEquals(title, titleFragmentInlineValue.getValue());
+
+		FragmentInlineValue urlFragmentInlineValue =
+			(FragmentInlineValue)fragmentImage.getUrl();
+
+		Assert.assertNull(urlFragmentInlineValue.getValue());
+
+		Map<String, String> urlI18nMap = urlFragmentInlineValue.getValue_i18n();
+
+		Assert.assertEquals(
+			"http://myexample.com/myexample.png", urlI18nMap.get("en_US"));
+		Assert.assertEquals(
+			"http://miejemplo.es/miejemplo.png", urlI18nMap.get("es_ES"));
+	}
+
 	private void _validateFragmentFieldHTML(
 		FragmentFieldHTML fragmentFieldHTML) {
 
-		InlineValue inlineValue = (InlineValue)fragmentFieldHTML.getHtml();
+		FragmentInlineValue fragmentInlineValue =
+			(FragmentInlineValue)fragmentFieldHTML.getHtml();
 
-		Assert.assertNull(inlineValue.getValue());
+		Assert.assertNull(fragmentInlineValue.getValue());
 
-		Map<String, String> i18nMap = inlineValue.getValue_i18n();
+		Map<String, String> i18nMap = fragmentInlineValue.getValue_i18n();
 
 		Assert.assertEquals("My example", i18nMap.get("en_US"));
 		Assert.assertEquals("Mi ejemplo", i18nMap.get("es_ES"));
@@ -487,15 +685,18 @@ public class PageDefinitionConverterUtilTest {
 		Assert.assertEquals(
 			FragmentLink.Target.BLANK, fragmentLink.getTarget());
 
-		InlineLink inlineLink = (InlineLink)fragmentLink.getValue();
+		FragmentInlineValue hrefFragmentInlineValue =
+			(FragmentInlineValue)fragmentLink.getHref();
 
-		Assert.assertEquals("http://www.myexample.com", inlineLink.getHref());
+		Assert.assertEquals(
+			"http://www.myexample.com", hrefFragmentInlineValue.getValue());
 
-		InlineValue inlineValue = (InlineValue)fragmentFieldText.getText();
+		FragmentInlineValue textFragmentInlineValue =
+			(FragmentInlineValue)fragmentFieldText.getText();
 
-		Assert.assertNull(inlineValue.getValue());
+		Assert.assertNull(textFragmentInlineValue.getValue());
 
-		Map<String, String> i18nMap = inlineValue.getValue_i18n();
+		Map<String, String> i18nMap = textFragmentInlineValue.getValue_i18n();
 
 		Assert.assertEquals("My example", i18nMap.get("en_US"));
 		Assert.assertEquals("Mi ejemplo", i18nMap.get("es_ES"));
@@ -504,11 +705,40 @@ public class PageDefinitionConverterUtilTest {
 	private void _validateFragmentImage(FragmentImage fragmentImage) {
 		Assert.assertNull(fragmentImage.getTitle());
 
-		InlineValue urlInlineValue = (InlineValue)fragmentImage.getUrl();
+		FragmentInlineValue descriptionFragmentInlineValue =
+			(FragmentInlineValue)fragmentImage.getDescription();
 
-		Assert.assertNull(urlInlineValue.getValue());
+		Assert.assertEquals(
+			"My example description",
+			descriptionFragmentInlineValue.getValue());
 
-		Map<String, String> urlI18nMap = urlInlineValue.getValue_i18n();
+		FragmentInlineValue urlFragmentInlineValue =
+			(FragmentInlineValue)fragmentImage.getUrl();
+
+		Assert.assertNull(urlFragmentInlineValue.getValue());
+
+		Map<String, String> urlI18nMap = urlFragmentInlineValue.getValue_i18n();
+
+		Assert.assertEquals(
+			"http://myexample.com/myexample.png", urlI18nMap.get("en_US"));
+		Assert.assertEquals(
+			"http://miejemplo.es/miejemplo.png", urlI18nMap.get("es_ES"));
+	}
+
+	private void _validateFragmentImageWithTitle(
+		FragmentImage fragmentImage, String title) {
+
+		FragmentInlineValue titleFragmentInlineValue =
+			(FragmentInlineValue)fragmentImage.getTitle();
+
+		Assert.assertEquals(title, titleFragmentInlineValue.getValue());
+
+		FragmentInlineValue urlFragmentInlineValue =
+			(FragmentInlineValue)fragmentImage.getUrl();
+
+		Assert.assertNull(urlFragmentInlineValue.getValue());
+
+		Map<String, String> urlI18nMap = urlFragmentInlineValue.getValue_i18n();
 
 		Assert.assertEquals(
 			"http://myexample.com/myexample.png", urlI18nMap.get("en_US"));

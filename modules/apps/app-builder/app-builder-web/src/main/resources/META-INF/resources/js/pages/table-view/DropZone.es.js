@@ -13,6 +13,7 @@
  */
 
 import ClayIcon from '@clayui/icon';
+import {ClayTooltipProvider} from '@clayui/tooltip';
 import classNames from 'classnames';
 import {DragTypes} from 'data-engine-taglib';
 import React, {useContext, useLayoutEffect, useRef, useState} from 'react';
@@ -108,9 +109,18 @@ const DropZone = ({fields, onAddFieldName, onRemoveFieldName}) => {
 									appliedFilters,
 									name
 								) && (
-									<div className="col text-right">
-										<ClayIcon symbol="filter" />
-									</div>
+									<ClayTooltipProvider>
+										<div className="col text-right">
+											<ClayIcon
+												data-tooltip-align="top"
+												data-tooltip-delay="200"
+												symbol="filter"
+												title={Liferay.Language.get(
+													'this-column-has-applied-filters'
+												)}
+											/>
+										</div>
+									</ClayTooltipProvider>
 								)}
 							</div>
 						</div>

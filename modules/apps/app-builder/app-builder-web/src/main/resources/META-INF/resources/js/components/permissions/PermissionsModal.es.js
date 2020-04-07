@@ -14,14 +14,15 @@
 
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
+import ClayManagementToolbar from '@clayui/management-toolbar';
 import ClayModal, {useModal} from '@clayui/modal';
 import {SearchInput} from 'data-engine-taglib';
 import React, {useEffect, useState} from 'react';
 
 import {Loading} from '../../components/loading/Loading.es';
-import ManagementToolbar from '../../components/management-toolbar/ManagementToolbar.es';
 import Table from '../../components/table/Table.es';
 import {getItem, updateItem} from '../../utils/client.es';
+import {errorToast, successToast} from '../../utils/toast.es';
 
 export default ({
 	actions,
@@ -106,10 +107,10 @@ export default ({
 		);
 
 	const handleOnSave = () =>
-		Promise.all([
-			updateItem(endpoint, permissions),
-			onSave(permissions),
-		]).then(() => onClose());
+		Promise.all([updateItem(endpoint, permissions), onSave(permissions)])
+			.then(() => onClose())
+			.then(() => successToast())
+			.catch(() => errorToast());
 
 	const togglePermission = (roleName, actionId) => {
 		const exists = permissions.some(
@@ -177,7 +178,7 @@ export default ({
 				{title || Liferay.Language.get('permissions')}
 			</ClayModal.Header>
 			<ClayModal.Body>
-				<ManagementToolbar>
+				<ClayManagementToolbar>
 					<SearchInput
 						onChange={searchText =>
 							setState(prevState => ({
@@ -187,8 +188,7 @@ export default ({
 						}
 						searchText={searchText}
 					/>
-				</ManagementToolbar>
-
+				</ClayManagementToolbar>
 				<Loading isLoading={isLoading}>
 					<Table
 						align="center"

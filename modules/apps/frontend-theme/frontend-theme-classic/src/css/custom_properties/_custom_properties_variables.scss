@@ -47,6 +47,7 @@ $theme-colors-cp: map-deep-merge(
 	--gray-600: #{$gray-600};
 	--gray-700: #{$gray-700};
 	--gray-800: #{$gray-800};
+	--gray-900: #{$gray-900};
 	--black: #{$black};
 	--transparent: transparent;
 
@@ -100,13 +101,9 @@ $theme-colors-cp: map-deep-merge(
 	--font-family-monospace: #{$font-family-monospace};
 	--font-family-base: #{$font-family-base};
 
-	--font-size-xs: 0.8125rem;
 	--font-size-sm: #{$font-size-sm};
 	--font-size-base: #{$font-size-base};
 	--font-size-lg: #{$font-size-lg};
-	--font-size-xl: 1.1875rem;
-	--font-size-2xl: 1.375rem;
-	--font-size-3xl: 1.625rem;
 
 	--font-weight-light: #{$font-weight-light};
 	--font-weight-lighter: #{$font-weight-lighter};
@@ -120,17 +117,17 @@ $theme-colors-cp: map-deep-merge(
 
 	// Headings
 
-	--h1-font-size: var(--font-size-3xl);
-	--h2-font-size: var(--font-size-2xl);
-	--h3-font-size: var(--font-size-xl);
-	--h4-font-size: var(--font-size-base);
-	--h5-font-size: var(--font-size-sm);
-	--h6-font-size: var(--font-size-xs);
+	--h1-font-size: #{$h1-font-size};
+	--h2-font-size: #{$h2-font-size};
+	--h3-font-size: #{$h3-font-size};
+	--h4-font-size: #{$h4-font-size};
+	--h5-font-size: #{$h5-font-size};
+	--h6-font-size: #{$h6-font-size};
 
 	// Body
 
-	--body-color: var(--dark);
-	--body-bg: var(--white);
+	--body-color: $body-color;
+	--body-bg: $body-bg;
 
 	// Buttons
 
@@ -144,100 +141,125 @@ $theme-colors-cp: map-deep-merge(
 	--btn-secondary-border: var(--gray-400);
 	--btn-secondary-color: var(--secondary);
 
-	--btn-padding-y: calc(var(--spacer) * #{$btn-padding-y});
-	--btn-padding-x: calc(var(--spacer) * #{$btn-padding-x});
-	--btn-font-size: var(--font-size-base);
-	--btn-line-height: var(--line-height-base);
-	--btn-border-radius: var(--border-radius);
+	--btn-padding-y: #{$btn-padding-y};
+	--btn-padding-x: #{$btn-padding-x};
+	--btn-font-size: #{$btn-font-size};
+	--btn-line-height: #{$btn-line-height};
+	--btn-border-radius: #{$btn-border-radius};
 
-	--btn-padding-y-lg: calc(var(--spacer) * #{$btn-padding-y-lg});
-	--btn-padding-x-lg: calc(var(--spacer) * #{$btn-padding-x-lg});
-	--btn-font-size-lg: var(--font-size-lg);
-	--btn-line-height-lg: var(--line-height-base);
-	--btn-border-radius-lg: var(--border-radius);
+	--btn-padding-y-lg: #{$btn-padding-y-lg};
+	--btn-padding-x-lg: #{$btn-padding-x-lg};
+	--btn-font-size-lg: #{$btn-font-size-lg};
+	--btn-line-height-lg: #{$btn-line-height-lg};
+	--btn-border-radius-lg: #{$btn-border-radius-lg};
 
-	--btn-padding-y-sm: calc(var(--spacer) * #{$btn-padding-y-sm});
-	--btn-padding-x-sm: calc(var(--spacer) * #{$btn-padding-x-sm});
-	--btn-font-size-sm: var(--font-size-sm);
-	--btn-line-height-sm: var(--line-height-sm);
-	--btn-border-radius-sm: var(--border-radius-sm);
+	--btn-padding-y-sm: #{$btn-padding-y-sm};
+	--btn-padding-x-sm: #{$btn-padding-x-sm};
+	--btn-font-size-sm: #{$btn-font-size-sm};
+	--btn-line-height-sm: #{$btn-line-height-sm};
+	--btn-border-radius-sm: #{$btn-border-radius-sm};
+
+	--btn-monospaced-padding-y: #{$btn-monospaced-padding-y};
+	--btn-monospaced-padding-x: #{$btn-monospaced-padding-x};
+	--btn-monospaced-size: #{$btn-monospaced-size};
+
+	--btn-monospaced-padding-y-sm: #{$btn-monospaced-padding-y-sm};
+	--btn-monospaced-padding-x-sm: #{$btn-monospaced-padding-x-sm};
+	--btn-monospaced-size-sm: #{$btn-monospaced-size-sm};
+
+	--btn-monospaced-padding-y-lg: #{$btn-monospaced-padding-y-lg};
+	--btn-monospaced-padding-x-lg: #{$btn-monospaced-padding-x-lg};
+	--btn-monospaced-size-lg: #{$btn-monospaced-size-lg};
+
+	--btn-section-font-size: #{$btn-section-font-size};
+	--btn-section-font-size-lg: #{$btn-section-font-size-lg};
+	--btn-section-font-size-sm: #{$btn-section-font-size-sm};
 
 	// Alerts
 
-	--alert-padding-y: calc(var(--spacer) * #{$alert-padding-y});
-	--alert-padding-x: calc(var(--spacer) * #{$spacer});
+	--alert-padding-y: #{$alert-padding-y};
+	--alert-padding-x: #{$alert-padding-x};
 
-	--alert-primary-color: var(--primary);
-	--alert-primary-bg: var(--primary-l3);
-	--alert-primary-border-color: var(--primary-l1);
+	--alert-primary-color: #{$alert-primary-color};
+	--alert-primary-bg: #{$alert-primary-bg};
+	--alert-primary-border-color: #{$alert-primary-border-color};
 
-	--alert-success-color: var(--success);
-	--alert-success-bg: var(--success-l2);
-	--alert-success-border-color: var(--success-l1);
+	--alert-success-color: #{$alert-success-color};
+	--alert-success-bg: #{$alert-success-bg};
+	--alert-success-border-color: #{$alert-success-border-color};
 
-	--alert-info-color: var(--info);
-	--alert-info-bg: var(--info-l2);
-	--alert-info-border-color: var(--info-l1);
+	--alert-info-color: #{$alert-info-color};
+	--alert-info-bg: #{$alert-info-bg};
+	--alert-info-border-color: #{$alert-info-border-color};
 
-	--alert-warning-color: var(--warning);
-	--alert-warning-bg: var(--warning-l2);
-	--alert-warning-border-color: var(--warning-l1);
+	--alert-warning-color: #{$alert-warning-color};
+	--alert-warning-bg: #{$alert-warning-bg};
+	--alert-warning-border-color: #{$alert-warning-border-color};
 
-	--alert-danger-color: var(--danger);
-	--alert-danger-bg: var(--danger-l2);
-	--alert-danger-border-color: var(--danger-l1);
+	--alert-danger-color: #{$alert-danger-color};
+	--alert-danger-bg: #{$alert-danger-bg};
+	--alert-danger-border-color: #{$alert-danger-border-color};
 
 	// Cards
 
-	--card-bg: var(--body-bg);
+	--card-bg: #{$card-bg};
 	--card-border-color: #{$card-border-color};
-	--card-border-radius: var(--border-radius);
+	--card-border-radius: #{$card-border-radius};
 	--card-border-width: #{$card-border-width};
-	--card-cap-bg: var(--card-bg);
-	--card-cap-color: var(--card-color);
+	--card-cap-bg: #{$card-cap-bg};
+	--card-cap-color: inherit;
 	--card-color: inherit;
 	--card-overflow: inherit;
-	--card-spacer-x: calc(var(--spacer) * #{$card-spacer-x});
-	--card-spacer-y: calc(var(--spacer) * #{$card-spacer-y});
+	--card-spacer-x: #{$card-spacer-x};
+	--card-spacer-y: #{$card-spacer-y};
 
 	// Forms
 
-	--input-bg: var(--light);
-	--input-border-color: var(--gray-300);
-	--input-border-radius: var(--border-radius);
+	--input-bg: #{$input-bg};
+	--input-border-color: #{$input-border-color};
+	--input-border-radius: #{$input-border-radius};
 	--input-border-width: #{$input-border-width};
-	--input-color: var(--dark);
+	--input-color: #{$input-color};
 	--input-height: #{$input-height};
-	--input-inset-padding-x: calc(var(--spacer) * #{$spacer} / 3.2);
-	--input-inset-padding-y: calc(var(--spacer) * #{$input-padding-y} / 3.2);
-	--input-line-height: var(--line-height-base);
-	--input-padding-x: calc(var(--spacer) * #{$spacer});
-	--input-padding-y: calc(var(--spacer) * #{$input-padding-y});
+	--input-group-inset-item-padding-left: #{$input-group-inset-item-padding-left};
+	--input-group-inset-item-padding-right: #{$input-group-inset-item-padding-right};
+	--input-line-height: #{$input-line-height};
+	--input-padding-x: #{$input-padding-x};
+	--input-padding-y: #{$input-padding-y};
 
-	--input-focus-color: var(--input-color);
-	--input-focus-bg: var(--primary-l3);
-	--input-focus-border-color: var(--primary-l1);
+	--input-focus-color: #{$input-focus-color};
+	--input-focus-bg: #{$input-focus-bg};
+	--input-focus-border-color: #{$input-focus-border-color};
 
-	--custom-control-indicator-checked-border-color: var(--primary);
-	--custom-control-indicator-checked-bg: var(--primary);
+	--custom-control-indicator-checked-border-color: #{$custom-control-indicator-checked-border-color};
+	--custom-control-indicator-checked-bg: #{$custom-control-indicator-checked-bg};
 
-	--input-label-font-size: var(--font-size-sm);
-	--input-label-margin-bottom: var(--spacer-0);
+	--input-label-font-size: inherit;
+	--input-label-margin-bottom: #{$input-label-margin-bottom};
 
-	--input-font-size-sm: var(--font-size-sm);
+	--input-font-size-sm: #{$input-font-size-sm};
 	--input-height-sm: #{$input-height-sm};
 
-	--input-font-size-lg: var(--font-size-lg);
+	--input-font-size-lg: #{$input-font-size-lg};
 	--input-height-lg: #{$input-height-lg};
 
 	// Nav and Navbar
 
-	--nav-font-size: var(--navbar-font-size);
-	--navbar-font-size: var(--font-size-sm);
+	--navbar-active-color: #{$navbar-light-active-color};
+	--navbar-brand-color: inherit;
+	--navbar-brand-font-size: #{$navbar-brand-font-size};
+	--navbar-color: #{$navbar-light-color};
+	--navbar-font-size: #{$navbar-font-size};
+	--navbar-hover-color: #{$navbar-light-hover-color};
+	--navbar-light-active-color: #{$navbar-light-active-color};
+	--navbar-light-hover-color: #{$navbar-light-hover-color};
 
+	--nav-font-size: #{$nav-font-size};
+	--nav-link-active-color: inherit;
 	--nav-link-color: inherit;
-	--nav-link-padding-x: calc(var(--spacer) * #{$spacer});
-	--nav-link-padding-y: calc(var(--spacer) * #{$nav-link-padding-y});
+	--nav-link-hover-color: inherit;
+	--nav-link-padding-x: #{$nav-link-padding-x};
+	--nav-link-padding-y: #{$nav-link-padding-y};
 
 	// Portlet vars
 
@@ -254,4 +276,48 @@ $theme-colors-cp: map-deep-merge(
 	--portlet-topper-color: var(--white);
 	--portlet-topper-link-color: var(--portlet-topper-color);
 	--portlet-topper-link-hover-color: var(--portlet-topper-link-color);
+
+	// Table list
+
+	--table-cell-padding: #{$table-cell-padding};
+
+	--table-list-active-bg: #{$table-list-active-bg};
+
+	--table-list-font-size: inherit;
+
+	--table-list-bg: #{$table-list-bg};
+	--table-list-color: #{$table-list-color};
+
+	--table-list-head-bg: inherit;
+	--table-list-head-color: inherit;
+
+	--table-list-border-radius: #{$table-list-border-radius};
+	--table-list-border-color: #{$table-list-border-color};
+	--table-list-border-x-width: #{$table-list-border-x-width};
+	--table-list-border-y-width: #{$table-list-border-y-width};
+
+	--table-list-divider-bg: #{$table-divider-bg};
+	--table-list-divider-color: #{$table-divider-color};
+	--table-list-divider-padding-x: #{$table-list-divider-padding-x};
+	--table-list-divider-padding-y: #{$table-list-divider-padding-y};
+
+	// List group
+
+	--list-group-bg: #{$list-group-bg};
+	--list-group-border-color: #{$list-group-border-color};
+	--list-group-border-radius: #{$list-group-border-radius};
+	--list-group-border-width: #{$list-group-border-width};
+	--list-group-color: inherit;
+
+	--list-group-active-bg: #{$list-group-active-bg};
+	--list-group-active-border-color: #{$list-group-active-border-color};
+	--list-group-active-color: #{$list-group-active-color};
+
+	--list-group-font-size: inherit;
+	--list-group-item-padding-x: #{$list-group-item-padding-x};
+	--list-group-item-padding-y: #{$list-group-item-padding-y};
+
+	--list-group-header-bg: #{$list-group-header-bg};
+	--list-group-header-padding-x: #{$list-group-header-padding-x};
+	--list-group-header-padding-y: #{$list-group-header-padding-y};
 }

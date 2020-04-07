@@ -12,7 +12,6 @@
  * details.
  */
 
-import moment from 'moment';
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 
@@ -29,6 +28,7 @@ import {
 	getItem,
 	updateItem,
 } from '../../utils/client.es';
+import {fromNow} from '../../utils/time.es';
 import {ACTIONS} from '../entry/PermissionsContext.es';
 import CustomObjectPopover from './CustomObjectPopover.es';
 
@@ -160,9 +160,6 @@ export default ({history}) => {
 				title={Liferay.Language.get(
 					'javax.portlet.title.com_liferay_app_builder_web_internal_portlet_CustomObjectsPortlet'
 				)}
-				tooltip={Liferay.Language.get(
-					'javax.portlet.description.com_liferay_app_builder_web_internal_portlet_CustomObjectsPortlet'
-				)}
 			/>
 
 			<ListView
@@ -216,7 +213,7 @@ export default ({history}) => {
 				addButton={() => (
 					<div ref={addButtonRef}>
 						<Button
-							className="nav-btn nav-btn-monospaced navbar-breakpoint-down-d-none"
+							className="nav-btn nav-btn-monospaced"
 							onClick={onClickAddButton}
 							symbol="plus"
 							tooltip={Liferay.Language.get('new-custom-object')}
@@ -245,8 +242,8 @@ export default ({history}) => {
 			>
 				{item => ({
 					...item,
-					dateCreated: moment(item.dateCreated).fromNow(),
-					dateModified: moment(item.dateModified).fromNow(),
+					dateCreated: fromNow(item.dateCreated),
+					dateModified: fromNow(item.dateModified),
 					name: (
 						<Link to={`/custom-object/${item.id}/form-views`}>
 							{item.name.en_US}

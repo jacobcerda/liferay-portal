@@ -192,6 +192,8 @@ definition {
 
 	@priority = "4"
 	test AddBlogsEntryWithSamePageScope {
+		property portal.upstream = "quarantine";
+
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
 		JSONLayout.addPublicLayout(
@@ -587,7 +589,7 @@ definition {
 
 	@priority = "5"
 	test DeleteBlogsEntries {
-		property portal.acceptance = "true";
+		property portal.upstream = "quarantine";
 
 		for (var entryCount : list "1,2,3") {
 			Navigator.gotoPage(pageName = "Blogs Page");
@@ -771,6 +773,7 @@ definition {
 	@description = "This is a usecase for LPS-75241"
 	@priority = "5"
 	test EmbedVideo {
+		property portal.acceptance = "true";
 		property testray.component.names = "WYSIWYG";
 
 		Blogs.addEntry(
@@ -815,42 +818,10 @@ definition {
 			entryTitle = "Blogs Entry Title");
 	}
 
-	@priority = "4"
-	test RateBlogsEntry {
-		JSONBlog.addEntry(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
-		Navigator.gotoPage(pageName = "Blogs Page");
-
-		BlogsNavigator.gotoEntryPG(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
-		Ratings.rate(ratingResult = "Thumb Up");
-
-		Ratings.viewRating(
-			ratingResult = "Thumb Up",
-			voteCount = "1");
-
-		Ratings.viewRating(
-			ratingResult = "Thumb Down",
-			voteCount = "0");
-
-		Ratings.rate(ratingResult = "Thumb Down");
-
-		Ratings.viewRating(
-			ratingResult = "Thumb Up",
-			voteCount = "0");
-
-		Ratings.viewRating(
-			ratingResult = "Thumb Down",
-			voteCount = "1");
-	}
-
 	@description = "This is a usecase for LPS-83229. This is the only small image test for blogs."
 	@priority = "5"
 	test RemoveSmallImage {
+		property portal.acceptance = "true";
 		property testray.component.names = "WYSIWYG";
 
 		BlogsNavigator.gotoAddEntry();
@@ -1077,6 +1048,7 @@ definition {
 
 	@priority = "4"
 	test UserFlagsEntryAndAdminViewsNotificationInMockMock {
+		property portal.upstream = "quarantine";
 		property test.smtp.server.enabled = "true";
 
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
@@ -1092,9 +1064,9 @@ definition {
 			panel = "Control Panel",
 			portlet = "Roles");
 
-		Role.assignRegRoleCP(
+		JSONRole.assignRoleToUser(
 			roleTitle = "Administrator",
-			userScreenName = "usersn");
+			userEmailAddress = "userea@liferay.com");
 
 		JSONBlog.addEntry(
 			entryContent = "Blogs Entry Content",
@@ -1190,6 +1162,28 @@ definition {
 			recipient = "userfn userln",
 			sender = "Joe Bloggs",
 			subject = "Blogs Entry Title Edit");
+	}
+
+	@description = "This test covers LPS-106613. It ensures that the custom abstract field cannot be reset to empty after typing in the content field."
+	@priority = "3"
+	test ViewAbstractDescriptionWithEntryContent {
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsEntry.addTitle(entryTitle = "Blogs Entry Title");
+
+		Panel.expandPanel(panel = "Configuration");
+
+		BlogsEntry.addCustomAbstract(entryAbstractDescription = "Blogs Entry Abstract Description");
+
+		Click.pauseClickAt(
+			key_editor = "content",
+			locator1 = "AlloyEditor#EDITOR");
+
+		BlogsEntry.addContent(entryContent = "Blogs Entry Content");
+
+		AssertTextEquals(
+			locator1 = "TextInput#DESCRIPTION",
+			value1 = "Blogs Entry Abstract Description");
 	}
 
 	@description = "This is a usecase for LPS-66970"
@@ -1348,6 +1342,7 @@ definition {
 	@description = "Basic test that ensures reading time displays when enabled."
 	@priority = "5"
 	test ViewBlogsEntryReadingTime {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "PGBlogs#ViewBlogsEntryReadingTime";
 
 		BlogsConfiguration.enableReadingTime();
@@ -1374,6 +1369,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test ViewBlogsEntryRSS {
+		property portal.upstream = "quarantine";
+
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
 		JSONBlog.addEntry(
@@ -1552,6 +1549,8 @@ definition {
 
 	@priority = "4"
 	test ViewBlogsEntryWithGuestPermissionsRemoved {
+		property portal.upstream = "quarantine";
+
 		Blogs.addEntry(
 			entryContent = "Blogs Entry1 Content",
 			entryTitle = "Blogs Entry1 Title");
@@ -1610,6 +1609,8 @@ definition {
 
 	@priority = "3"
 	test ViewBlogsEntryWithUploadedCoverImage {
+		property portal.upstream = "quarantine";
+
 		Blogs.addEntryWithUploadedCoverImage(
 			coverImageName = "Document_1",
 			entryContent = "Blogs Entry Content",

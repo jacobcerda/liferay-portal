@@ -36,6 +36,10 @@ String required = (String)request.getAttribute(AlloyEditorConstants.ATTRIBUTE_NA
 boolean showSource = GetterUtil.getBoolean((String)request.getAttribute(AlloyEditorConstants.ATTRIBUTE_NAMESPACE + ":showSource"));
 boolean skipEditorLoading = GetterUtil.getBoolean((String)request.getAttribute(AlloyEditorConstants.ATTRIBUTE_NAMESPACE + ":skipEditorLoading"));
 
+if (Validator.isNull(placeholder)) {
+	placeholder = "write-your-content-here";
+}
+
 JSONObject editorConfigJSONObject = null;
 
 if (data != null) {
@@ -127,7 +131,7 @@ String uploadURL = StringPool.BLANK;
 if (editorOptions != null) {
 	uploadURL = editorOptions.getUploadURL();
 
-	if (Validator.isNotNull(data) && Validator.isNotNull(uploadURL)) {
+	if ((data != null) && Validator.isNotNull(uploadURL)) {
 		modules += ",liferay-editor-image-uploader";
 	}
 }

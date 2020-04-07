@@ -92,6 +92,7 @@ public class TaxonomyCategoryDTOConverter
 
 		return new TaxonomyCategory() {
 			{
+				actions = dtoConverterContext.getActions();
 				availableLanguages = LocaleUtil.toW3cLanguageIds(
 					assetCategory.getAvailableLanguageIds());
 				creator = CreatorUtil.toCreator(
@@ -101,14 +102,14 @@ public class TaxonomyCategoryDTOConverter
 				dateModified = assetCategory.getModifiedDate();
 				description = assetCategory.getDescription(
 					dtoConverterContext.getLocale());
-				description_i18n = LocalizedMapUtil.getLocalizedMap(
+				description_i18n = LocalizedMapUtil.getI18nMap(
 					dtoConverterContext.isAcceptAllLanguages(),
 					assetCategory.getDescriptionMap());
 				externalReferenceCode =
 					assetCategory.getExternalReferenceCode();
 				id = String.valueOf(assetCategory.getCategoryId());
 				name = assetCategory.getTitle(dtoConverterContext.getLocale());
-				name_i18n = LocalizedMapUtil.getLocalizedMap(
+				name_i18n = LocalizedMapUtil.getI18nMap(
 					dtoConverterContext.isAcceptAllLanguages(),
 					assetCategory.getTitleMap());
 				numberOfTaxonomyCategories =

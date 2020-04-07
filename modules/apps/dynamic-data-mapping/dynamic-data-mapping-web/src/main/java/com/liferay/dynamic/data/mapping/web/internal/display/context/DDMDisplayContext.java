@@ -315,18 +315,19 @@ public class DDMDisplayContext {
 
 		return CreationMenuBuilder.addPrimaryDropdownItem(
 			dropdownItem -> {
-				PortletURL redirect = _renderResponse.createRenderURL();
+				PortletURL redirectURL = _renderResponse.createRenderURL();
 
-				redirect.setParameter("mvcPath", "/select_structure.jsp");
-				redirect.setParameter("classPK", String.valueOf(getClassPK()));
-				redirect.setParameter(
+				redirectURL.setParameter("mvcPath", "/select_structure.jsp");
+				redirectURL.setParameter(
+					"classPK", String.valueOf(getClassPK()));
+				redirectURL.setParameter(
 					"eventName",
 					ParamUtil.getString(
 						_renderRequest, "eventName", "selectStructure"));
 
 				dropdownItem.setHref(
 					_renderResponse.createRenderURL(), "mvcPath",
-					"/edit_structure.jsp", "redirect", redirect, "groupId",
+					"/edit_structure.jsp", "redirect", redirectURL, "groupId",
 					String.valueOf(_ddmWebRequestHelper.getScopeGroupId()));
 
 				dropdownItem.setLabel(
@@ -392,16 +393,16 @@ public class DDMDisplayContext {
 			return null;
 		}
 
-		PortletURL redirect = _renderResponse.createRenderURL();
+		PortletURL redirectURL = _renderResponse.createRenderURL();
 
-		redirect.setParameter("mvcPath", "/view.jsp");
-		redirect.setParameter(
+		redirectURL.setParameter("mvcPath", "/view.jsp");
+		redirectURL.setParameter(
 			"groupId", String.valueOf(_ddmWebRequestHelper.getScopeGroupId()));
 
 		PortletURL addTemplateURL = _renderResponse.createRenderURL();
 
 		addTemplateURL.setParameter("mvcPath", "/edit_structure.jsp");
-		addTemplateURL.setParameter("redirect", redirect.toString());
+		addTemplateURL.setParameter("redirect", redirectURL.toString());
 		addTemplateURL.setParameter(
 			"groupId", String.valueOf(_ddmWebRequestHelper.getScopeGroupId()));
 

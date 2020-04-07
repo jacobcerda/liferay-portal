@@ -187,7 +187,7 @@ public class WorkflowTaskDisplayContext {
 	public String getAssignedTheTaskMessageKey(WorkflowLog workflowLog)
 		throws PortalException {
 
-		User user = _users.get(workflowLog.getUserId());
+		User user = _getUser(workflowLog.getUserId());
 
 		if (user.isMale()) {
 			return "x-assigned-the-task-to-himself";
@@ -202,7 +202,8 @@ public class WorkflowTaskDisplayContext {
 		return new Object[] {
 			HtmlUtil.escape(
 				PortalUtil.getUserName(
-					workflowLog.getAuditUserId(), StringPool.BLANK)),
+					workflowLog.getAuditUserId(),
+					String.valueOf(workflowLog.getAuditUserId()))),
 			HtmlUtil.escape(_getActorName(workflowLog))
 		};
 	}
@@ -353,7 +354,8 @@ public class WorkflowTaskDisplayContext {
 
 	public String getPreviousAssigneeMessageArguments(WorkflowLog workflowLog) {
 		String userName = PortalUtil.getUserName(
-			workflowLog.getPreviousUserId(), StringPool.BLANK);
+			workflowLog.getPreviousUserId(),
+			String.valueOf(workflowLog.getPreviousUserId()));
 
 		return HtmlUtil.escape(userName);
 	}
@@ -459,7 +461,8 @@ public class WorkflowTaskDisplayContext {
 		return new Object[] {
 			HtmlUtil.escape(
 				PortalUtil.getUserName(
-					workflowLog.getAuditUserId(), StringPool.BLANK)),
+					workflowLog.getAuditUserId(),
+					String.valueOf(workflowLog.getAuditUserId()))),
 			HtmlUtil.escape(
 				LanguageUtil.get(
 					_workflowTaskRequestHelper.getRequest(),
@@ -487,8 +490,11 @@ public class WorkflowTaskDisplayContext {
 		return HtmlUtil.escape(workflowTask.getName());
 	}
 
-	public Object getTaskUpdateMessageArguments(WorkflowLog workflowLog) {
-		return HtmlUtil.escape(_getActorName(workflowLog));
+	public String getTaskUpdateMessageArguments(WorkflowLog workflowLog) {
+		return HtmlUtil.escape(
+			PortalUtil.getUserName(
+				workflowLog.getAuditUserId(),
+				String.valueOf(workflowLog.getAuditUserId())));
 	}
 
 	public int getTotalItems() throws PortalException {
@@ -507,7 +513,10 @@ public class WorkflowTaskDisplayContext {
 
 	public Object getTransitionMessageArguments(WorkflowLog workflowLog) {
 		return new Object[] {
-			HtmlUtil.escape(_getActorName(workflowLog)),
+			HtmlUtil.escape(
+				PortalUtil.getUserName(
+					workflowLog.getAuditUserId(),
+					String.valueOf(workflowLog.getAuditUserId()))),
 			HtmlUtil.escape(workflowLog.getPreviousState()),
 			HtmlUtil.escape(
 				LanguageUtil.get(
@@ -526,7 +535,7 @@ public class WorkflowTaskDisplayContext {
 	}
 
 	public String getUserFullName(WorkflowLog workflowLog) {
-		User user = _users.get(workflowLog.getUserId());
+		User user = _getUser(workflowLog.getUserId());
 
 		return HtmlUtil.escape(user.getFullName());
 	}
@@ -594,7 +603,8 @@ public class WorkflowTaskDisplayContext {
 
 	public String getWorkflowTaskAssigneeUserName(WorkflowTask workflowTask) {
 		return PortalUtil.getUserName(
-			workflowTask.getAssigneeUserId(), StringPool.BLANK);
+			workflowTask.getAssigneeUserId(),
+			String.valueOf(workflowTask.getAssigneeUserId()));
 	}
 
 	public String getWorkflowTaskRandomId() {
@@ -628,7 +638,7 @@ public class WorkflowTaskDisplayContext {
 			_workflowTaskRequestHelper.getUserId(), searchTerms.getKeywords(),
 			new String[] {searchTerms.getKeywords()},
 			_getAssetType(searchTerms.getKeywords()), null, null, null, null,
-			_getCompleted(), searchByUserRoles, null, false);
+			null, _getCompleted(), searchByUserRoles, null, null, false);
 
 		_workflowTaskSearch.setTotal(total);
 
@@ -637,7 +647,7 @@ public class WorkflowTaskDisplayContext {
 			_workflowTaskRequestHelper.getUserId(), searchTerms.getKeywords(),
 			new String[] {searchTerms.getKeywords()},
 			_getAssetType(searchTerms.getKeywords()), null, null, null, null,
-			_getCompleted(), searchByUserRoles, null, false,
+			null, _getCompleted(), searchByUserRoles, null, null, false,
 			_workflowTaskSearch.getStart(), _workflowTaskSearch.getEnd(),
 			_workflowTaskSearch.getOrderByComparator());
 
@@ -697,15 +707,11 @@ public class WorkflowTaskDisplayContext {
 	}
 
 	public boolean isAuditUser(WorkflowLog workflowLog) {
-		User user = null;
-
-		if (workflowLog.getUserId() != 0) {
-			user = _users.get(workflowLog.getUserId());
+		if (workflowLog.getUserId() == 0) {
+			return false;
 		}
 
-		if ((user != null) &&
-			(workflowLog.getAuditUserId() == user.getUserId())) {
-
+		if (workflowLog.getAuditUserId() == workflowLog.getUserId()) {
 			return true;
 		}
 
@@ -737,13 +743,9 @@ public class WorkflowTaskDisplayContext {
 				LanguageUtil.getLanguageId(_httpServletRequest));
 		}
 		else if (workflowLog.getUserId() != 0) {
-			User user = _getUser(workflowLog.getUserId());
-
-			if (user == null) {
-				return String.valueOf(workflowLog.getUserId());
-			}
-
-			return user.getFullName();
+			return PortalUtil.getUserName(
+				workflowLog.getUserId(),
+				String.valueOf(workflowLog.getUserId()));
 		}
 
 		return StringPool.BLANK;

@@ -62,9 +62,9 @@ definition {
 		}
 
 		AssertClick(
-			key_breadcrumbName = "sites",
+			key_breadcrumbName = "Sites and Libraries",
 			locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
-			value1 = "sites");
+			value1 = "Sites and Libraries");
 
 		AssertClick(
 			key_groupTab = "${workspacesType}",
@@ -226,7 +226,7 @@ definition {
 
 		ItemSelector.changeWorkspaces(
 			navTab = "${navTab}",
-			workspacesType = "Repository");
+			workspacesType = "Asset Library");
 
 		LexiconCard.clickCard(card = "${depotName}");
 
@@ -255,9 +255,9 @@ definition {
 			locator1 = "TextInput#FILE",
 			value1 = "${uploadFileName}");
 
-		Pause(locator1 = "3000");
+		Pause(locator1 = "5000");
 
-		AssertElementPresent.assertVisible(
+		AssertElementPresent.pauseAssertVisible(
 			locator1 = "ItemSelector#ADD_BUTTON",
 			value1 = "Add");
 

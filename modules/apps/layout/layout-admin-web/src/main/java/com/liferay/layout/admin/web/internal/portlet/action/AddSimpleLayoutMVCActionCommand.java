@@ -113,7 +113,7 @@ public class AddSimpleLayoutMVCActionCommand
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			Layout.class.getName(), actionRequest);
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			PropertiesParamUtil.getProperties(
 				actionRequest, "TypeSettingsProperties--");
 
@@ -123,8 +123,8 @@ public class AddSimpleLayoutMVCActionCommand
 			Layout layout = _layoutService.addLayout(
 				groupId, privateLayout, parentLayoutId, nameMap,
 				new HashMap<>(), new HashMap<>(), new HashMap<>(),
-				new HashMap<>(), type, typeSettingsProperties.toString(), false,
-				masterLayoutPlid, new HashMap<>(), serviceContext);
+				new HashMap<>(), type, typeSettingsUnicodeProperties.toString(),
+				false, masterLayoutPlid, new HashMap<>(), serviceContext);
 
 			LayoutTypePortlet layoutTypePortlet =
 				(LayoutTypePortlet)layout.getLayoutType();
@@ -137,7 +137,7 @@ public class AddSimpleLayoutMVCActionCommand
 				groupId, privateLayout, layout.getLayoutId(),
 				layout.getTypeSettings());
 
-			_actionUtil.updateLookAndFeel(
+			ActionUtil.updateLookAndFeel(
 				actionRequest, themeDisplay.getCompanyId(), liveGroupId,
 				stagingGroupId, privateLayout, layout.getLayoutId(),
 				layout.getTypeSettingsProperties());
@@ -181,9 +181,6 @@ public class AddSimpleLayoutMVCActionCommand
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AddSimpleLayoutMVCActionCommand.class);
-
-	@Reference
-	private ActionUtil _actionUtil;
 
 	@Reference
 	private LayoutExceptionRequestHandler _layoutExceptionRequestHandler;

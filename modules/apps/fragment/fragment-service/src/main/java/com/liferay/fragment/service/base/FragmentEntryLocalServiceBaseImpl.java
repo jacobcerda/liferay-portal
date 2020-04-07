@@ -24,6 +24,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.fragment.service.persistence.FragmentCollectionPersistence;
+import com.liferay.fragment.service.persistence.FragmentEntryFinder;
 import com.liferay.fragment.service.persistence.FragmentEntryLinkFinder;
 import com.liferay.fragment.service.persistence.FragmentEntryLinkPersistence;
 import com.liferay.fragment.service.persistence.FragmentEntryPersistence;
@@ -53,6 +54,7 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -453,6 +455,10 @@ public abstract class FragmentEntryLocalServiceBaseImpl
 			(FragmentEntry)persistedModel);
 	}
 
+	public BasePersistence<FragmentEntry> getBasePersistence() {
+		return fragmentEntryPersistence;
+	}
+
 	/**
 	 * @throws PortalException
 	 */
@@ -609,6 +615,9 @@ public abstract class FragmentEntryLocalServiceBaseImpl
 
 	@Reference
 	protected FragmentEntryPersistence fragmentEntryPersistence;
+
+	@Reference
+	protected FragmentEntryFinder fragmentEntryFinder;
 
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService

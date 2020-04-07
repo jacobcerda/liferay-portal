@@ -20,18 +20,26 @@ export default function(
 	editableId,
 	processorType,
 	languageId,
-	segmentsExperienceId
+	prefixedSegmentsExperienceId,
+	getFieldValue = InfoItemService.getAssetFieldValue
 ) {
 	const editableValue = editableValues[processorType][editableId];
 
 	let valuePromise;
 
 	if (editableIsMappedToInfoItem(editableValue)) {
-		valuePromise = getMappingValue({
+		valuePromise = getFieldValue({
 			classNameId: editableValue.classNameId,
 			classPK: editableValue.classPK,
+			collectionFieldId: editableValue.collectionFieldId,
 			fieldId: editableValue.fieldId,
 			languageId,
+		}).catch(() => {
+			return selectEditableValueContent(
+				editableValue,
+				languageId,
+				prefixedSegmentsExperienceId
+			);
 		});
 	}
 	else {
@@ -39,7 +47,7 @@ export default function(
 			selectEditableValueContent(
 				editableValue,
 				languageId,
-				segmentsExperienceId
+				prefixedSegmentsExperienceId
 			)
 		);
 	}
@@ -47,13 +55,19 @@ export default function(
 	let configPromise;
 
 	if (editableIsMappedToInfoItem(editableValue.config)) {
-		configPromise = getMappingValue({
+		configPromise = getFieldValue({
 			classNameId: editableValue.config.classNameId,
 			classPK: editableValue.config.classPK,
+			collectionFieldId: editableValue.config.collectionFieldId,
 			fieldId: editableValue.config.fieldId,
-		}).then(href => {
-			return {...editableValue.config, href};
-		});
+			languageId,
+		})
+			.then(href => {
+				return {...editableValue.config, href};
+			})
+			.catch(() => {
+				return {...editableValue.config};
+			});
 	}
 	else {
 		configPromise = Promise.resolve(editableValue.config);
@@ -65,15 +79,12 @@ export default function(
 function selectEditableValueContent(
 	editableValue,
 	languageId,
-	segmentsExperienceId
+	prefixedSegmentsExperienceId
 ) {
 	let content = editableValue;
 
-	if (content[segmentsExperienceId]) {
-		content = content[segmentsExperienceId];
-	}
-	else if (content[config.defaultSegmentsExperienceId]) {
-		content = content[config.defaultSegmentsExperienceId];
+	if (content[prefixedSegmentsExperienceId]) {
+		content = content[prefixedSegmentsExperienceId];
 	}
 
 	if (content[languageId]) {
@@ -93,27 +104,9 @@ function selectEditableValueContent(
 function editableIsMappedToInfoItem(editableValue) {
 	return (
 		editableValue &&
-		editableValue.classNameId &&
-		editableValue.classPK &&
-		editableValue.fieldId
+		((editableValue.classNameId &&
+			editableValue.classPK &&
+			editableValue.fieldId) ||
+			editableValue.collectionFieldId)
 	);
-}
-
-function getMappingValue({
-	classNameId,
-	classPK,
-	fieldId,
-	languageId = undefined,
-}) {
-	return InfoItemService.getAssetFieldValue({
-		classNameId,
-		classPK,
-		fieldId,
-		languageId,
-		onNetworkStatus: () => {},
-	}).then(response => {
-		const {fieldValue = ''} = response;
-
-		return fieldValue;
-	});
 }

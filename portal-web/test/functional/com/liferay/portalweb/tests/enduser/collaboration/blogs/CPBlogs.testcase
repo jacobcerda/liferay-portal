@@ -222,6 +222,8 @@ definition {
 
 		LexiconEntry.gotoAdd();
 
+		Pause(locator1 = "5000");
+
 		BlogsNavigator.gotoSelectFile();
 
 		ItemSelector.uploadFile(
@@ -268,6 +270,8 @@ definition {
 
 	@priority = "5"
 	test DeleteBlogsEntries {
+		property portal.acceptance = "true";
+
 		JSONBlog.addEntry(
 			entryContent = "Blogs Entry1 Content",
 			entryTitle = "Blogs Entry1 Title");
@@ -480,6 +484,8 @@ definition {
 
 	@priority = "3"
 	test SearchDMImagesViaItemSelector {
+		property portal.upstream = "quarantine";
+
 		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntryWithUploadedCoverImage(

@@ -34,6 +34,10 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 @Component(immediate = true, service = DataDefinitionContentTypeTracker.class)
 public class DataDefinitionContentTypeTracker {
 
+	public Long getClassNameId(String contentType) {
+		return _classNameIds.get(contentType);
+	}
+
 	public DataDefinitionContentType getDataDefinitionContentType(
 		long classNameId) {
 
@@ -59,12 +63,17 @@ public class DataDefinitionContentTypeTracker {
 			return;
 		}
 
+		String contentType = MapUtil.getString(properties, "content.type");
+
+		_classNameIds.put(
+			contentType, dataDefinitionContentType.getClassNameId());
+
 		_dataDefinitionContentTypesByClassNameId.put(
 			dataDefinitionContentType.getClassNameId(),
 			dataDefinitionContentType);
+
 		_dataDefinitionContentTypesByContentType.put(
-			MapUtil.getString(properties, "content.type"),
-			dataDefinitionContentType);
+			contentType, dataDefinitionContentType);
 	}
 
 	@Deactivate
@@ -76,12 +85,16 @@ public class DataDefinitionContentTypeTracker {
 		DataDefinitionContentType dataDefinitionContentType,
 		Map<String, Object> properties) {
 
+		String contentType = MapUtil.getString(properties, "content.type");
+
 		_dataDefinitionContentTypesByClassNameId.remove(
-			dataDefinitionContentType.getClassNameId());
-		_dataDefinitionContentTypesByContentType.remove(
-			MapUtil.getString(properties, "content.type"));
+			_classNameIds.get(contentType));
+
+		_classNameIds.remove(contentType);
+		_dataDefinitionContentTypesByContentType.remove(contentType);
 	}
 
+	private final Map<String, Long> _classNameIds = new TreeMap<>();
 	private final Map<Long, DataDefinitionContentType>
 		_dataDefinitionContentTypesByClassNameId = new TreeMap<>();
 	private final Map<String, DataDefinitionContentType>

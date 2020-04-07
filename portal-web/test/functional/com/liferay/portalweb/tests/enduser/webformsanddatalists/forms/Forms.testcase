@@ -98,6 +98,7 @@ definition {
 	test AddElementSetsWithTranslation {
 		property test.name.skip.portal.instance = "Forms#AddElementSetsWithTranslation";
 		property testray.component.names = "Training";
+		property portal.upstream = "quarantine";
 
 		Navigator.openURL();
 
@@ -320,6 +321,7 @@ definition {
 
 	@priority = "5"
 	test AddFormInGlobal {
+		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "Forms#AddFormInGlobal";
 		property portal.acceptance = "true";
 		property testray.component.names = "Training";
@@ -1147,6 +1149,7 @@ definition {
 	@priority = "5"
 	test DeletePages {
 		property test.name.skip.portal.instance = "Forms#DeletePages";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -1348,6 +1351,8 @@ definition {
 	@priority = "4"
 	test EditAllFormFieldNames {
 		property test.name.skip.portal.instance = "Forms#EditAllFormFieldNames";
+		property portal.upstream = "quarantine";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -2020,10 +2025,11 @@ definition {
 	@description = "This is a use case for LPS-61740"
 	@priority = "5"
 	test PreviewAndPublishForm {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
+		property portal.upstream = "quarantine";
 		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
-		property environment.acceptance = "true";
+		property environment.acceptance = "quarantine";
 
 		Navigator.openURL();
 
@@ -3228,6 +3234,8 @@ definition {
 			fieldLabel = "Text",
 			fieldName = "Text");
 
+		Pause(locator1 = "5000");
+
 		FormFields.editText(
 			fieldName = "Text",
 			fieldValue = "Text Field Value");
@@ -3751,7 +3759,8 @@ definition {
 	@priority = "5"
 	test SubmitFormWithRequiredTextField {
 		property test.name.skip.portal.instance = "Forms#SubmitFormWithRequiredTextField";
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
+		property portal.upstream = "quarantine";
 		property testray.component.names = "Training";
 
 		Navigator.openURL();
@@ -4056,6 +4065,7 @@ definition {
 	@priority = "2"
 	test ViewAltSuccessPagePagination {
 		property test.name.skip.portal.instance = "Forms#ViewAltSuccessPagePagination";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -4122,6 +4132,8 @@ definition {
 	@priority = "3"
 	test ViewBlankLabelWhenAddingNewField {
 		property test.name.skip.portal.instance = "Forms#ViewBlankLabelWhenAddingNewField";
+		property portal.upstream = "quarantine";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -4417,6 +4429,8 @@ definition {
 	@priority = "4"
 	test ViewRepeatableTextFieldLabel {
 		property test.name.skip.portal.instance = "Forms#ViewRepeatableTextFieldLabel";
+		property portal.upstream = "quarantine";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(

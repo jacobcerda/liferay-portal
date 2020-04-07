@@ -16,6 +16,11 @@ components:
                     type: array
                 dataDefinitionKey:
                     type: string
+                dataRules:
+                    items:
+                        $ref: "#/components/schemas/DataRule"
+                    type:
+                        array
                 dateCreated:
                     format: date-time
                     type: string
@@ -108,6 +113,11 @@ components:
                 dataLayoutPages:
                     items:
                         $ref: "#/components/schemas/DataLayoutPage"
+                    type:
+                        array
+                dataRules:
+                    items:
+                        $ref: "#/components/schemas/DataRule"
                     type:
                         array
                 dateCreated:
@@ -243,6 +253,21 @@ components:
                 siteId:
                     format: int64
                     type: integer
+            type: object
+        DataRule:
+            properties:
+                actions:
+                    items:
+                        type: object
+                    type:
+                        array
+                conditions:
+                    items:
+                        type: object
+                    type:
+                        array
+                logicalOperator:
+                    type: string
             type: object
 info:
     description:
@@ -435,6 +460,23 @@ paths:
                         ""
             tags: ["DataDefinition"]
     "/data-definitions/{dataDefinitionId}/data-layouts":
+        delete:
+            operationId: deleteDataLayoutsDataDefinition
+            parameters:
+                - in: path
+                  name: dataDefinitionId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+                    description:
+                        ""
+            tags: ["DataLayout"]
         get:
             operationId: getDataDefinitionDataLayoutsPage
             parameters:

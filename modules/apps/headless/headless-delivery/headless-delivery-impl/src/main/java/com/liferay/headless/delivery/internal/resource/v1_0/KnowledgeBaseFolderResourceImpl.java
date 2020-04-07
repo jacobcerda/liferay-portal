@@ -73,7 +73,18 @@ public class KnowledgeBaseFolderResourceImpl
 			parentKnowledgeBaseFolderId);
 
 		return Page.of(
-			_getKnowledgeBaseFolderListActions(kbFolder.getGroupId()),
+			HashMapBuilder.<String, Map<String, String>>put(
+				"create",
+				addAction(
+					"ADD_KB_FOLDER",
+					"postKnowledgeBaseFolderKnowledgeBaseFolder",
+					"com.liferay.knowledge.base.admin", kbFolder.getGroupId())
+			).put(
+				"get",
+				addAction(
+					"VIEW", "getKnowledgeBaseFolderKnowledgeBaseFoldersPage",
+					"com.liferay.knowledge.base.admin", kbFolder.getGroupId())
+			).build(),
 			transform(
 				_kbFolderService.getKBFolders(
 					kbFolder.getGroupId(), parentKnowledgeBaseFolderId,
@@ -90,7 +101,17 @@ public class KnowledgeBaseFolderResourceImpl
 		throws Exception {
 
 		return Page.of(
-			_getSiteListActions(siteId),
+			HashMapBuilder.<String, Map<String, String>>put(
+				"create",
+				addAction(
+					"ADD_KB_FOLDER", "postSiteKnowledgeBaseFolder",
+					"com.liferay.knowledge.base.admin", siteId)
+			).put(
+				"get",
+				addAction(
+					"VIEW", "getSiteKnowledgeBaseFoldersPage",
+					"com.liferay.knowledge.base.admin", siteId)
+			).build(),
 			transform(
 				_kbFolderService.getKBFolders(
 					siteId, 0, pagination.getStartPosition(),
@@ -155,16 +176,6 @@ public class KnowledgeBaseFolderResourceImpl
 					null)));
 	}
 
-	private Map<String, Map<String, String>> _getActions(KBFolder kbFolder) {
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"delete", addAction("DELETE", kbFolder, "deleteKnowledgeBaseFolder")
-		).put(
-			"get", addAction("VIEW", kbFolder, "getKnowledgeBaseFolder")
-		).put(
-			"replace", addAction("UPDATE", kbFolder, "putKnowledgeBaseFolder")
-		).build();
-	}
-
 	private long _getClassNameId() {
 		return _portal.getClassNameId(KBFolder.class.getName());
 	}
@@ -178,36 +189,6 @@ public class KnowledgeBaseFolderResourceImpl
 			contextAcceptLanguage.getPreferredLocale());
 	}
 
-	private Map<String, Map<String, String>> _getKnowledgeBaseFolderListActions(
-		Long groupId) {
-
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"create",
-			addAction(
-				"ADD_KB_FOLDER", "postKnowledgeBaseFolderKnowledgeBaseFolder",
-				"com.liferay.knowledge.base.admin", groupId)
-		).put(
-			"get",
-			addAction(
-				"VIEW", "getKnowledgeBaseFolderKnowledgeBaseFoldersPage",
-				"com.liferay.knowledge.base.admin", groupId)
-		).build();
-	}
-
-	private Map<String, Map<String, String>> _getSiteListActions(Long siteId) {
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"create",
-			addAction(
-				"ADD_KB_FOLDER", "postSiteKnowledgeBaseFolder",
-				"com.liferay.knowledge.base.admin", siteId)
-		).put(
-			"get",
-			addAction(
-				"VIEW", "getSiteKnowledgeBaseFoldersPage",
-				"com.liferay.knowledge.base.admin", siteId)
-		).build();
-	}
-
 	private KnowledgeBaseFolder _toKnowledgeBaseFolder(KBFolder kbFolder)
 		throws Exception {
 
@@ -217,7 +198,15 @@ public class KnowledgeBaseFolderResourceImpl
 
 		return new KnowledgeBaseFolder() {
 			{
-				actions = _getActions(kbFolder);
+				actions = HashMapBuilder.<String, Map<String, String>>put(
+					"delete",
+					addAction("DELETE", kbFolder, "deleteKnowledgeBaseFolder")
+				).put(
+					"get", addAction("VIEW", kbFolder, "getKnowledgeBaseFolder")
+				).put(
+					"replace",
+					addAction("UPDATE", kbFolder, "putKnowledgeBaseFolder")
+				).build();
 				creator = CreatorUtil.toCreator(
 					_portal, _userLocalService.getUser(kbFolder.getUserId()));
 				customFields = CustomFieldsUtil.toCustomFields(

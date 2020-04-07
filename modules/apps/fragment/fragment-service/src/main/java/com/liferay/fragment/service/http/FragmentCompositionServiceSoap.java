@@ -275,6 +275,26 @@ public class FragmentCompositionServiceSoap {
 	}
 
 	public static com.liferay.fragment.model.FragmentCompositionSoap
+			moveFragmentComposition(
+				long fragmentCompositionId, long fragmentCollectionId)
+		throws RemoteException {
+
+		try {
+			com.liferay.fragment.model.FragmentComposition returnValue =
+				FragmentCompositionServiceUtil.moveFragmentComposition(
+					fragmentCompositionId, fragmentCollectionId);
+
+			return com.liferay.fragment.model.FragmentCompositionSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.fragment.model.FragmentCompositionSoap
 			updateFragmentComposition(
 				long fragmentCompositionId, long previewFileEntryId)
 		throws RemoteException {
@@ -283,6 +303,25 @@ public class FragmentCompositionServiceSoap {
 			com.liferay.fragment.model.FragmentComposition returnValue =
 				FragmentCompositionServiceUtil.updateFragmentComposition(
 					fragmentCompositionId, previewFileEntryId);
+
+			return com.liferay.fragment.model.FragmentCompositionSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.fragment.model.FragmentCompositionSoap
+			updateFragmentComposition(long fragmentCompositionId, String name)
+		throws RemoteException {
+
+		try {
+			com.liferay.fragment.model.FragmentComposition returnValue =
+				FragmentCompositionServiceUtil.updateFragmentComposition(
+					fragmentCompositionId, name);
 
 			return com.liferay.fragment.model.FragmentCompositionSoap.
 				toSoapModel(returnValue);

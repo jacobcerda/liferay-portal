@@ -963,6 +963,22 @@ components:
             required:
                 - name
             type: object
+        DropZoneDefinition:
+            properties:
+                fragmentSettings:
+                    oneOf:
+                        - $ref: "#/components/schemas/FragmentSettingsAllowed"
+                        - $ref: "#/components/schemas/FragmentSettingsUnallowed"
+            type: object
+        Fragment:
+            properties:
+                collectionName:
+                    type: string
+                key:
+                    type: string
+                name:
+                    type: string
+            type: object
         FragmentField:
             properties:
                 id:
@@ -983,7 +999,8 @@ components:
             properties:
                 html:
                     oneOf:
-                        - $ref: "#/components/schemas/InlineValue"
+                        - $ref: "#/components/schemas/FragmentInlineValue"
+                        - $ref: "#/components/schemas/FragmentMappedValue"
             type: object
         FragmentFieldImage:
             properties:
@@ -998,28 +1015,35 @@ components:
                     $ref: "#/components/schemas/FragmentLink"
                 text:
                     oneOf:
-                        - $ref: "#/components/schemas/InlineValue"
+                        - $ref: "#/components/schemas/FragmentInlineValue"
+                        - $ref: "#/components/schemas/FragmentMappedValue"
             type: object
         FragmentImage:
             properties:
+                description:
+                    oneOf:
+                        - $ref: "#/components/schemas/FragmentInlineValue"
                 title:
                     oneOf:
-                        - $ref: "#/components/schemas/InlineValue"
+                        - $ref: "#/components/schemas/FragmentInlineValue"
                 url:
                     oneOf:
-                        - $ref: "#/components/schemas/InlineValue"
+                        - $ref: "#/components/schemas/FragmentInlineValue"
+                        - $ref: "#/components/schemas/FragmentMappedValue"
+            type: object
+        FragmentInlineValue:
+            properties:
+                value:
+                    type: string
+                value_i18n:
+                    additionalProperties:
+                        type: string
+                    type: object
             type: object
         FragmentInstanceDefinition:
             properties:
                 fragment:
-                    properties:
-                        fragmentCollectionName:
-                            type: string
-                        fragmentKey:
-                            type: string
-                        fragmentName:
-                            type: string
-                    type: object
+                    $ref: "#/components/schemas/Fragment"
                 fragmentConfig:
                     additionalProperties:
                         type: object
@@ -1031,25 +1055,40 @@ components:
             type: object
         FragmentLink:
             properties:
+                href:
+                    oneOf:
+                        - $ref: "#/components/schemas/FragmentInlineValue"
+                        - $ref: "#/components/schemas/FragmentMappedValue"
                 target:
                     enum: [Blank, Parent, Self, Top]
                     type: string
-                value:
-                    oneOf:
-                        - $ref: "#/components/schemas/InlineLink"
-        InlineLink:
+        FragmentMappedValue:
+            description:
+                ""
             properties:
-                href:
-                    type: string
-            type: object
-        InlineValue:
-            properties:
-                value:
-                    type: string
-                value_i18n:
-                    additionalProperties:
-                        type: string
+                defaultValue:
+                    $ref: "#/components/schemas/FragmentInlineValue"
+                mapping:
+                    properties:
+                        fieldKey:
+                            type: string
+                        itemKey:
+                            type: string
                     type: object
+            type: object
+        FragmentSettingsAllowed:
+            properties:
+                allowedFragments:
+                    items:
+                        $ref: "#/components/schemas/Fragment"
+                    type: array
+            type: object
+        FragmentSettingsUnallowed:
+            properties:
+                unallowedFragments:
+                    items:
+                        $ref: "#/components/schemas/Fragment"
+                    type: array
             type: object
         KnowledgeBaseArticle:
             description:
@@ -1321,6 +1360,15 @@ components:
                     writeOnly: true
             required:
                 - name
+            type: object
+        MasterPage:
+            description:
+                ""
+            properties:
+                key:
+                    type: string
+                name:
+                    type: string
             type: object
         MessageBoardAttachment:
             description:
@@ -1777,10 +1825,7 @@ components:
                         javascript:
                             type: string
                         masterPage:
-                            properties:
-                                name:
-                                    type: string
-                            type: object
+                            $ref: "#/components/schemas/MasterPage"
                         themeName:
                             type: string
                         themeSettings:
@@ -1792,6 +1837,7 @@ components:
                 definition:
                     oneOf:
                         - $ref: "#/components/schemas/ColumnDefinition"
+                        - $ref: "#/components/schemas/DropZoneDefinition"
                         - $ref: "#/components/schemas/FragmentInstanceDefinition"
                         - $ref: "#/components/schemas/RootDefinition"
                         - $ref: "#/components/schemas/RowDefinition"
@@ -1970,7 +2016,7 @@ components:
             type: object
         SectionDefinition:
             properties:
-                backgroundColorCssClass:
+                backgroundColor:
                     type: string
                 backgroundImage:
                     $ref: "#/components/schemas/FragmentImage"

@@ -12,7 +12,7 @@
  * details.
  */
 
-import {debounce} from 'frontend-js-web';
+import {ItemSelectorDialog, debounce} from 'frontend-js-web';
 
 import {config} from '../config/index';
 
@@ -65,8 +65,42 @@ export default function getAlloyEditorProcessor(
 			_element = element;
 
 			const editorName = `${config.portletNamespace}FragmentEntryLinkEditable_${element.id}`;
-			_editor = AlloyEditor.editable(getEditorWrapper(element), {
+
+			const editorWrapper = getEditorWrapper(element);
+
+			editorWrapper.setAttribute('id', editorName);
+			editorWrapper.setAttribute('name', editorName);
+
+			_editor = AlloyEditor.editable(editorWrapper, {
 				...editorConfig,
+
+				documentBrowseLinkCallback: (
+					editor,
+					url,
+					changeLinkCallback
+				) => {
+					const itemSelectorDialog = new ItemSelectorDialog({
+						eventName: editor.title + 'selectItem',
+						singleSelect: true,
+						title: Liferay.Language.get('select-item'),
+						url,
+					});
+
+					itemSelectorDialog.open();
+
+					itemSelectorDialog.on('selectedItemChange', event => {
+						const selectedItem = event.selectedItem;
+
+						if (selectedItem) {
+							changeLinkCallback(selectedItem);
+						}
+					});
+				},
+
+				documentBrowseLinkUrl: editorConfig.documentBrowseLinkUrl.replace(
+					'_EDITOR_NAME_',
+					editorName
+				),
 
 				filebrowserImageBrowseLinkUrl: editorConfig.filebrowserImageBrowseLinkUrl.replace(
 					'_EDITOR_NAME_',
@@ -77,6 +111,8 @@ export default function getAlloyEditorProcessor(
 					'_EDITOR_NAME_',
 					editorName
 				),
+
+				title: editorName,
 			});
 
 			const nativeEditor = _editor.get('nativeEditor');

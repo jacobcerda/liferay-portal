@@ -74,6 +74,8 @@ definition {
 			assetType = "${assetType}",
 			scopeSite = "${scopeSite}");
 
+		Pause(locator1 = "3000");
+
 		SelectFrame(value1 = "relative=top");
 
 		var key_assetTitle = "${assetTitle}";
@@ -171,6 +173,8 @@ definition {
 	}
 
 	macro addNullCP {
+		AssertElementNotPresent(locator1 = "TextInput#REQUIRED_ALERT");
+
 		if (isSet(webContentContent)) {
 			AlloyEditor.addContent(content = "${webContentContent}");
 		}
@@ -179,12 +183,7 @@ definition {
 			locator1 = "Button#PUBLISH",
 			value1 = "Publish");
 
-		Alert.viewSuccessMessage();
-
-		AssertTextEquals.assertPartialText(
-			key_webContentTitle = "Untitled",
-			locator1 = "WC#ENTRY_LIST_TITLE",
-			value1 = "Untitled");
+		AssertElementPresent(locator1 = "TextInput#REQUIRED_ALERT");
 	}
 
 	macro addPGViaAP {
@@ -962,6 +961,8 @@ definition {
 	}
 
 	macro editNullCP {
+		AssertElementNotPresent(locator1 = "TextInput#REQUIRED_ALERT");
+
 		WebContent.addCP(webContentTitle = "");
 
 		if (isSet(webContentContent)) {
@@ -972,12 +973,7 @@ definition {
 			locator1 = "Button#PUBLISH",
 			value1 = "Publish");
 
-		Alert.viewSuccessMessage();
-
-		AssertTextEquals.assertPartialText(
-			key_webContentTitle = "Untitled",
-			locator1 = "WC#ENTRY_LIST_TITLE",
-			value1 = "Untitled");
+		AssertElementPresent(locator1 = "TextInput#REQUIRED_ALERT");
 	}
 
 	macro editPGViaWCD {
@@ -1020,9 +1016,9 @@ definition {
 	macro editViaContentPanel {
 		PageEditor.gotoTab(tabName = "Contents");
 
-		LexiconEntry.gotoFragmentEllipsisMenuItem(
+		LexiconEntry.gotoFragmentPageContentEllipsisMenuItem(
 			menuItem = "Edit",
-			webContentTitle = "${webContentTitleEdit}");
+			rowEntry = "${webContentTitle}");
 
 		WebContent.addCP(webContentTitle = "${webContentTitleEdit}");
 
@@ -1130,6 +1126,8 @@ definition {
 
 		SelectFrame(locator1 = "IFrame#DIALOG");
 
+		Pause(locator1 = "3000");
+
 		WebContentFolder.selectFolderTreeNode(nodeName = "${folderName}");
 
 		SelectFrameTop();
@@ -1158,6 +1156,8 @@ definition {
 
 		SelectFrame(locator1 = "IFrame#DIALOG");
 
+		Pause(locator1 = "3000");
+
 		WebContentFolder.selectFolderTreeNode(nodeName = "${folderName}");
 
 		SelectFrame(value1 = "relative=top");
@@ -1184,6 +1184,8 @@ definition {
 			value1 = "Select");
 
 		SelectFrame(locator1 = "IFrame#DIALOG");
+
+		Pause(locator1 = "3000");
 
 		WebContentFolder.selectFolderTreeNode(nodeName = "${folderName}");
 
@@ -1337,7 +1339,7 @@ definition {
 	macro selectRepositoryWC {
 		var key_contentName = "${contentName}";
 
-		ItemSelector.changeWorkspaces(workspacesType = "Repository");
+		ItemSelector.changeWorkspaces(workspacesType = "Asset Library");
 
 		LexiconCard.clickCard(card = "${depotName}");
 

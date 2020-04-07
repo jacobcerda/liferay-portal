@@ -12,11 +12,16 @@
  * details.
  */
 
+import {getDataDefinitionField} from './utils/dataDefinition.es';
+
 export const ADD_CUSTOM_OBJECT_FIELD = 'ADD_CUSTOM_OBJECT_FIELD';
+export const ADD_DATA_LAYOUT_RULE = 'ADD_DATA_LAYOUT_RULE';
 export const DELETE_DATA_DEFINITION_FIELD = 'DELETE_DATA_DEFINITION_FIELD';
 export const DELETE_DATA_LAYOUT_FIELD = 'DELETE_DATA_LAYOUT_FIELD';
 export const EDIT_CUSTOM_OBJECT_FIELD = 'EDIT_CUSTOM_OBJECT_FIELD';
 export const EVALUATION_ERROR = 'EVALUATION_ERROR';
+export const SWITCH_SIDEBAR_PANEL = 'SWITCH_SIDEBAR_PANEL';
+export const UPDATE_CONFIG = 'UPDATE_CONFIG';
 export const UPDATE_FIELDSETS = 'UPDATE_FIELDSETS';
 export const UPDATE_FOCUSED_CUSTOM_OBJECT_FIELD =
 	'UPDATE_FOCUSED_CUSTOM_OBJECT_FIELD';
@@ -33,43 +38,70 @@ export const dropCustomObjectField = ({
 	dataDefinition,
 	dataDefinitionFieldName,
 	dataLayoutBuilder,
-	...payload
+	fieldName,
+	indexes,
+	parentFieldName,
 }) => {
-	const dataDefinitionField = dataDefinition.dataDefinitionFields.find(
-		({name}) => name === dataDefinitionFieldName
+	const dataDefinitionField = getDataDefinitionField(
+		dataDefinition,
+		dataDefinitionFieldName
 	);
-	const fieldType = dataLayoutBuilder.getFieldTypes().find(({name}) => {
-		return name === dataDefinitionField.fieldType;
-	});
-	const settingsContext = dataLayoutBuilder.getFieldSettingsContext(
+	const settingsContext = dataLayoutBuilder.getDDMFormFieldSettingsContext(
 		dataDefinitionField
 	);
 	const {label} = dataDefinitionField;
 
 	return {
-		...payload,
+		data: {
+			fieldName,
+			parentFieldName,
+		},
 		fieldType: {
-			...fieldType,
+			...dataLayoutBuilder.getFieldTypes().find(({name}) => {
+				return name === dataDefinitionField.fieldType;
+			}),
+			editable: true,
 			label: label[themeDisplay.getLanguageId()],
 			settingsContext,
 		},
+		indexes,
+		skipFieldNameGeneration: true,
 	};
 };
 
 export const dropLayoutBuilderField = ({
 	dataLayoutBuilder,
+	fieldName,
 	fieldTypeName,
-	...payload
+	indexes,
+	parentFieldName,
 }) => {
-	const fieldType = dataLayoutBuilder.getFieldTypes().find(({name}) => {
-		return name === fieldTypeName;
-	});
-
 	return {
-		...payload,
+		data: {
+			fieldName,
+			parentFieldName,
+		},
 		fieldType: {
-			...fieldType,
+			...dataLayoutBuilder.getFieldTypes().find(({name}) => {
+				return name === fieldTypeName;
+			}),
 			editable: true,
 		},
+		indexes,
+	};
+};
+
+export const dropFieldSet = ({
+	dataLayoutBuilder,
+	fieldName,
+	fieldSet,
+	indexes,
+	parentFieldName,
+}) => {
+	return {
+		fieldName,
+		fieldSet: dataLayoutBuilder.getDDMForm(fieldSet),
+		indexes,
+		parentFieldName,
 	};
 };

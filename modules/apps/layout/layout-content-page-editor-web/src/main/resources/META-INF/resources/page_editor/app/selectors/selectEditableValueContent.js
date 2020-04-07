@@ -23,7 +23,9 @@ export default function selectEditableValueContent(
 	processorType
 ) {
 	const {languageId} = state;
-	const segmentsExperienceId = selectPrefixedSegmentsExperienceId(state);
+	const prefixedSegmentsExperienceId = selectPrefixedSegmentsExperienceId(
+		state
+	);
 
 	const data = selectEditableValue(
 		state,
@@ -34,8 +36,8 @@ export default function selectEditableValueContent(
 
 	let content = data;
 
-	if (content[segmentsExperienceId]) {
-		content = content[segmentsExperienceId];
+	if (content[prefixedSegmentsExperienceId]) {
+		content = content[prefixedSegmentsExperienceId];
 	}
 
 	if (content[languageId]) {

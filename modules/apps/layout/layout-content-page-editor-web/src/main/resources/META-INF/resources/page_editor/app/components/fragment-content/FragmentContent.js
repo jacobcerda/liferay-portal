@@ -12,18 +12,20 @@
  * details.
  */
 
+import classNames from 'classnames';
 import {useIsMounted} from 'frontend-js-react-web';
 import {debounce} from 'frontend-js-web';
 import PropTypes from 'prop-types';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 
-import {BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/backgroundImageFragmentEntryProcessor';
+import {updateFragmentEntryLinkContent} from '../../actions/index';
 import {EDITABLE_FLOATING_TOOLBAR_BUTTONS} from '../../config/constants/editableFloatingToolbarButtons';
-import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/editableFragmentEntryProcessor';
-import Processors from '../../processors/index';
+import selectCanUpdateLayoutContent from '../../selectors/selectCanUpdateLayoutContent';
 import selectPrefixedSegmentsExperienceId from '../../selectors/selectPrefixedSegmentsExperienceId';
-import selectShowEditableFloatingToolbar from '../../selectors/selectShowEditableFloatingToolbar';
-import {useSelector} from '../../store/index';
+import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
+import FragmentService from '../../services/FragmentService';
+import {useDispatch, useSelector} from '../../store/index';
+import {useGetFieldValue} from '../CollectionItemContext';
 import UnsafeHTML from '../UnsafeHTML';
 import {
 	useEditableProcessorUniqueId,
@@ -40,25 +42,34 @@ import resolveEditableValue from './resolveEditableValue';
 
 const FragmentContent = React.forwardRef(
 	({fragmentEntryLinkId, itemId}, ref) => {
+		const dispatch = useDispatch();
 		const element = ref.current;
 		const isMounted = useIsMounted();
 		const editableProcessorUniqueId = useEditableProcessorUniqueId();
 		const setEditableProcessorUniqueId = useSetEditableProcessorUniqueId();
-		const showEditableFloatingToolbar = useSelector(
-			selectShowEditableFloatingToolbar
+		const canUpdateLayoutContent = useSelector(
+			selectCanUpdateLayoutContent
 		);
 
-		const [editableElements, setEditableElements] = useState([]);
+		const getFieldValue = useGetFieldValue();
 
-		const updateEditableElements = (parent = element) => {
-			setEditableElements(parent ? getAllEditables(parent) : []);
+		const [editables, setEditables] = useState([]);
+
+		const editableElements = useMemo(
+			() => editables.map(editable => editable.element),
+			[editables]
+		);
+
+		const updateEditables = (parent = element) => {
+			setEditables(parent ? getAllEditables(parent) : []);
 		};
 
 		const languageId = useSelector(state => state.languageId);
 
-		const segmentsExperienceId = useSelector(
+		const prefixedSegmentsExperienceId = useSelector(
 			selectPrefixedSegmentsExperienceId
 		);
+		const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
 
 		const defaultContent = useSelector(state =>
 			state.fragmentEntryLinks[fragmentEntryLinkId]
@@ -75,6 +86,21 @@ const FragmentContent = React.forwardRef(
 		const [content, setContent] = useState(defaultContent);
 
 		useEffect(() => {
+			FragmentService.renderFragmentEntryLinkContent({
+				fragmentEntryLinkId,
+				onNetworkStatus: dispatch,
+				segmentsExperienceId,
+			}).then(({content}) =>
+				dispatch(
+					updateFragmentEntryLinkContent({
+						content,
+						fragmentEntryLinkId,
+					})
+				)
+			);
+		}, [dispatch, fragmentEntryLinkId, segmentsExperienceId]);
+
+		useEffect(() => {
 			let element = document.createElement('div');
 			element.innerHTML = defaultContent;
 
@@ -85,43 +111,25 @@ const FragmentContent = React.forwardRef(
 			}, 50);
 
 			if (!editableProcessorUniqueId) {
-				Array.from(
-					element.querySelectorAll('[data-lfr-background-image-id]')
-				).map(editable => {
+				editables.forEach(editable => {
 					resolveEditableValue(
 						editableValues,
-						editable.dataset.lfrBackgroundImageId,
-						BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR,
+						editable.editableId,
+						editable.editableValueNamespace,
 						languageId,
-						segmentsExperienceId
-					).then(([value, _editableConfig]) => {
-						const processor = Processors['background-image'];
+						prefixedSegmentsExperienceId,
+						getFieldValue
+					).then(([value, editableConfig]) => {
+						editable.processor.render(
+							editable.element,
+							value,
+							editableConfig
+						);
 
-						processor.render(editable, value);
 						updateContent();
 					});
 				});
 
-				Array.from(element.querySelectorAll('lfr-editable')).forEach(
-					editable => {
-						editable.classList.add('page-editor__editable');
-
-						resolveEditableValue(
-							editableValues,
-							editable.getAttribute('id'),
-							EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
-							languageId,
-							segmentsExperienceId
-						).then(([value, editableConfig]) => {
-							const processor =
-								Processors[editable.getAttribute('type')] ||
-								Processors.fallback;
-
-							processor.render(editable, value, editableConfig);
-							updateContent();
-						});
-					}
-				);
 				updateContent();
 			}
 
@@ -132,9 +140,11 @@ const FragmentContent = React.forwardRef(
 			defaultContent,
 			editableProcessorUniqueId,
 			editableValues,
+			editables,
+			getFieldValue,
 			isMounted,
 			languageId,
-			segmentsExperienceId,
+			prefixedSegmentsExperienceId,
 		]);
 
 		const onFloatingToolbarButtonClick = (buttonId, editableId) => {
@@ -153,23 +163,25 @@ const FragmentContent = React.forwardRef(
 					itemId={itemId}
 				>
 					<UnsafeHTML
-						className="page-editor__fragment-content"
+						className={classNames('page-editor__fragment-content', {
+							'page-editor__fragment-content--portlet-topper-hidden': !canUpdateLayoutContent,
+						})}
 						contentRef={ref}
 						markup={content}
-						onRender={updateEditableElements}
+						onRender={updateEditables}
 					/>
 				</FragmentContentInteractionsFilter>
 
-				{showEditableFloatingToolbar && (
+				{canUpdateLayoutContent && (
 					<FragmentContentFloatingToolbar
-						editableElements={editableElements}
+						editables={editables}
 						fragmentEntryLinkId={fragmentEntryLinkId}
 						onButtonClick={onFloatingToolbarButtonClick}
 					/>
 				)}
 
 				<FragmentContentProcessor
-					element={element}
+					editables={editables}
 					fragmentEntryLinkId={fragmentEntryLinkId}
 				/>
 

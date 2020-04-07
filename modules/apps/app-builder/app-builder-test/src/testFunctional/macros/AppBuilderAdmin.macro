@@ -35,6 +35,14 @@ definition {
 		}
 
 		AppBuilderAdmin.continueNewCustomObject();
+
+		AppBuilderAdmin.waitForContinueButtonNotVisible();
+	}
+
+	macro addEntry {
+
+		AppBuilderAdmin.add();
+		AppBuilderAdmin.waitForSaveButtonVisible();
 	}
 
 	macro addOrRemovePermissionFromRoles {
@@ -210,6 +218,8 @@ definition {
 	}
 
 	macro gotoCustomAppCP {
+		Refresh();
+
 		ProductMenuHelper.expandPanel(panel = "${panel}");
 
 		Click(
@@ -299,6 +309,8 @@ definition {
 
 	macro save {
 		Click(locator1 = "AppBuilder#SAVE_BUTTON");
+
+		AppBuilderAdmin.waitForSaveButtonNotVisible();
 	}
 
 	macro searchByItem {
@@ -327,14 +339,14 @@ definition {
 			panel = "Control Panel",
 			portlet = "Custom Objects");
 
+		Pause(locator1 = "2000");
+
 		while (IsElementPresent(locator1 = "Icon#VERTICAL_ELLIPSIS_BUTTON")) {
 			LexiconEntry.gotoVerticalEllipsisMenuItemNoError(menuItem = "Delete");
 
 			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-			// TODO: Remove this comment to validade Success Messages when implemented on App Builder
-			// Alert.viewSuccessMessage();
-
+			Alert.viewSuccessMessage();
 		}
 	}
 
@@ -358,6 +370,26 @@ definition {
 			value1 = "UNDEPLOYED");
 	}
 
+	macro validateAppIsNotPresentOnControlPanel {
+		Navigator.openURL();
+
+		ProductMenuHelper.expandPanel(panel = "Control Panel");
+
+		AssertElementNotPresent(
+			key_portlet = "${portlet}",
+			locator1 = "AppBuilder#CUSTOM_PORTLET");
+	}
+
+	macro validateAppIsNotPresentOnSite {
+		ProductMenuHelper.expandPanel(panel = "Site Administration");
+
+		ProductMenuHelper.expandCategory(category = "Content & Data");
+
+		AssertElementNotPresent(
+			key_portlet = "${portlet}",
+			locator1 = "ProductMenu#PORTLET");
+	}
+
 	macro validateCustomObjectNameOnHeader {
 		AssertTextEquals(
 			locator1 = "AppBuilder#CUSTOM_OBJECT_NAME_ON_HEADER",
@@ -372,6 +404,12 @@ definition {
 		AssertTextEquals(
 			locator1 = "AppBuilder#MESSAGE_DESCRIPTION_EMPTY_LIST",
 			value1 = "${description}");
+	}
+
+	macro validateFieldIsOnTable {
+		AssertElementPresent(
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "AppBuilder#FIELD_LABEL_IN_TABLE");
 	}
 
 	macro validateIfSearchItemIsFound {
@@ -392,6 +430,12 @@ definition {
 
 	macro validateItemNameOnTable {
 		AssertTextEquals(
+			locator1 = "AppBuilder#ITEM_ON_THE_TABLE",
+			value1 = "${itemName}");
+	}
+
+	macro validateItemNameOnTableNotPresent {
+		AssertElementNotPresent(
 			locator1 = "AppBuilder#ITEM_ON_THE_TABLE",
 			value1 = "${itemName}");
 	}
@@ -486,6 +530,26 @@ definition {
 	macro viewItem {
 		AppBuilderAdmin.openActionMenu(itemName = "${itemName}");
 		MenuItem.clickNoError(menuItem = "View");
+	}
+
+	macro waitForContinueButtonNotVisible {
+		while (IsElementPresent(locator1 = "AppBuilder#BUTTON_CONTINUE")) {
+			Pause(locator1 = "1000");
+		}
+		Pause(locator1 = "1000");
+	}
+
+	macro waitForSaveButtonNotVisible {
+		while (IsElementPresent(locator1 = "AppBuilder#SAVE_BUTTON")) {
+			Pause(locator1 = "1000");
+		}
+		Pause(locator1 = "1000");
+	}
+
+	macro waitForSaveButtonVisible {
+		while (IsElementNotPresent(locator1 = "AppBuilder#SAVE_BUTTON")) {
+			Pause(locator1 = "1000");
+		}
 	}
 
 }

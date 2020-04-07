@@ -9,11 +9,10 @@
  * distribution rights of the Software.
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 
-import BasicInformation from './components/BasicInformation';
-import Chart from './components/Chart';
-import TotalCount from './components/TotalCount';
+import Detail from './components/Detail';
+import Main from './components/Main';
 import APIService from './utils/APIService';
 import {numberFormat} from './utils/numberFormat';
 
@@ -21,6 +20,7 @@ export default function({context, props}) {
 	const {languageTag, namespace, page} = context;
 	const {defaultTimeSpanKey, timeSpans} = context;
 	const {authorName, publishDate, title} = props;
+	const {trafficSources} = props;
 
 	const {
 		getAnalyticsReportsHistoricalReadsURL,
@@ -40,9 +40,41 @@ export default function({context, props}) {
 		page,
 	});
 
+	return (
+		<Navigation
+			api={api}
+			authorName={authorName}
+			defaultTimeSpanKey={defaultTimeSpanKey}
+			languageTag={languageTag}
+			pagePublishDate={publishDate}
+			pageTitle={title}
+			timeSpanOptions={timeSpans}
+			trafficSources={trafficSources}
+		/>
+	);
+}
+
+function Navigation({
+	api,
+	authorName,
+	defaultTimeSpanKey,
+	languageTag,
+	pagePublishDate,
+	pageTitle,
+	timeSpanOptions,
+	trafficSources,
+}) {
+	const [currentPage, setCurrentPage] = useState({view: 'main'});
+
+	const [trafficSourceName, setTrafficSourceName] = useState('');
+
 	const {getHistoricalReads, getHistoricalViews} = api;
 
-	function _handleTotalReads() {
+	function handleCurrentPage(currentPage) {
+		setCurrentPage({view: currentPage.view});
+	}
+
+	function handleTotalReads() {
 		return api.getTotalReads().then(response => {
 			return numberFormat(
 				languageTag,
@@ -50,7 +82,8 @@ export default function({context, props}) {
 			);
 		});
 	}
-	function _handleTotalViews() {
+
+	function handleTotalViews() {
 		return api.getTotalViews().then(response => {
 			return numberFormat(
 				languageTag,
@@ -59,43 +92,72 @@ export default function({context, props}) {
 		});
 	}
 
+	function handleTrafficShare() {
+		const trafficSource = trafficSources.find(trafficSource => {
+			return trafficSource['name'] === trafficSourceName;
+		});
+
+		return Promise.resolve(trafficSource ? trafficSource.share : '-');
+	}
+
+	function handleTrafficSourceClick(trafficSourceName) {
+		setTrafficSourceName(trafficSourceName);
+
+		api.getTrafficSourceDetails(trafficSourceName).then(
+			trafficSourceData => {
+				setCurrentPage({
+					data: trafficSourceData,
+					view: 'traffic-source-detail',
+				});
+			}
+		);
+	}
+
+	function handleTrafficSourceName(trafficSourceName) {
+		setTrafficSourceName(trafficSourceName);
+	}
+
+	function handleTrafficVolume() {
+		const trafficSource = trafficSources.find(trafficSource => {
+			return trafficSource['name'] === trafficSourceName;
+		});
+
+		return Promise.resolve(trafficSource ? trafficSource.value : '-');
+	}
+
 	return (
-		<div className="p-3">
-			<BasicInformation
-				authorName={authorName}
-				languageTag={languageTag}
-				publishDate={publishDate}
-				title={title}
-			/>
+		<>
+			{currentPage.view === 'main' && (
+				<div className="p-3">
+					<Main
+						authorName={authorName}
+						chartDataProviders={[
+							getHistoricalViews,
+							getHistoricalReads,
+						]}
+						defaultTimeSpanOption={defaultTimeSpanKey}
+						languageTag={languageTag}
+						onTrafficSourceClick={handleTrafficSourceClick}
+						pagePublishDate={pagePublishDate}
+						pageTitle={pageTitle}
+						timeSpanOptions={timeSpanOptions}
+						totalReadsDataProvider={handleTotalReads}
+						totalViewsDataProvider={handleTotalViews}
+						trafficSources={trafficSources}
+					/>
+				</div>
+			)}
 
-			<TotalCount
-				className="mt-4"
-				dataProvider={_handleTotalViews}
-				label={Liferay.Util.sub(Liferay.Language.get('total-views'))}
-				popoverHeader={Liferay.Language.get('total-views')}
-				popoverMessage={Liferay.Language.get(
-					'this-number-refers-to-the-total-number-of-views-since-the-content-was-published'
-				)}
-			/>
-
-			<TotalCount
-				className="mt-2"
-				dataProvider={_handleTotalReads}
-				label={Liferay.Util.sub(Liferay.Language.get('total-reads'))}
-				popoverHeader={Liferay.Language.get('total-reads')}
-				popoverMessage={Liferay.Language.get(
-					'this-number-refers-to-the-total-number-of-reads-since-the-content-was-published'
-				)}
-			/>
-
-			<hr />
-
-			<Chart
-				dataProviders={[getHistoricalReads, getHistoricalViews]}
-				defaultTimeSpanOption={defaultTimeSpanKey}
-				languageTag={languageTag}
-				timeSpanOptions={timeSpans}
-			/>
-		</div>
+			{currentPage.view === 'traffic-source-detail' && (
+				<Detail
+					currentPage={currentPage}
+					languageTag={languageTag}
+					onCurrentPageChange={handleCurrentPage}
+					onTrafficSourceNameChange={handleTrafficSourceName}
+					trafficShareDataProvider={handleTrafficShare}
+					trafficVolumeDataProvider={handleTrafficVolume}
+				/>
+			)}
+		</>
 	);
 }

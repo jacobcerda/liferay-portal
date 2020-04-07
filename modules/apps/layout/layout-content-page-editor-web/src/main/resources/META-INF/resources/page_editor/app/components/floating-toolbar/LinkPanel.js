@@ -20,9 +20,11 @@ import {useDebounceCallback} from '../../../core/hooks/useDebounceCallback';
 import {getEditableItemPropTypes} from '../../../prop-types/index';
 import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/editableFragmentEntryProcessor';
 import {EDITABLE_TYPES} from '../../config/constants/editableTypes';
-import InfoItemService from '../../services/InfoItemService';
+import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
 import {useDispatch, useSelector} from '../../store/index';
 import updateEditableValues from '../../thunks/updateEditableValues';
+import {useGetFieldValue} from '../CollectionItemContext';
+import isMapped from '../fragment-content/isMapped';
 import MappingSelector from './MappingSelector';
 
 const SOURCE_TYPES = {
@@ -61,29 +63,29 @@ const TARGET_OPTIONS = [
 ];
 
 export default function LinkPanel({item}) {
-	const {editableId, fragmentEntryLinkId} = item;
+	const {editableId, editableType, fragmentEntryLinkId} = item;
 
+	const dispatch = useDispatch();
 	const fragmentEntryLinks = useSelector(state => state.fragmentEntryLinks);
 	const languageId = useSelector(state => state.languageId);
-	const segmentsExperienceId = useSelector(
-		state => state.segmentsExperienceId
-	);
-	const dispatch = useDispatch();
+	const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
 
 	const editableValue =
 		fragmentEntryLinks[fragmentEntryLinkId].editableValues[
 			EDITABLE_FRAGMENT_ENTRY_PROCESSOR
 		][editableId];
 
-	const editableConfig = editableValue.config || {};
-
-	const isMapped = editableConfig.mappedField || editableConfig.fieldId;
+	const editableConfig = editableValue ? editableValue.config : {};
 
 	const [sourceType, setSourceType] = useState(
-		isMapped ? SOURCE_TYPES.fromContentField : SOURCE_TYPES.manual
+		isMapped(editableConfig)
+			? SOURCE_TYPES.fromContentField
+			: SOURCE_TYPES.manual
 	);
 
 	const [href, setHref] = useState(editableConfig.href);
+
+	const getFieldValue = useGetFieldValue();
 
 	useEffect(() => {
 		updateMappedHrefValue({
@@ -97,6 +99,7 @@ export default function LinkPanel({item}) {
 		editableConfig.classPK,
 		editableConfig.fieldId,
 		languageId,
+		updateMappedHrefValue,
 	]);
 
 	const updateRowConfig = useCallback(
@@ -106,11 +109,14 @@ export default function LinkPanel({item}) {
 			const editableProcessorValues =
 				editableValues[EDITABLE_FRAGMENT_ENTRY_PROCESSOR];
 
-			const config = Object.keys(newConfig).length
-				? {
-						...newConfig,
-				  }
-				: {};
+			const config = {...newConfig};
+
+			if (
+				Object.keys(config).length > 0 &&
+				editableType !== EDITABLE_TYPES.link
+			) {
+				config.mapperType = 'link';
+			}
 
 			const nextEditableValues = {
 				...editableValues,
@@ -135,6 +141,7 @@ export default function LinkPanel({item}) {
 		[
 			dispatch,
 			editableId,
+			editableType,
 			fragmentEntryLinkId,
 			fragmentEntryLinks,
 			segmentsExperienceId,
@@ -143,28 +150,24 @@ export default function LinkPanel({item}) {
 
 	const [debounceUpdateRowConfig] = useDebounceCallback(updateRowConfig, 500);
 
-	const updateMappedHrefValue = ({
-		classNameId,
-		classPK,
-		fieldId,
-		languageId,
-	}) => {
-		if (!classNameId || !classPK || !fieldId) {
-			return;
-		}
+	const updateMappedHrefValue = useCallback(
+		({classNameId, classPK, fieldId, languageId}) => {
+			if (!classNameId || !classPK || !fieldId) {
+				return;
+			}
 
-		InfoItemService.getAssetFieldValue({
-			classNameId,
-			classPK,
-			fieldId,
-			languageId,
-			onNetworkStatus: () => {},
-		}).then(response => {
-			const {fieldValue = ''} = response;
-
-			setHref(fieldValue);
-		});
-	};
+			getFieldValue({
+				classNameId,
+				classPK,
+				fieldId,
+				languageId,
+				onNetworkStatus: () => {},
+			}).then(fieldValue => {
+				setHref(fieldValue);
+			});
+		},
+		[getFieldValue]
+	);
 
 	return (
 		<>

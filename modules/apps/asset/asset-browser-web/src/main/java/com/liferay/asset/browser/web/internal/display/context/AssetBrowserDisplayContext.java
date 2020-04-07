@@ -23,11 +23,14 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.util.AssetHelper;
+import com.liferay.item.selector.constants.ItemSelectorPortletKeys;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
@@ -35,6 +38,7 @@ import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntry;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -201,6 +205,22 @@ public class AssetBrowserDisplayContext {
 		return _groupId;
 	}
 
+	public String getGroupTypeTitle() {
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)_httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		Group group = themeDisplay.getScopeGroup();
+
+		String groupTypeTitle = "site";
+
+		if (group.getType() == GroupConstants.TYPE_DEPOT) {
+			groupTypeTitle = "asset-library";
+		}
+
+		return LanguageUtil.get(_httpServletRequest, groupTypeTitle);
+	}
+
 	public List<BreadcrumbEntry> getPortletBreadcrumbEntries()
 		throws PortalException, PortletException {
 
@@ -319,6 +339,24 @@ public class AssetBrowserDisplayContext {
 		return _typeSelection;
 	}
 
+	public boolean isLegacySingleSelection() {
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)_httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		if (Objects.equals(
+				AssetBrowserPortletKeys.ASSET_BROWSER,
+				portletDisplay.getPortletName()) &&
+			!isMultipleSelection()) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	public boolean isMultipleSelection() {
 		if (_multipleSelection != null) {
 			return _multipleSelection;
@@ -339,6 +377,35 @@ public class AssetBrowserDisplayContext {
 			_httpServletRequest, "showAddButton");
 
 		return _showAddButton;
+	}
+
+	public boolean isShowAssetEntryStatus() {
+		if (_isShowNonindexable() || _isShowScheduled()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isShowBreadcrumb() {
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)_httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		boolean showBreadcrumb = ParamUtil.getBoolean(
+			_httpServletRequest, "showBreadcrumb");
+
+		if (Objects.equals(
+				ItemSelectorPortletKeys.ITEM_SELECTOR,
+				portletDisplay.getPortletName()) ||
+			showBreadcrumb) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	protected String getOrderByCol() {

@@ -128,7 +128,7 @@ StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHe
 											</div>
 
 											<div class="autofit-col autofit-col-expand lfr-discussion-editor">
-												<liferay-ui:input-editor
+												<liferay-editor:editor
 													configKey="commentEditor"
 													contents=""
 													editorName='<%= PropsUtil.get("editor.wysiwyg.portal-web.docroot.html.taglib.ui.discussion.jsp") %>'
@@ -692,7 +692,7 @@ StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHe
 					'<%= portletDisplay.getId() %>:portletRefreshed',
 					function(event) {
 						var randomNamespaceNodes = document.querySelectorAll(
-							'input[id^="<%= namespace %>randomNamespace"]'
+							'input[id^="<%= namespace %>"][id$="randomNamespace"]'
 						);
 
 						Array.prototype.forEach.call(randomNamespaceNodes, function(
@@ -728,7 +728,7 @@ StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHe
 
 				if (response.commentId) {
 					var messageTextNode = document.querySelector(
-						'input[name^="<%= namespace %>body"]'
+						'input[name^="<%= namespace + randomNamespace %>body"]'
 					);
 
 					if (messageTextNode) {

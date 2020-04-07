@@ -14,6 +14,66 @@
 
 import {PagesVisitor} from 'dynamic-data-mapping-form-renderer';
 
+import {FIELD_TYPE_FIELDSET} from './constants.es';
+
+export const createField = (props, event) => {
+	const {
+		defaultLanguageId,
+		editingLanguageId,
+		fieldNameGenerator,
+		spritemap,
+	} = props;
+	const {fieldType, skipFieldNameGeneration = false} = event;
+
+	let newFieldName;
+
+	if (skipFieldNameGeneration) {
+		const {settingsContext} = fieldType;
+		const visitor = new PagesVisitor(settingsContext.pages);
+
+		visitor.mapFields(({fieldName, value}) => {
+			if (fieldName === 'name') {
+				newFieldName = value;
+			}
+		});
+	}
+	else {
+		newFieldName = fieldNameGenerator(fieldType.label);
+	}
+
+	const newField = {
+		...fieldType,
+		fieldName: newFieldName,
+		name: newFieldName,
+		settingsContext: {
+			...fieldType.settingsContext,
+			pages: normalizeSettingsContextPages(
+				fieldType.settingsContext.pages,
+				editingLanguageId,
+				fieldType,
+				newFieldName
+			),
+			type: fieldType.name,
+		},
+	};
+
+	const {fieldName, name, settingsContext} = newField;
+
+	return {
+		...getFieldProperties(
+			settingsContext,
+			defaultLanguageId,
+			editingLanguageId
+		),
+		fieldName,
+		instanceId: generateInstanceId(8),
+		name,
+		settingsContext,
+		spritemap,
+		type: fieldType.name,
+	};
+};
+
 export const formatFieldName = (instanceId, languageId, value) => {
 	return `ddm$$${value}$${instanceId}$0$$${languageId}`;
 };
@@ -31,55 +91,10 @@ export const generateInstanceId = length => {
 	return text;
 };
 
-export const normalizeSettingsContextPages = (
-	pages,
-	editingLanguageId,
-	fieldType,
-	generatedFieldName
-) => {
+export const getField = (pages, fieldName) => {
 	const visitor = new PagesVisitor(pages);
 
-	return visitor.mapFields(field => {
-		const {fieldName} = field;
-
-		if (fieldName === 'name') {
-			field = {
-				...field,
-				value: generatedFieldName,
-				visible: true,
-			};
-		}
-		else if (fieldName === 'label') {
-			field = {
-				...field,
-				localizedValue: {
-					...field.localizedValue,
-					[editingLanguageId]: fieldType.label,
-				},
-				type: 'text',
-				value: fieldType.label,
-			};
-		}
-		else if (fieldName === 'type') {
-			field = {
-				...field,
-				value: fieldType.name,
-			};
-		}
-		else if (fieldName === 'validation') {
-			field = {
-				...field,
-				validation: {
-					...field.validation,
-					fieldName: generatedFieldName,
-				},
-			};
-		}
-
-		return {
-			...field,
-		};
-	});
+	return visitor.findField(field => field.fieldName === fieldName);
 };
 
 export const getFieldProperties = (
@@ -115,8 +130,52 @@ export const getFieldProperties = (
 	return properties;
 };
 
+export const getParentField = (pages, fieldName) => {
+	let parentField = null;
+	const visitor = new PagesVisitor(pages);
+
+	visitor.visitFields(field => {
+		const nestedFieldsVisitor = new PagesVisitor(field.nestedFields || []);
+
+		if (nestedFieldsVisitor.containsField(fieldName)) {
+			parentField = field;
+
+			return true;
+		}
+
+		return false;
+	});
+
+	return parentField;
+};
+
+export const getParentFieldSet = (pages, fieldName) => {
+	let parentField = getParentField(pages, fieldName);
+
+	while (parentField) {
+		if (isFieldSet(parentField)) {
+			return parentField;
+		}
+
+		parentField = getParentField(pages, parentField.fieldName);
+	}
+
+	return null;
+};
+
+export const isFieldSet = field =>
+	field.type === FIELD_TYPE_FIELDSET && field.dataDefinitionId;
+
+export const isFieldSetChild = (pages, fieldName) => {
+	return !!getParentFieldSet(pages, fieldName);
+};
+
 export const localizeField = (field, defaultLanguageId, editingLanguageId) => {
 	let value = field.value;
+
+	if (field.dataType === 'json' && typeof value === 'object') {
+		value = JSON.stringify(value);
+	}
 
 	if (field.localizable && field.localizedValue) {
 		let localizedValue = field.localizedValue[editingLanguageId];
@@ -149,4 +208,54 @@ export const localizeField = (field, defaultLanguageId, editingLanguageId) => {
 		},
 		value,
 	};
+};
+
+export const normalizeSettingsContextPages = (
+	pages,
+	editingLanguageId,
+	fieldType,
+	generatedFieldName
+) => {
+	const visitor = new PagesVisitor(pages);
+
+	return visitor.mapFields(field => {
+		const {fieldName} = field;
+
+		if (fieldName === 'name') {
+			field = {
+				...field,
+				value: generatedFieldName,
+			};
+		}
+		else if (fieldName === 'label') {
+			field = {
+				...field,
+				localizedValue: {
+					...field.localizedValue,
+					[editingLanguageId]: fieldType.label,
+				},
+				type: 'text',
+				value: fieldType.label,
+			};
+		}
+		else if (fieldName === 'type') {
+			field = {
+				...field,
+				value: fieldType.name,
+			};
+		}
+		else if (fieldName === 'validation') {
+			field = {
+				...field,
+				validation: {
+					...field.validation,
+					fieldName: generatedFieldName,
+				},
+			};
+		}
+
+		return {
+			...field,
+		};
+	});
 };

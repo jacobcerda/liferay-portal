@@ -15,16 +15,6 @@
 import {PagesVisitor} from 'dynamic-data-mapping-form-renderer';
 import Form from 'dynamic-data-mapping-form-renderer/js/containers/Form/Form.es';
 
-const UNIMPLEMENTED_PROPERTIES = [
-	'fieldNamespace',
-	'indexType',
-	'localizable',
-	'readOnly',
-	'type',
-	'validation',
-	'visibilityExpression',
-];
-
 export const getEvents = (dispatchEvent, settingsContext) => {
 	const handleFieldBlurred = ({fieldInstance, value}) => {
 		if (fieldInstance && !fieldInstance.isDisposed()) {
@@ -61,8 +51,19 @@ export const getEvents = (dispatchEvent, settingsContext) => {
 	};
 };
 
-export const getFilteredSettingsContext = settingsContext => {
-	const visitor = new PagesVisitor(settingsContext.pages);
+export const getFilteredSettingsContext = ({config, settingsContext}) => {
+	const unsupportedTabs = [...config.disabledTabs];
+
+	const pages = settingsContext.pages.filter(
+		page => !unsupportedTabs.includes(page.title)
+	);
+
+	const visitor = new PagesVisitor(pages);
+
+	const unsupportedProperties = [
+		...config.unimplementedProperties,
+		...config.disabledProperties,
+	];
 
 	return {
 		...settingsContext,
@@ -72,7 +73,7 @@ export const getFilteredSettingsContext = settingsContext => {
 				fields: column.fields
 					.filter(
 						({fieldName}) =>
-							UNIMPLEMENTED_PROPERTIES.indexOf(fieldName) === -1
+							!unsupportedProperties.includes(fieldName)
 					)
 					.map(field => {
 						if (field.fieldName === 'dataSourceType') {

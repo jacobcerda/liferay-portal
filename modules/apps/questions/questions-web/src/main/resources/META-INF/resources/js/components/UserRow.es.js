@@ -13,15 +13,22 @@
  */
 
 import React from 'react';
-import {Link} from 'react-router-dom';
+import {withRouter} from 'react-router-dom';
 
+import Link from '../components/Link.es';
 import UserPopover from './UserPopover.es';
 
-export default ({creator, statistics}) => {
-	return (
+export default withRouter(
+	({
+		creator,
+		match: {
+			params: {sectionTitle},
+		},
+		statistics,
+	}) => (
 		<Link
-			className="border-0 btn btn-block btn-secondary position-relative question-user text-left text-md-right"
-			to={``}
+			className="border-0 btn btn-block btn-secondary position-relative questions-user text-left text-md-right"
+			to={`/questions/${sectionTitle}/creator/${creator.id}`}
 		>
 			<p className="c-mb-0 small">
 				{Liferay.Language.get('answered-by')}
@@ -31,5 +38,5 @@ export default ({creator, statistics}) => {
 
 			<UserPopover creator={creator} statistics={statistics} />
 		</Link>
-	);
-};
+	)
+);

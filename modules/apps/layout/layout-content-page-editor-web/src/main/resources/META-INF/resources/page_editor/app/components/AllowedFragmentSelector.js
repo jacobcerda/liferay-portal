@@ -17,13 +17,15 @@ import {Treeview} from 'frontend-js-components-web';
 import PropTypes from 'prop-types';
 import React, {useEffect, useMemo, useState} from 'react';
 
-import {config} from '../config/index';
+import {useSelector} from '../store/index';
 import AllowedFragmentTreeNode from './AllowedFragmentTreeNode';
 
 const AllowedFragmentSelector = ({dropZoneConfig, onSelectedFragment}) => {
+	const fragments = useSelector(state => state.fragments);
+
 	const fragmentEntryKeysArray = useMemo(
-		() => toFragmentEntryKeysArray(config.fragments),
-		[]
+		() => toFragmentEntryKeysArray(fragments),
+		[fragments]
 	);
 
 	const initialAllowNewFragmentEntries =
@@ -35,7 +37,7 @@ const AllowedFragmentSelector = ({dropZoneConfig, onSelectedFragment}) => {
 
 	const [filter, setFilter] = useState('');
 
-	const nodes = useMemo(() => toNodes(config.fragments), []);
+	const nodes = useMemo(() => toNodes(fragments), [fragments]);
 
 	const [allowNewFragmentEntries, setAllowNewFragmentEntries] = useState(
 		initialAllowNewFragmentEntries

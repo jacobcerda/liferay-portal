@@ -488,6 +488,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 
 	@Test
 	public void testDeleteDataDefinition() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		DataDefinition dataDefinition =
 			testDeleteDataDefinition_addDataDefinition();
 
@@ -1186,6 +1187,14 @@ public abstract class BaseDataDefinitionResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("dataRules", additionalAssertFieldName)) {
+				if (dataDefinition.getDataRules() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals(
 					"defaultDataLayout", additionalAssertFieldName)) {
 
@@ -1342,6 +1351,17 @@ public abstract class BaseDataDefinitionResourceTestCase {
 				if (!Objects.deepEquals(
 						dataDefinition1.getDataDefinitionKey(),
 						dataDefinition2.getDataDefinitionKey())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("dataRules", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						dataDefinition1.getDataRules(),
+						dataDefinition2.getDataRules())) {
 
 					return false;
 				}
@@ -1609,6 +1629,11 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			sb.append("'");
 
 			return sb.toString();
+		}
+
+		if (entityFieldName.equals("dataRules")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("dateCreated")) {

@@ -28,6 +28,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -48,6 +49,22 @@ public class AnalyticsSettingsUtil {
 			return _request(
 				null, companyId,
 				new HttpGet(
+					String.format(
+						"%s/%s", getAsahFaroBackendURL(companyId), path)));
+		}
+		catch (IOException ioException) {
+			throw new PortalException(ioException);
+		}
+	}
+
+	public static HttpResponse doPatch(
+			JSONObject bodyJSONObject, long companyId, String path)
+		throws PortalException {
+
+		try {
+			return _request(
+				bodyJSONObject, companyId,
+				new HttpPatch(
 					String.format(
 						"%s/%s", getAsahFaroBackendURL(companyId), path)));
 		}

@@ -22,6 +22,7 @@
 Map<String, Object> data = new HashMap<>();
 
 data.put("availableLanguageIds", availableLanguageIds);
+data.put("config", configJSONObject);
 data.put("contentType", contentType);
 data.put("context", dataLayoutJSONObject);
 data.put("dataDefinitionId", dataDefinitionId);
@@ -32,14 +33,8 @@ data.put("fieldTypes", fieldTypesJSONArray);
 data.put("fieldTypesModules", fieldTypesModules);
 data.put("groupId", groupId);
 data.put("localizable", localizable);
-data.put("singlePage", singlePage);
+data.put("sidebarPanels", sidebarPanels);
 data.put("spritemap", themeDisplay.getPathThemeImages() + "/lexicon/icons.svg");
-
-Map<String, Object> successPageSettings = new HashMap<>();
-
-successPageSettings.put("enabled", enableSuccessPage);
-
-data.put("successPageSettings", successPageSettings);
 %>
 
 <div id="<%= componentId + "container" %>">

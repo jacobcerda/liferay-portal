@@ -211,6 +211,7 @@ public abstract class BaseBlogPostingResourceTestCase {
 
 	@Test
 	public void testDeleteBlogPosting() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		BlogPosting blogPosting = testDeleteBlogPosting_addBlogPosting();
 
 		assertHttpResponseStatusCode(
@@ -377,6 +378,7 @@ public abstract class BaseBlogPostingResourceTestCase {
 
 	@Test
 	public void testDeleteBlogPostingMyRating() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		BlogPosting blogPosting =
 			testDeleteBlogPostingMyRating_addBlogPosting();
 
@@ -764,12 +766,12 @@ public abstract class BaseBlogPostingResourceTestCase {
 		assertHttpResponseStatusCode(
 			204,
 			blogPostingResource.putSiteBlogPostingSubscribeHttpResponse(
-				testGroup.getGroupId()));
+				blogPosting.getSiteId()));
 
 		assertHttpResponseStatusCode(
 			404,
 			blogPostingResource.putSiteBlogPostingSubscribeHttpResponse(
-				testGroup.getGroupId()));
+				blogPosting.getSiteId()));
 	}
 
 	protected BlogPosting testPutSiteBlogPostingSubscribe_addBlogPosting()
@@ -788,12 +790,12 @@ public abstract class BaseBlogPostingResourceTestCase {
 		assertHttpResponseStatusCode(
 			204,
 			blogPostingResource.putSiteBlogPostingUnsubscribeHttpResponse(
-				testGroup.getGroupId()));
+				blogPosting.getSiteId()));
 
 		assertHttpResponseStatusCode(
 			404,
 			blogPostingResource.putSiteBlogPostingUnsubscribeHttpResponse(
-				testGroup.getGroupId()));
+				blogPosting.getSiteId()));
 	}
 
 	protected BlogPosting testPutSiteBlogPostingUnsubscribe_addBlogPosting()

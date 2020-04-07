@@ -30,6 +30,7 @@ definition {
 	@priority = "5"
 	test CheckExpiredEntries {
 		property custom.properties = "trash.entry.check.interval=1${line.separator}trash.entries.max.age=1";
+		property portal.upstream = "quarantine";
 
 		JSONDocument.addFile(
 			dmDocumentDescription = "DM Document Description",
@@ -81,7 +82,7 @@ definition {
 			customMaxAge = "1 minute",
 			deleteUser = "Test Test");
 
-		Pause(locator1 = "90000");
+		Pause(locator1 = "120000");
 
 		Refresh();
 
@@ -122,11 +123,15 @@ definition {
 	@description = "This ensures that the web content can be deleted after the recycle bin is disabled."
 	@priority = "5"
 	test DeleteWCAfterDisabling {
+		property portal.upstream = "quarantine";
+
 		DepotNavigator.openDepotAdmin();
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
 			portlet = "Web Content");
+
+		ProductMenuHelper.openProductMenu();
 
 		AssertVisible(
 			key_category = "Recycle Bin",
@@ -223,11 +228,19 @@ definition {
 	@description = "This ensures that the web content can be restored from recycle bin."
 	@priority = "5"
 	test RestoreWebContent {
+		property portal.acceptance = "true";
+
 		JSONWebcontent.addWebContent(
 			content = "WC WebContent Content",
 			groupName = "Test Depot Name",
 			site = "false",
 			title = "WC WebContent Title");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepot(
+			depotName = "Test Depot Name",
+			portlet = "Web Content");
 
 		WebContent.moveToRecycleBinCP(
 			assetType = "Web Content Article",

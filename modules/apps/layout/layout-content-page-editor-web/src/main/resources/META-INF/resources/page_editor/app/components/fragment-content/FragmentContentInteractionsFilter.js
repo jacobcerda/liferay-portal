@@ -16,9 +16,12 @@ import PropTypes from 'prop-types';
 import React, {useEffect, useMemo} from 'react';
 
 import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/editableFragmentEntryProcessor';
+import {ITEM_ACTIVATION_ORIGINS} from '../../config/constants/itemActivationOrigins';
 import {ITEM_TYPES} from '../../config/constants/itemTypes';
+import selectCanUpdateLayoutContent from '../../selectors/selectCanUpdateLayoutContent';
 import {useSelector} from '../../store/index';
 import {
+	useActivationOrigin,
 	useActiveItemId,
 	useActiveItemType,
 	useHoverItem,
@@ -29,6 +32,7 @@ import {useSetEditableProcessorUniqueId} from './EditableProcessorContext';
 import {getEditableElement} from './getEditableElement';
 import getEditableElementId from './getEditableElementId';
 import getEditableUniqueId from './getEditableUniqueId';
+import isMapped from './isMapped';
 
 export default function FragmentContentInteractionsFilter({
 	children,
@@ -36,12 +40,14 @@ export default function FragmentContentInteractionsFilter({
 	fragmentEntryLinkId,
 	itemId,
 }) {
+	const activationOrigin = useActivationOrigin();
 	const hoverItem = useHoverItem();
 	const isActive = useIsActive();
 	const activeItemId = useActiveItemId();
 	const activeItemType = useActiveItemType();
 	const selectItem = useSelectItem();
 	const setEditableProcessorUniqueId = useSetEditableProcessorUniqueId();
+	const canUpdateLayoutContent = useSelector(selectCanUpdateLayoutContent);
 
 	const editableValues = useSelector(state =>
 		state.fragmentEntryLinks[fragmentEntryLinkId]
@@ -61,13 +67,7 @@ export default function FragmentContentInteractionsFilter({
 				const editableElementId = getEditableElementId(editableElement);
 				const editableValue = editableValues[editableElementId] || {};
 
-				const isMapped =
-					(editableValue.classNameId &&
-						editableValue.classPK &&
-						editableValue.fieldId) ||
-					editableValue.mappedField;
-
-				if (isMapped) {
+				if (isMapped(editableValue)) {
 					return;
 				}
 				const editableClickPosition = {
@@ -99,12 +99,24 @@ export default function FragmentContentInteractionsFilter({
 			);
 
 			if (activeEditableElement) {
-				requestAnimationFrame(() => {
-					activeEditableElement.addEventListener(
-						'dblclick',
-						enableProcessor
-					);
-				});
+				if (canUpdateLayoutContent) {
+					requestAnimationFrame(() => {
+						activeEditableElement.addEventListener(
+							'dblclick',
+							enableProcessor
+						);
+					});
+				}
+
+				if (
+					activationOrigin === ITEM_ACTIVATION_ORIGINS.structureTree
+				) {
+					activeEditableElement.scrollIntoView({
+						behavior: 'smooth',
+						block: 'center',
+						inline: 'nearest',
+					});
+				}
 			}
 		}
 
@@ -117,8 +129,10 @@ export default function FragmentContentInteractionsFilter({
 			}
 		};
 	}, [
+		activationOrigin,
 		activeItemId,
 		activeItemType,
+		canUpdateLayoutContent,
 		editableElements,
 		editableValues,
 		fragmentEntryLinkId,

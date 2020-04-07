@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.aggregation.Aggregations;
@@ -44,6 +45,7 @@ import com.liferay.portal.search.sort.FieldSort;
 import com.liferay.portal.search.sort.SortOrder;
 import com.liferay.portal.search.sort.Sorts;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.workflow.metrics.search.index.name.WorkflowMetricsIndexNameBuilder;
 import com.liferay.portal.workflow.metrics.sla.processor.WorkflowMetricsSLAStatus;
 
 import java.io.IOException;
@@ -52,6 +54,7 @@ import java.text.DateFormat;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -202,11 +205,15 @@ public class ResourceHelper {
 				clazz.getResourceAsStream("dependencies/" + resourceName)));
 	}
 
-	public BooleanQuery createTokensBooleanQuery(boolean instanceCompleted) {
+	public BooleanQuery createTasksBooleanQuery(
+		long companyId, boolean instanceCompleted) {
+
 		BooleanQuery booleanQuery = _queries.booleanQuery();
 
 		booleanQuery.addFilterQueryClauses(
-			_queries.term("_index", "workflow-metrics-tokens"));
+			_queries.term(
+				"_index",
+				_taskWorkflowMetricsIndexNameBuilder.getIndexName(companyId)));
 
 		booleanQuery.addMustQueryClauses(
 			_queries.term("instanceCompleted", instanceCompleted));
@@ -233,66 +240,66 @@ public class ResourceHelper {
 		scriptedMetricAggregation.setParameters(
 			HashMapBuilder.<String, Object>put(
 				"assigneeUserIds",
-				() -> {
-					if (!assigneeUserIds.isEmpty()) {
-						return Stream.of(
-							assigneeUserIds
-						).flatMap(
-							List::parallelStream
-						).map(
-							String::valueOf
-						).collect(
-							Collectors.toList()
-						);
-					}
-
-					return null;
-				}
+				() -> Optional.ofNullable(
+					assigneeUserIds
+				).filter(
+					ListUtil::isNotEmpty
+				).map(
+					List::parallelStream
+				).map(
+					stream -> stream.map(
+						String::valueOf
+					).collect(
+						Collectors.toList()
+					)
+				).orElseGet(
+					() -> null
+				)
 			).put(
 				"endDate",
-				() -> {
-					if (dateEnd != null) {
-						return dateEnd.getTime();
-					}
-
-					return null;
-				}
+				() -> Optional.ofNullable(
+					dateEnd
+				).map(
+					Date::getTime
+				).orElseGet(
+					() -> null
+				)
 			).put(
 				"slaStatuses",
-				() -> {
-					if (!slaStatuses.isEmpty()) {
-						return slaStatuses;
-					}
-
-					return null;
-				}
+				() -> Optional.ofNullable(
+					slaStatuses
+				).filter(
+					ListUtil::isNotEmpty
+				).orElseGet(
+					() -> null
+				)
 			).put(
 				"startDate",
-				() -> {
-					if (dateStart != null) {
-						return dateStart.getTime();
-					}
-
-					return null;
-				}
+				() -> Optional.ofNullable(
+					dateStart
+				).map(
+					Date::getTime
+				).orElseGet(
+					() -> null
+				)
 			).put(
 				"statuses",
-				() -> {
-					if (!statuses.isEmpty()) {
-						return statuses;
-					}
-
-					return null;
-				}
+				() -> Optional.ofNullable(
+					statuses
+				).filter(
+					ListUtil::isNotEmpty
+				).orElseGet(
+					() -> null
+				)
 			).put(
 				"taskNames",
-				() -> {
-					if (!taskNames.isEmpty()) {
-						return taskNames;
-					}
-
-					return null;
-				}
+				() -> Optional.ofNullable(
+					taskNames
+				).filter(
+					ListUtil::isNotEmpty
+				).orElseGet(
+					() -> null
+				)
 			).build());
 		scriptedMetricAggregation.setReduceScript(
 			_workflowMetricsInstanceCountReduceScript);
@@ -342,7 +349,8 @@ public class ResourceHelper {
 	public String getLatestProcessVersion(long companyId, long processId) {
 		SearchSearchRequest searchSearchRequest = new SearchSearchRequest();
 
-		searchSearchRequest.setIndexNames("workflow-metrics-processes");
+		searchSearchRequest.setIndexNames(
+			_processWorkflowMetricsIndexNameBuilder.getIndexName(companyId));
 
 		BooleanQuery booleanQuery = _queries.booleanQuery();
 
@@ -478,6 +486,10 @@ public class ResourceHelper {
 	@Reference
 	private Portal _portal;
 
+	@Reference(target = "(workflow.metrics.index.entity.name=process)")
+	private WorkflowMetricsIndexNameBuilder
+		_processWorkflowMetricsIndexNameBuilder;
+
 	@Reference
 	private Queries _queries;
 
@@ -489,6 +501,10 @@ public class ResourceHelper {
 
 	@Reference
 	private Sorts _sorts;
+
+	@Reference(target = "(workflow.metrics.index.entity.name=task)")
+	private WorkflowMetricsIndexNameBuilder
+		_taskWorkflowMetricsIndexNameBuilder;
 
 	private Script _workflowMetricsInstanceCountCombineScript;
 	private Script _workflowMetricsInstanceCountInitScript;

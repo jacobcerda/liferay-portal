@@ -432,6 +432,15 @@ public class FragmentCompositionLocalServiceUtil {
 		return getService().getTempFileNames(userId, groupId, folderName);
 	}
 
+	public static com.liferay.fragment.model.FragmentComposition
+			moveFragmentComposition(
+				long fragmentCompositionId, long fragmentCollectionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().moveFragmentComposition(
+			fragmentCompositionId, fragmentCollectionId);
+	}
+
 	/**
 	 * Updates the fragment composition in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -465,6 +474,14 @@ public class FragmentCompositionLocalServiceUtil {
 		return getService().updateFragmentComposition(
 			userId, fragmentCompositionId, name, description, data,
 			previewFileEntryId, status);
+	}
+
+	public static com.liferay.fragment.model.FragmentComposition
+			updateFragmentComposition(long fragmentCompositionId, String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateFragmentComposition(
+			fragmentCompositionId, name);
 	}
 
 	public static FragmentCompositionLocalService getService() {

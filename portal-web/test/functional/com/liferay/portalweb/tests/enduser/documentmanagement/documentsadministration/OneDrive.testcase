@@ -411,6 +411,7 @@ definition {
 	@description = "This test ensures that a Powerpoint presentation title can be changed via the OneDrive editor."
 	@priority = "4"
 	test EditPowerPointPresentation {
+		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "OneDrive#EditPowerPointPresentation";
 
 		for (var documentTitle : list "Document_2,Powerpoint Presentation Title Edited") {
@@ -448,10 +449,9 @@ definition {
 			dmDocumentVersionNumber = "2.0");
 	}
 
-	@description = "This is not an acceptance test and is temporarily quarantined. This test ensures that a Word document title can be changed via the OneDrive editor."
+	@description = "This test ensures that a Word document title can be changed via the OneDrive editor."
 	@priority = "4"
 	test EditWordDocument {
-		property portal.acceptance = "quarantine";
 		property test.name.skip.portal.instance = "OneDrive#EditWordDocument";
 
 		for (var documentTitle : list "Document_3,Word Doc Title Edited") {

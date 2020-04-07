@@ -349,6 +349,8 @@ definition {
 
 	@priority = "4"
 	test AddMBThreadWithMultipleAttachments {
+		property portal.upstream = "quarantine";
+
 		Navigator.gotoPage(pageName = "Message Boards Page");
 
 		AssertClick(
@@ -372,10 +374,22 @@ definition {
 				locator1 = "TextInput#FILE",
 				value1 = "${mbThreadAttachment}");
 
+			Pause(locator1 = "5000");
+
 			AssertTextEquals(
 				key_attachmentName = "${mbThreadAttachment}",
 				locator1 = "MessageBoardsEditMessage#ATTACHMENTS_SELECTED_FILE",
 				value1 = "${mbThreadAttachment}");
+
+			if (IsElementPresent(locator1 = "Header#H4_TITLE", key_title = "Uploading")) {
+				Refresh();
+
+				Click(locator1 = "Checkbox#SELECT_ALL");
+			}
+
+			AssertChecked.assertCheckedNotVisible(
+				checkboxName = "${mbThreadAttachment}",
+				locator1 = "Checkbox#ANY_CHECKBOX");
 		}
 
 		PortletEntry.publish();

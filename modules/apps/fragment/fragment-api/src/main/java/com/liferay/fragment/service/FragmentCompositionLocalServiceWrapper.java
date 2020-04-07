@@ -475,6 +475,16 @@ public class FragmentCompositionLocalServiceWrapper
 			userId, groupId, folderName);
 	}
 
+	@Override
+	public com.liferay.fragment.model.FragmentComposition
+			moveFragmentComposition(
+				long fragmentCompositionId, long fragmentCollectionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentCompositionLocalService.moveFragmentComposition(
+			fragmentCompositionId, fragmentCollectionId);
+	}
+
 	/**
 	 * Updates the fragment composition in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -512,6 +522,15 @@ public class FragmentCompositionLocalServiceWrapper
 		return _fragmentCompositionLocalService.updateFragmentComposition(
 			userId, fragmentCompositionId, name, description, data,
 			previewFileEntryId, status);
+	}
+
+	@Override
+	public com.liferay.fragment.model.FragmentComposition
+			updateFragmentComposition(long fragmentCompositionId, String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentCompositionLocalService.updateFragmentComposition(
+			fragmentCompositionId, name);
 	}
 
 	@Override

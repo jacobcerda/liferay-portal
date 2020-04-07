@@ -23,6 +23,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,126 +34,217 @@ import org.json.JSONObject;
  */
 public class SpiraTestCaseRun extends BaseSpiraArtifact {
 
-	public static SpiraTestCaseRun recordTestSpiraTestCaseRun(
-			SpiraProject spiraProject, SpiraTestCaseObject spiraTestCaseObject)
-		throws IOException {
-
-		List<SpiraTestCaseRun> spiraTestCaseRuns = recordTestSpiraTestCaseRuns(
-			spiraProject, spiraTestCaseObject);
-
-		if (spiraTestCaseRuns.isEmpty()) {
-			return null;
-		}
-
-		if (spiraTestCaseRuns.size() > 1) {
-			throw new RuntimeException("Duplicate records found");
-		}
-
-		return spiraTestCaseRuns.get(0);
-	}
-
 	public static List<SpiraTestCaseRun> recordTestSpiraTestCaseRuns(
-			SpiraProject spiraProject,
-			SpiraTestCaseObject... spiraTestCaseObjects)
-		throws IOException {
+		SpiraProject spiraProject, SpiraRelease spiraRelease,
+		SpiraReleaseBuild spiraReleaseBuild, List<Result> results) {
+
+		Integer releaseID = null;
+
+		if (spiraRelease != null) {
+			releaseID = spiraRelease.getID();
+		}
+
+		Integer releaseBuildID = null;
+
+		if (spiraReleaseBuild != null) {
+			releaseBuildID = spiraReleaseBuild.getID();
+		}
 
 		Calendar calendar = Calendar.getInstance();
 
-		List<JSONObject> requestJSONObjects = new ArrayList<>(
-			spiraTestCaseObjects.length);
+		JSONArray requestJSONArray = new JSONArray();
 
-		for (SpiraTestCaseObject spiraTestCase : spiraTestCaseObjects) {
+		for (Result result : results) {
 			JSONObject requestJSONObject = new JSONObject();
 
-			requestJSONObject.put("ExecutionStatusId", STATUS_PASSED);
-			requestJSONObject.put("RunnerMessage", spiraTestCase.getPath());
+			SpiraTestCaseObject spiraTestCase = result.getSpiraTestCase();
+
+			requestJSONObject.put(
+				SpiraTestCaseObject.ID_KEY, spiraTestCase.getID());
+			requestJSONObject.put(
+				"CustomProperties", result.getCustomListValuesJSONArray());
+			requestJSONObject.put("ExecutionStatusId", result.getStatusID());
+			requestJSONObject.put("RunnerMessage", spiraTestCase.getName());
 			requestJSONObject.put("RunnerName", "Liferay CI");
-			requestJSONObject.put("RunnerStackTrace", "");
+			requestJSONObject.put("RunnerStackTrace", result.getDescription());
 			requestJSONObject.put("RunnerTestName", spiraTestCase.getName());
 			requestJSONObject.put(
 				"StartDate", PathSpiraArtifact.toDateString(calendar));
-			requestJSONObject.put("TestCaseId", spiraTestCase.getID());
-			requestJSONObject.put("TestRunFormatId", RUNNER_FORMAT_PLAIN);
+			requestJSONObject.put(
+				"TestRunFormatId", result.getRunnerFormatID());
 
-			requestJSONObjects.add(requestJSONObject);
-		}
-
-		return recordSpiraTestCaseRuns(
-			spiraProject, requestJSONObjects.toArray(new JSONObject[0]));
-	}
-
-	@Override
-	public int getID() {
-		return jsonObject.getInt("TestRunId");
-	}
-
-	protected static List<SpiraTestCaseRun> getSpiraTestCaseRuns(
-			SpiraProject spiraProject, SpiraTestCaseObject spiraTestCase,
-			SearchParameter... searchParameters)
-		throws IOException {
-
-		List<SpiraTestCaseRun> spiraTestCaseRuns = new ArrayList<>();
-
-		for (SpiraTestCaseRun spiraTestCaseRun : _spiraTestCaseRuns.values()) {
-			if (spiraTestCaseRun.matches(searchParameters)) {
-				spiraTestCaseRuns.add(spiraTestCaseRun);
+			if (releaseID != null) {
+				requestJSONObject.put("ReleaseId", releaseID);
 			}
+
+			if (releaseBuildID != null) {
+				requestJSONObject.put("BuildId", releaseBuildID);
+			}
+
+			requestJSONArray.put(requestJSONObject);
 		}
 
-		if (!spiraTestCaseRuns.isEmpty()) {
-			return spiraTestCaseRuns;
-		}
-
-		Map<String, String> urlParameters = new HashMap<>();
-
-		urlParameters.put("number_of_rows", String.valueOf(1000));
-		urlParameters.put("sort_direction", "DESC");
-		urlParameters.put("sort_field", "TestRunId");
-		urlParameters.put("starting_row", String.valueOf(1));
+		String urlPath = "projects/{project_id}/test-runs/record-multiple";
 
 		Map<String, String> urlPathReplacements = new HashMap<>();
 
 		urlPathReplacements.put(
 			"project_id", String.valueOf(spiraProject.getID()));
-		urlPathReplacements.put(
-			"test_case_id", String.valueOf(spiraTestCase.getID()));
 
-		JSONArray requestJSONArray = new JSONArray();
+		try {
+			JSONArray responseJSONArray = SpiraRestAPIUtil.requestJSONArray(
+				urlPath, null, urlPathReplacements, HttpRequestMethod.POST,
+				requestJSONArray.toString());
 
-		for (SearchParameter searchParameter : searchParameters) {
-			requestJSONArray.put(searchParameter.toFilterJSONObject());
-		}
+			List<SpiraTestCaseRun> spiraTestCaseRuns = new ArrayList<>();
 
-		JSONArray responseJSONArray = SpiraRestAPIUtil.requestJSONArray(
-			"projects/{project_id}/test-cases/{test_case_id}/test-runs/search",
-			urlParameters, urlPathReplacements, HttpRequestMethod.POST,
-			requestJSONArray.toString());
+			for (int i = 0; i < responseJSONArray.length(); i++) {
+				JSONObject responseJSONObject = responseJSONArray.getJSONObject(
+					i);
 
-		for (int i = 0; i < responseJSONArray.length(); i++) {
-			JSONObject responseJSONObject = responseJSONArray.getJSONObject(i);
+				responseJSONObject.put(
+					SpiraProject.ID_KEY, spiraProject.getID());
 
-			responseJSONObject.put("ProjectId", spiraProject.getID());
-
-			SpiraTestCaseRun spiraTestCaseRun = new SpiraTestCaseRun(
-				responseJSONObject);
-
-			_spiraTestCaseRuns.put(
-				_createSpiraTestCaseRunKey(
-					spiraProject.getID(), spiraTestCase.getID(),
-					spiraTestCaseRun.getID()),
-				spiraTestCaseRun);
-
-			if (spiraTestCaseRun.matches(searchParameters)) {
-				spiraTestCaseRuns.add(spiraTestCaseRun);
+				spiraTestCaseRuns.add(new SpiraTestCaseRun(responseJSONObject));
 			}
+
+			return spiraTestCaseRuns;
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
+	}
+
+	public static class Result {
+
+		public Result(
+			SpiraTestCaseObject spiraTestCase, RunnerFormat runnerFormat,
+			String runnerStackTrace, Status status,
+			List<SpiraCustomList.Value> spiraCustomListValues) {
+
+			_spiraTestCase = spiraTestCase;
+			_runnerFormat = runnerFormat;
+			_description = runnerStackTrace;
+			_status = status;
+			_spiraCustomListValues = spiraCustomListValues;
 		}
 
-		return spiraTestCaseRuns;
+		public JSONArray getCustomListValuesJSONArray() {
+			JSONArray customListValuesJSONArray = new JSONArray();
+
+			if (_spiraCustomListValues == null) {
+				return customListValuesJSONArray;
+			}
+
+			for (SpiraCustomList.Value spiraCustomListValue :
+					_spiraCustomListValues) {
+
+				SpiraCustomProperty spiraCustomProperty =
+					spiraCustomListValue.getSpiraCustomProperty();
+
+				JSONArray integerListValueJSONArray = new JSONArray();
+
+				integerListValueJSONArray.put(spiraCustomListValue.getID());
+
+				JSONObject customListValuesJSONObject = new JSONObject();
+
+				customListValuesJSONObject.put(
+					"IntegerListValue", integerListValueJSONArray);
+				customListValuesJSONObject.put(
+					"PropertyNumber", spiraCustomProperty.getPropertyNumber());
+
+				customListValuesJSONArray.put(customListValuesJSONObject);
+			}
+
+			return customListValuesJSONArray;
+		}
+
+		public String getDescription() {
+			return _description;
+		}
+
+		public Integer getRunnerFormatID() {
+			return _runnerFormat.getID();
+		}
+
+		public SpiraTestCaseObject getSpiraTestCase() {
+			return _spiraTestCase;
+		}
+
+		public Integer getStatusID() {
+			return _status.getID();
+		}
+
+		private final String _description;
+		private final RunnerFormat _runnerFormat;
+		private final List<SpiraCustomList.Value> _spiraCustomListValues;
+		private final SpiraTestCaseObject _spiraTestCase;
+		private final Status _status;
+
+	}
+
+	public static enum RunnerFormat {
+
+		HTML(2), PLAIN(1);
+
+		public Integer getID() {
+			return _id;
+		}
+
+		private RunnerFormat(Integer id) {
+			_id = id;
+		}
+
+		private final Integer _id;
+
+	}
+
+	public static enum Status {
+
+		BLOCKED(5), CAUTION(6), FAILED(1), NOT_APPLICABLE(4), NOT_RUN(3),
+		PASSED(2);
+
+		public Integer getID() {
+			return _id;
+		}
+
+		private Status(Integer id) {
+			_id = id;
+		}
+
+		private final Integer _id;
+
+	}
+
+	protected static List<SpiraTestCaseRun> getSpiraTestCaseRuns(
+		final SpiraProject spiraProject,
+		final SpiraTestCaseObject spiraTestCase,
+		final SearchQuery.SearchParameter... searchParameters) {
+
+		return getSpiraArtifacts(
+			SpiraTestCaseRun.class,
+			new Supplier<List<JSONObject>>() {
+
+				@Override
+				public List<JSONObject> get() {
+					return _requestSpiraTestCaseRuns(
+						spiraProject, spiraTestCase, searchParameters);
+				}
+
+			},
+			new Function<JSONObject, SpiraTestCaseRun>() {
+
+				@Override
+				public SpiraTestCaseRun apply(JSONObject jsonObject) {
+					return new SpiraTestCaseRun(jsonObject);
+				}
+
+			},
+			searchParameters);
 	}
 
 	protected static List<SpiraTestCaseRun> recordSpiraTestCaseRuns(
-			SpiraProject spiraProject, JSONObject... requestJSONObjects)
-		throws IOException {
+		SpiraProject spiraProject, JSONObject... requestJSONObjects) {
 
 		String urlPath = "projects/{project_id}/test-runs/record-multiple";
 
@@ -166,50 +259,88 @@ public class SpiraTestCaseRun extends BaseSpiraArtifact {
 			requestJSONArray.put(requestJSONObject);
 		}
 
-		JSONArray responseJSONArray = SpiraRestAPIUtil.requestJSONArray(
-			urlPath, null, urlPathReplacements, HttpRequestMethod.POST,
-			requestJSONArray.toString());
+		try {
+			JSONArray responseJSONArray = SpiraRestAPIUtil.requestJSONArray(
+				urlPath, null, urlPathReplacements, HttpRequestMethod.POST,
+				requestJSONArray.toString());
 
-		List<SpiraTestCaseRun> spiraTestCaseRuns = new ArrayList<>();
+			List<SpiraTestCaseRun> spiraTestCaseRuns = new ArrayList<>();
 
-		for (int i = 0; i < responseJSONArray.length(); i++) {
-			JSONObject responseJSONObject = responseJSONArray.getJSONObject(i);
+			for (int i = 0; i < responseJSONArray.length(); i++) {
+				JSONObject responseJSONObject = responseJSONArray.getJSONObject(
+					i);
 
-			responseJSONObject.put("ProjectId", spiraProject.getID());
+				responseJSONObject.put(
+					SpiraProject.ID_KEY, spiraProject.getID());
 
-			spiraTestCaseRuns.add(new SpiraTestCaseRun(responseJSONObject));
+				spiraTestCaseRuns.add(new SpiraTestCaseRun(responseJSONObject));
+			}
+
+			return spiraTestCaseRuns;
 		}
-
-		return spiraTestCaseRuns;
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
 	}
 
-	protected static final int RUNNER_FORMAT_HTML = 2;
+	protected static final Integer ARTIFACT_TYPE_ID = 5;
 
-	protected static final int RUNNER_FORMAT_PLAIN = 1;
+	protected static final String ARTIFACT_TYPE_NAME = "testrun";
 
-	protected static final int STATUS_BLOCKED = 5;
+	protected static final String ID_KEY = "TestRunId";
 
-	protected static final int STATUS_CAUTION = 6;
+	private static List<JSONObject> _requestSpiraTestCaseRuns(
+		SpiraProject spiraProject, SpiraTestCaseObject spiraTestCase,
+		SearchQuery.SearchParameter... searchParameters) {
 
-	protected static final int STATUS_FAILED = 1;
+		Map<String, String> urlParameters = new HashMap<>();
 
-	protected static final int STATUS_NOT_APPLICABLE = 4;
+		urlParameters.put("number_of_rows", String.valueOf(1000));
+		urlParameters.put("sort_direction", "DESC");
+		urlParameters.put("sort_field", ID_KEY);
+		urlParameters.put("starting_row", String.valueOf(1));
 
-	protected static final int STATUS_NOT_RUN = 3;
+		Map<String, String> urlPathReplacements = new HashMap<>();
 
-	protected static final int STATUS_PASSED = 2;
+		urlPathReplacements.put(
+			"project_id", String.valueOf(spiraProject.getID()));
+		urlPathReplacements.put(
+			"test_case_id", String.valueOf(spiraTestCase.getID()));
 
-	private static String _createSpiraTestCaseRunKey(
-		int projectID, int testCaseID, int testCaseRunID) {
+		JSONArray requestJSONArray = new JSONArray();
 
-		return projectID + "-" + testCaseID + "-" + testCaseRunID;
+		for (SearchQuery.SearchParameter searchParameter : searchParameters) {
+			requestJSONArray.put(searchParameter.toFilterJSONObject());
+		}
+
+		try {
+			JSONArray responseJSONArray = SpiraRestAPIUtil.requestJSONArray(
+				"projects/{project_id}/test-cases/{test_case_id}/test-runs" +
+					"/search",
+				urlParameters, urlPathReplacements, HttpRequestMethod.POST,
+				requestJSONArray.toString());
+
+			List<JSONObject> spiraTestCaseRuns = new ArrayList<>();
+
+			for (int i = 0; i < responseJSONArray.length(); i++) {
+				JSONObject responseJSONObject = responseJSONArray.getJSONObject(
+					i);
+
+				responseJSONObject.put(
+					SpiraProject.ID_KEY, spiraProject.getID());
+
+				spiraTestCaseRuns.add(responseJSONObject);
+			}
+
+			return spiraTestCaseRuns;
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
 	}
 
 	private SpiraTestCaseRun(JSONObject jsonObject) {
 		super(jsonObject);
 	}
-
-	private static final Map<String, SpiraTestCaseRun> _spiraTestCaseRuns =
-		new HashMap<>();
 
 }

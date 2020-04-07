@@ -4,13 +4,19 @@
 			{
 				"definition" : {
 					"fragment" : {
-						"fragmentKey" : "my-key"
+						"key" : "my-key"
 					},
 					"fragmentFields" : [
 						{
 							"id" : "image-square",
 							"value": {
 								"fragmentImage": {
+									"description" : {
+										"value_i18n": {
+											"en_US" : "A greeting to Liferay",
+											"es_ES" : "Un saludo para Liferay España"
+										}
+									},
 									"title" : {
 										"value_i18n": {
 											"en_US" : "Hello Liferay!",
@@ -25,10 +31,10 @@
 									}
 								},
 								"fragmentLink": {
-									"target": "Blank",
-									"value": {
-										"href": "http://www.liferay.com"
-									}
+									"href": {
+										"value": "http://www.liferay.com"
+									},
+									"target": "Blank"
 								}
 							}
 						}

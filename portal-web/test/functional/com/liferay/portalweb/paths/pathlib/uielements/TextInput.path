@@ -189,6 +189,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>EMAIL_VERIFICATION_CODE</td>
+	<td>//div[label[contains(.,'Email Verification Code')]]/input</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ENTER_AGAIN</td>
 	<td>//div[label[contains(.,'Enter Again')]]/input</td>
 	<td></td>
@@ -235,7 +240,7 @@
 </tr>
 <tr>
 	<td>GENERIC_TEXT_INPUT</td>
-	<td>//div[label[contains(.,'${key_fieldLabel}')]]//input[@type='text']</td>
+	<td>//div[label[contains(.,'${key_fieldLabel}')]]//input[@type='text'] | //div[p[contains(.,'${key_fieldLabel}')]]//input[@type='text']</td>
 	<td></td>
 </tr>
 <tr>
@@ -434,6 +439,21 @@
 	<td></td>
 </tr>
 <tr>
+	<td>REDIRECT_DESTINATION_URL</td>
+	<td>//input[contains(@id,'destinationURL')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REDIRECT_SOURCE_URL</td>
+	<td>//input[contains(@id,'sourceURL')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REDIRECT_SOURCE_URL_PREFIX</td>
+	<td>//div[contains(@class,'form-text')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>REMINDER_QUERY</td>
 	<td>//input[contains(@id,'reminderQueryAnswer')]</td>
 	<td></td>
@@ -465,7 +485,7 @@
 </tr>
 <tr>
 	<td>REQUIRED_ALERT</td>
-	<td>//div[contains(@class,'has-error')] | //div[contains(@class,'has-error') and contains(.,'key_fieldName')]</td>
+	<td>//div[contains(@class,'has-error')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -516,6 +536,11 @@
 <tr>
 	<td>SOURCE_URL</td>
 	<td>//input[contains(@id,'_src')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SPECIFIC_FIELD_REQUIRED_ALERT</td>
+	<td>//div[@data-fieldname='${key_fieldName}']//div[@class='required']</td>
 	<td></td>
 </tr>
 <tr>

@@ -23,6 +23,8 @@ data.put("defaultDelta", PropsValues.SEARCH_CONTAINER_PAGE_DEFAULT_DELTA);
 data.put("deltaValues", PropsValues.SEARCH_CONTAINER_PAGE_DELTA_VALUES);
 data.put("isAmPm", DateUtil.isFormatAmPm(locale));
 data.put("maxPages", PropsValues.SEARCH_CONTAINER_PAGE_ITERATOR_MAX_PAGES);
+data.put("userId", themeDisplay.getUserId());
+data.put("userName", PortalUtil.getUserName(themeDisplay.getUserId(), String.valueOf(themeDisplay.getUserId())));
 %>
 
 <div>

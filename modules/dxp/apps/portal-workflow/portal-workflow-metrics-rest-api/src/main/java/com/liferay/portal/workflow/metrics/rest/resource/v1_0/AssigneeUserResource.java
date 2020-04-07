@@ -19,8 +19,9 @@ import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.workflow.metrics.rest.dto.v1_0.AssigneeUser;
+import com.liferay.portal.workflow.metrics.rest.dto.v1_0.AssigneeUserBulkSelection;
 
-import java.util.Date;
+import java.util.Locale;
 
 import javax.annotation.Generated;
 
@@ -43,10 +44,13 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface AssigneeUserResource {
 
-	public Page<AssigneeUser> getProcessAssigneeUsersPage(
-			Long processId, Boolean completed, Date dateEnd, Date dateStart,
-			String keywords, Long[] roleIds, String[] taskKeys,
-			Pagination pagination, Sort[] sorts)
+	public static Builder builder() {
+		return FactoryHolder.factory.create();
+	}
+
+	public Page<AssigneeUser> postProcessAssigneeUsersPage(
+			Long processId, Pagination pagination, Sort[] sorts,
+			AssigneeUserBulkSelection assigneeUserBulkSelection)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(
@@ -69,5 +73,34 @@ public interface AssigneeUserResource {
 
 	public void setContextUser(
 		com.liferay.portal.kernel.model.User contextUser);
+
+	public static class FactoryHolder {
+
+		public static volatile Factory factory;
+
+	}
+
+	@ProviderType
+	public interface Builder {
+
+		public AssigneeUserResource build();
+
+		public Builder checkPermissions(boolean checkPermissions);
+
+		public Builder httpServletRequest(
+			HttpServletRequest httpServletRequest);
+
+		public Builder preferredLocale(Locale preferredLocale);
+
+		public Builder user(com.liferay.portal.kernel.model.User user);
+
+	}
+
+	@ProviderType
+	public interface Factory {
+
+		public Builder create();
+
+	}
 
 }

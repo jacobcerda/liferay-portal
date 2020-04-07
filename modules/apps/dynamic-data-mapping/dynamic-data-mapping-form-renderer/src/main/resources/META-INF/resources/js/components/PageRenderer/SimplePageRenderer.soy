@@ -35,6 +35,7 @@
 				{param activePage: $activePage /}
 				{param editable: $editable /}
 				{param empty: $empty /}
+				{param hideHeader: true /}
 				{param page: $page /}
 				{param pageIndex: $pageIndex /}
 				{param paginationMode: 'single_page' /}
@@ -42,10 +43,5 @@
 				{param spritemap: $spritemap /}
 			{/call}
 		</div>
-		{if $showSubmitButton}
-			<button class="btn btn-primary lfr-ddm-form-submit pull-right" type="submit">
-				{$submitLabel}
-			</button>
-		{/if}
 	</div>
 {/deltemplate}

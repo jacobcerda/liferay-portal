@@ -29,9 +29,11 @@ import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.util.PropsValues;
 
 import java.util.ArrayList;
@@ -84,23 +86,29 @@ public class MFAEmailOTPChecker {
 			return;
 		}
 
+		HttpServletRequest originalHttpServletRequest =
+			_portal.getOriginalServletRequest(httpServletRequest);
+
+		HttpSession httpSession = originalHttpServletRequest.getSession();
+
 		httpServletRequest.setAttribute(
 			MFAEmailOTPWebKeys.MFA_EMAIL_OTP_CONFIGURATION,
 			_getMFAEmailOTPConfiguration(userId));
 		httpServletRequest.setAttribute(
 			MFAEmailOTPWebKeys.MFA_EMAIL_OTP_SEND_TO_ADDRESS,
 			user.getEmailAddress());
+		httpServletRequest.setAttribute(
+			MFAEmailOTPWebKeys.MFA_EMAIL_OTP_SET_AT_TIME,
+			GetterUtil.getLong(
+				httpSession.getAttribute(
+					MFAEmailOTPWebKeys.MFA_EMAIL_OTP_SET_AT_TIME),
+				Long.MIN_VALUE));
 
 		RequestDispatcher requestDispatcher =
 			_servletContext.getRequestDispatcher(
 				"/mfa_email_otp_checker/verify_browser.jsp");
 
 		requestDispatcher.include(httpServletRequest, httpServletResponse);
-
-		HttpServletRequest originalHttpServletRequest =
-			_portal.getOriginalServletRequest(httpServletRequest);
-
-		HttpSession httpSession = originalHttpServletRequest.getSession();
 
 		httpSession.setAttribute(
 			MFAEmailOTPWebKeys.MFA_EMAIL_OTP_PHASE, "verify");
@@ -165,7 +173,7 @@ public class MFAEmailOTPChecker {
 			Date lastFailDate = mfaEmailOTPEntry.getLastFailDate();
 
 			long time =
-				mfaEmailOTPConfiguration.retryTimeout() +
+				(mfaEmailOTPConfiguration.retryTimeout() * Time.SECOND) +
 					lastFailDate.getTime();
 
 			if (time <= System.currentTimeMillis()) {
@@ -339,12 +347,11 @@ public class MFAEmailOTPChecker {
 			return true;
 		}
 
-		long mfaEmailOTPValidatedAtTime = (long)httpSession.getAttribute(
-			MFAEmailOTPWebKeys.MFA_EMAIL_OTP_VALIDATED_AT_TIME);
-
 		long time =
-			(mfaEmailOTPConfiguration.validationExpirationTime() * 1000) +
-				mfaEmailOTPValidatedAtTime;
+			mfaEmailOTPConfiguration.validationExpirationTime() * Time.SECOND;
+
+		time += (long)httpSession.getAttribute(
+			MFAEmailOTPWebKeys.MFA_EMAIL_OTP_VALIDATED_AT_TIME);
 
 		if (time > System.currentTimeMillis()) {
 			_routeAuditMessage(

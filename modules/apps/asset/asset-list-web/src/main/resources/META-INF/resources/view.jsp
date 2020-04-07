@@ -78,6 +78,10 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 							<strong><liferay-ui:message key="<%= HtmlUtil.escape(assetListEntry.getTypeLabel()) %>" /></strong>
 						</h6>
 
+						<h6 class="text-default">
+							<strong><liferay-ui:message key="<%= ResourceActionsUtil.getModelResource(locale, assetListEntry.getAssetEntryType()) %>" /></strong>
+						</h6>
+
 						<%
 						Date statusDate = assetListEntry.getCreateDate();
 						%>
@@ -109,7 +113,7 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 				componentId="emptyResultMessageComponent"
 				defaultEventHandler="emptyResultMessageComponentDefaultEventHandler"
 				description="<%= assetListDisplayContext.getEmptyResultMessageDescription() %>"
-				elementType='<%= LanguageUtil.get(request, "content-sets") %>'
+				elementType='<%= LanguageUtil.get(request, "collections") %>'
 			/>
 		</c:otherwise>
 	</c:choose>

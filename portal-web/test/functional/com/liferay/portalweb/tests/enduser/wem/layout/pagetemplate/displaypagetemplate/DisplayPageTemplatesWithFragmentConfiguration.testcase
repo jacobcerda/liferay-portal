@@ -32,6 +32,7 @@ definition {
 	@priority = "5"
 	test AddCheckboxConfigurationFragmentToDisplayPageTemplate {
 		property portal.acceptance = "true";
+		property portal.upstream = "quarantine";
 
 		task ("Add a section fragment to the fragment collection via JSON") {
 			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "checkbox_configuration.html");
@@ -107,6 +108,7 @@ definition {
 			fragmentName = "itemSelector Fragment Example");
 
 		PageEditor.editContentDisplay(
+			fragmentName = "itemSelector Fragment Example",
 			webcontent = "true",
 			webContentContent = "WC WebContent Content",
 			webContentTitle = "WebContent Title");
@@ -130,10 +132,7 @@ definition {
 
 	@description = "This is a test for LPS-96685. User can change select fragment configuration in a display page template."
 	test AddSelectConfigurationFragmentToDisplayPageTemplate {
-
-		// Ignore test from acceptance until POSHI-48 resolved
-
-		property portal.acceptance = "false";
+		property portal.acceptance = "true";
 
 		task ("Add a section fragment to the fragment collection via JSON") {
 			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "select_configuration.html");

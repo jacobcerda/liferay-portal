@@ -214,6 +214,7 @@ public abstract class BaseKnowledgeBaseArticleResourceTestCase {
 
 	@Test
 	public void testDeleteKnowledgeBaseArticle() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		KnowledgeBaseArticle knowledgeBaseArticle =
 			testDeleteKnowledgeBaseArticle_addKnowledgeBaseArticle();
 
@@ -414,6 +415,7 @@ public abstract class BaseKnowledgeBaseArticleResourceTestCase {
 
 	@Test
 	public void testDeleteKnowledgeBaseArticleMyRating() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		KnowledgeBaseArticle knowledgeBaseArticle =
 			testDeleteKnowledgeBaseArticleMyRating_addKnowledgeBaseArticle();
 
@@ -1656,13 +1658,13 @@ public abstract class BaseKnowledgeBaseArticleResourceTestCase {
 			204,
 			knowledgeBaseArticleResource.
 				putSiteKnowledgeBaseArticleSubscribeHttpResponse(
-					testGroup.getGroupId()));
+					knowledgeBaseArticle.getSiteId()));
 
 		assertHttpResponseStatusCode(
 			404,
 			knowledgeBaseArticleResource.
 				putSiteKnowledgeBaseArticleSubscribeHttpResponse(
-					testGroup.getGroupId()));
+					knowledgeBaseArticle.getSiteId()));
 	}
 
 	protected KnowledgeBaseArticle
@@ -1683,13 +1685,13 @@ public abstract class BaseKnowledgeBaseArticleResourceTestCase {
 			204,
 			knowledgeBaseArticleResource.
 				putSiteKnowledgeBaseArticleUnsubscribeHttpResponse(
-					testGroup.getGroupId()));
+					knowledgeBaseArticle.getSiteId()));
 
 		assertHttpResponseStatusCode(
 			404,
 			knowledgeBaseArticleResource.
 				putSiteKnowledgeBaseArticleUnsubscribeHttpResponse(
-					testGroup.getGroupId()));
+					knowledgeBaseArticle.getSiteId()));
 	}
 
 	protected KnowledgeBaseArticle

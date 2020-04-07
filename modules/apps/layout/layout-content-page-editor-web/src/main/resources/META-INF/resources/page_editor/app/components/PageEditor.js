@@ -23,6 +23,7 @@ import {
 	LayoutDataPropTypes,
 	getLayoutDataItemPropTypes,
 } from '../../prop-types/index';
+import {ITEM_ACTIVATION_ORIGINS} from '../config/constants/itemActivationOrigins';
 import {
 	ARROW_DOWN_KEYCODE,
 	ARROW_UP_KEYCODE,
@@ -33,11 +34,19 @@ import {PAGE_TYPES} from '../config/constants/pageTypes';
 import {config} from '../config/index';
 import {useDispatch, useSelector} from '../store/index';
 import moveItem from '../thunks/moveItem';
-import {useActiveItemId, useIsActive, useSelectItem} from './Controls';
+import {DragAndDropContextProvider} from '../utils/useDragAndDrop';
+import {
+	useActivationOrigin,
+	useActiveItemId,
+	useIsActive,
+	useSelectItem,
+} from './Controls';
 import DragPreview from './DragPreview';
 import {EditableDecorationProvider} from './fragment-content/EditableDecorationContext';
 import {EditableProcessorContextProvider} from './fragment-content/EditableProcessorContext';
 import {
+	CollectionItemWithControls,
+	CollectionWithControls,
 	ColumnWithControls,
 	ContainerWithControls,
 	DropZoneWithControls,
@@ -45,9 +54,10 @@ import {
 	Root,
 	RowWithControls,
 } from './layout-data-items/index';
-import {DragDropManager} from './useDragAndDrop';
 
 const LAYOUT_DATA_ITEMS = {
+	[LAYOUT_DATA_ITEM_TYPES.collection]: CollectionWithControls,
+	[LAYOUT_DATA_ITEM_TYPES.collectionItem]: CollectionItemWithControls,
 	[LAYOUT_DATA_ITEM_TYPES.column]: ColumnWithControls,
 	[LAYOUT_DATA_ITEM_TYPES.container]: ContainerWithControls,
 	[LAYOUT_DATA_ITEM_TYPES.dropZone]: DropZoneWithControls,
@@ -56,7 +66,7 @@ const LAYOUT_DATA_ITEMS = {
 	[LAYOUT_DATA_ITEM_TYPES.row]: RowWithControls,
 };
 
-export default function PageEditor({withinMasterPage = false}) {
+export default function PageEditor({mainItem, withinMasterPage = false}) {
 	const activeItemId = useActiveItemId();
 	const dispatch = useDispatch();
 	const fragmentEntryLinks = useSelector(state => state.fragmentEntryLinks);
@@ -67,8 +77,6 @@ export default function PageEditor({withinMasterPage = false}) {
 		state => state.sidebar.panelId && state.sidebar.open
 	);
 	const store = useSelector(state => state);
-
-	const mainItem = layoutData.items[layoutData.rootItems.main];
 
 	const onClick = event => {
 		if (event.target === event.currentTarget) {
@@ -220,13 +228,13 @@ export default function PageEditor({withinMasterPage = false}) {
 
 				<EditableProcessorContextProvider>
 					<EditableDecorationProvider>
-						<DragDropManager>
+						<DragAndDropContextProvider>
 							<LayoutDataItem
 								fragmentEntryLinks={fragmentEntryLinks}
 								item={mainItem}
 								layoutData={layoutData}
 							/>
-						</DragDropManager>
+						</DragAndDropContextProvider>
 					</EditableDecorationProvider>
 				</EditableProcessorContextProvider>
 			</div>
@@ -235,6 +243,7 @@ export default function PageEditor({withinMasterPage = false}) {
 }
 
 PageEditor.propTypes = {
+	mainItem: getLayoutDataItemPropTypes().isRequired,
 	withinMasterPage: PropTypes.bool,
 };
 
@@ -280,19 +289,25 @@ function LayoutDataItemContent({
 	...otherProps
 }) {
 	const Component = LAYOUT_DATA_ITEMS[item.type];
+	const activationOrigin = useActivationOrigin();
 	const isActive = useIsActive()(item.itemId);
 	const isMounted = useIsMounted();
 	const componentRef = useRef(null);
 
 	useEffect(() => {
-		if (isActive && componentRef.current && isMounted()) {
+		if (
+			isActive &&
+			componentRef.current &&
+			isMounted() &&
+			activationOrigin === ITEM_ACTIVATION_ORIGINS.structureTree
+		) {
 			componentRef.current.scrollIntoView({
 				behavior: 'smooth',
-				block: 'nearest',
+				block: 'center',
 				inline: 'nearest',
 			});
 		}
-	}, [componentRef, isActive, isMounted]);
+	}, [activationOrigin, componentRef, isActive, isMounted]);
 
 	return (
 		<Component item={item} layoutData={layoutData} ref={componentRef}>

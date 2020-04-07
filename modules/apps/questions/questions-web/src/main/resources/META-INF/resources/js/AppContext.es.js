@@ -16,10 +16,11 @@ import React, {createContext, useEffect, useState} from 'react';
 
 import {hasListPermissions} from './utils/client.es';
 
-const AppContext = createContext();
+const AppContext = createContext({});
 
 const AppContextProvider = ({children, ...context}) => {
 	const [canCreateThread, setCanCreateThread] = useState(false);
+	const [section, setSection] = useState({});
 
 	useEffect(() => {
 		hasListPermissions('create', context.siteKey).then(value =>
@@ -32,6 +33,8 @@ const AppContextProvider = ({children, ...context}) => {
 			value={{
 				...context,
 				canCreateThread,
+				section,
+				setSection,
 			}}
 		>
 			{children}

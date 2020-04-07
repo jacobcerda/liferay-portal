@@ -28,6 +28,7 @@ export default function ItemSelector({
 	label,
 	onItemSelect,
 	selectedItemTitle,
+	showMappedItems = true,
 }) {
 	const mappedInfoItems = useSelector(state => state.mappedInfoItems);
 	const [active, setActive] = useState(false);
@@ -48,12 +49,15 @@ export default function ItemSelector({
 					value={selectedItemTitle || ''}
 				/>
 
-				{mappedInfoItems.length > 0 ? (
+				{mappedInfoItems.length > 0 && showMappedItems ? (
 					<ClayDropDown
 						active={active}
 						onActiveChange={setActive}
 						trigger={
 							<ClayButtonWithIcon
+								aria-label={Liferay.Language.get(
+									'select-content-button'
+								)}
 								displayType="secondary"
 								onClick={() => setActive(true)}
 								small
@@ -84,12 +88,15 @@ export default function ItemSelector({
 									)
 								}
 							>
-								{Liferay.Language.get('select-content')} ...
+								{Liferay.Language.get('select-content')}...
 							</ClayDropDown.Item>
 						</ClayDropDown.ItemList>
 					</ClayDropDown>
 				) : (
 					<ClayButtonWithIcon
+						aria-label={Liferay.Language.get(
+							'select-content-button'
+						)}
 						displayType="secondary"
 						onClick={() =>
 							openInfoItemSelector(

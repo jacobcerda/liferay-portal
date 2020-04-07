@@ -388,33 +388,18 @@ public abstract class BaseBuild implements Build {
 
 	@Override
 	public String getConsoleText() {
-		String consoleText = JenkinsResultsParserUtil.getCachedText(
-			_PREFIX_CONSOLE_TEXT_CACHE + getBuildURL());
-
-		if (consoleText != null) {
-			return consoleText;
-		}
-
 		String buildURL = getBuildURL();
 
-		if (buildURL != null) {
-			String status = getStatus();
-
-			JenkinsConsoleTextLoader jenkinsConsoleTextLoader =
-				new JenkinsConsoleTextLoader(
-					getBuildURL(), status.equals("completed"));
-
-			consoleText = jenkinsConsoleTextLoader.getConsoleText();
-
-			if (consoleText.contains("\nFinished:")) {
-				JenkinsResultsParserUtil.saveToCacheFile(
-					_PREFIX_CONSOLE_TEXT_CACHE + getBuildURL(), consoleText);
-			}
-
-			return consoleText;
+		if (buildURL == null) {
+			return "";
 		}
 
-		return "";
+		if (_jenkinsConsoleTextLoader == null) {
+			_jenkinsConsoleTextLoader = new JenkinsConsoleTextLoader(
+				getBuildURL());
+		}
+
+		return _jenkinsConsoleTextLoader.getConsoleText();
 	}
 
 	@Override
@@ -491,7 +476,8 @@ public abstract class BaseBuild implements Build {
 			return downstreamBuilds;
 		}
 
-		List<Build> filteredDownstreamBuilds = new ArrayList<>();
+		List<Build> filteredDownstreamBuilds = Collections.synchronizedList(
+			new ArrayList<Build>());
 
 		for (Build downstreamBuild : downstreamBuilds) {
 			if (((status == null) ||
@@ -1138,6 +1124,17 @@ public abstract class BaseBuild implements Build {
 	}
 
 	@Override
+	public String getTestSuiteName() {
+		Build parentBuild = getParentBuild();
+
+		if (parentBuild == null) {
+			return "default";
+		}
+
+		return parentBuild.getTestSuiteName();
+	}
+
+	@Override
 	public TopLevelBuild getTopLevelBuild() {
 		Build topLevelBuild = this;
 
@@ -1405,11 +1402,11 @@ public abstract class BaseBuild implements Build {
 		JenkinsSlave jenkinsSlave = getJenkinsSlave();
 
 		String message = JenkinsResultsParserUtil.combine(
-			slaveOfflineRule.getName(), " failure detected at ", getBuildURL(),
-			". ", jenkinsSlave.getName(), " will be taken offline.\n\n",
-			slaveOfflineRule.toString(), "\n\n\nOffline Slave URL: https://",
-			_jenkinsMaster.getName(), ".liferay.com/computer/",
-			jenkinsSlave.getName(), "\n");
+			"PINNED\n", slaveOfflineRule.getName(), " failure detected at ",
+			getBuildURL(), ". ", jenkinsSlave.getName(),
+			" will be taken offline.\n\n", slaveOfflineRule.toString(),
+			"\n\n\nOffline Slave URL: https://", _jenkinsMaster.getName(),
+			".liferay.com/computer/", jenkinsSlave.getName(), "\n");
 
 		System.out.println(message);
 
@@ -2069,9 +2066,7 @@ public abstract class BaseBuild implements Build {
 		List<String> foundDownstreamBuildURLs = new ArrayList<>(
 			findDownstreamBuildsInConsoleText());
 
-		JSONObject buildJSONObject;
-
-		buildJSONObject = getBuildJSONObject("runs[number,url]");
+		JSONObject buildJSONObject = getBuildJSONObject("runs[number,url]");
 
 		if ((buildJSONObject != null) && buildJSONObject.has("runs")) {
 			JSONArray runsJSONArray = buildJSONObject.getJSONArray("runs");
@@ -2336,8 +2331,6 @@ public abstract class BaseBuild implements Build {
 	protected Map<String, String> getInjectedEnvironmentVariablesMap()
 		throws IOException {
 
-		Map<String, String> injectedEnvironmentVariablesMap;
-
 		String localBuildURL = JenkinsResultsParserUtil.getLocalURL(
 			getBuildURL());
 
@@ -2348,7 +2341,7 @@ public abstract class BaseBuild implements Build {
 
 		Set<String> envMapJSONObjectKeySet = envMapJSONObject.keySet();
 
-		injectedEnvironmentVariablesMap = new HashMap<>();
+		Map<String, String> injectedEnvironmentVariablesMap = new HashMap<>();
 
 		for (String key : envMapJSONObjectKeySet) {
 			injectedEnvironmentVariablesMap.put(
@@ -2544,6 +2537,32 @@ public abstract class BaseBuild implements Build {
 		}
 
 		return parameterNames;
+	}
+
+	protected Properties getJobProperties() {
+		if (_jobProperties != null) {
+			return _jobProperties;
+		}
+
+		System.out.println("Reading job properties");
+
+		TopLevelBuild topLevelBuild = getTopLevelBuild();
+
+		String topLevelJobName = topLevelBuild.getJobName();
+
+		String repositoryName = null;
+
+		if (topLevelJobName.contains("subrepository")) {
+			repositoryName = topLevelBuild.getBaseGitRepositoryName();
+		}
+
+		Job job = JobFactory.newJob(
+			topLevelJobName, topLevelBuild.getTestSuiteName(),
+			topLevelBuild.getBranchName(), repositoryName);
+
+		_jobProperties = job.getJobProperties();
+
+		return _jobProperties;
 	}
 
 	protected Map<String, String> getParameters(JSONArray jsonArray) {
@@ -3429,8 +3448,6 @@ public abstract class BaseBuild implements Build {
 
 	private static final int _PIXELS_WIDTH_INDENT = 35;
 
-	private static final String _PREFIX_CONSOLE_TEXT_CACHE = "console-text-";
-
 	private static final String[] _TOKENS_HIGH_PRIORITY_CONTENT = {
 		"compileJSP", "SourceFormatter.format", "Unable to compile JSPs"
 	};
@@ -3464,8 +3481,10 @@ public abstract class BaseBuild implements Build {
 
 	private String _buildDescription;
 	private int _buildNumber = -1;
+	private JenkinsConsoleTextLoader _jenkinsConsoleTextLoader;
 	private JenkinsMaster _jenkinsMaster;
 	private JenkinsSlave _jenkinsSlave;
+	private Properties _jobProperties;
 	private Map<String, String> _parameters = new HashMap<>();
 	private final Build _parentBuild;
 	private String _previousStatus;

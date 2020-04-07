@@ -38,6 +38,7 @@ import com.liferay.portal.search.engine.adapter.search.SearchSearchResponse;
 import com.liferay.portal.search.query.BooleanQuery;
 import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.search.query.TermsQuery;
+import com.liferay.portal.search.script.Scripts;
 import com.liferay.portal.search.sort.FieldSort;
 import com.liferay.portal.search.sort.SortOrder;
 import com.liferay.portal.search.sort.Sorts;
@@ -48,6 +49,7 @@ import com.liferay.portal.workflow.metrics.rest.dto.v1_0.Task;
 import com.liferay.portal.workflow.metrics.rest.internal.odata.entity.v1_0.TaskEntityModel;
 import com.liferay.portal.workflow.metrics.rest.internal.resource.helper.ResourceHelper;
 import com.liferay.portal.workflow.metrics.rest.resource.v1_0.TaskResource;
+import com.liferay.portal.workflow.metrics.search.index.name.WorkflowMetricsIndexNameBuilder;
 import com.liferay.portal.workflow.metrics.sla.processor.WorkflowMetricsSLAStatus;
 
 import java.util.Collection;
@@ -128,22 +130,28 @@ public class TaskResourceImpl
 		BooleanQuery slaTaskResultsBooleanQuery = _queries.booleanQuery();
 
 		slaTaskResultsBooleanQuery.addFilterQueryClauses(
-			_queries.term("_index", "workflow-metrics-sla-task-results"));
+			_queries.term(
+				"_index",
+				_slaTaskResultWorkflowMetricsIndexNameBuilder.getIndexName(
+					contextCompany.getCompanyId())));
 		slaTaskResultsBooleanQuery.addMustQueryClauses(
 			_createSLATaskResultsBooleanQuery(
 				completed, dateEnd, dateStart, processId, taskNames));
 
-		BooleanQuery tokensBooleanQuery = _queries.booleanQuery();
+		BooleanQuery tasksBooleanQuery = _queries.booleanQuery();
 
-		tokensBooleanQuery.addFilterQueryClauses(
-			_queries.term("_index", "workflow-metrics-tokens"));
-		tokensBooleanQuery.addMustQueryClauses(
-			_createTokensBooleanQuery(
+		tasksBooleanQuery.addFilterQueryClauses(
+			_queries.term(
+				"_index",
+				_taskWorkflowMetricsIndexNameBuilder.getIndexName(
+					contextCompany.getCompanyId())));
+		tasksBooleanQuery.addMustQueryClauses(
+			_createTasksBooleanQuery(
 				completed, dateEnd, dateStart, processId, taskNames));
 
 		return filterBooleanQuery.addFilterQueryClauses(
 			booleanQuery.addShouldQueryClauses(
-				slaTaskResultsBooleanQuery, tokensBooleanQuery));
+				slaTaskResultsBooleanQuery, tasksBooleanQuery));
 	}
 
 	private BooleanQuery _createBooleanQuery(
@@ -151,7 +159,7 @@ public class TaskResourceImpl
 
 		BooleanQuery booleanQuery = _queries.booleanQuery();
 
-		booleanQuery.addMustNotQueryClauses(_queries.term("tokenId", 0));
+		booleanQuery.addMustNotQueryClauses(_queries.term("taskId", 0));
 
 		return booleanQuery.addMustQueryClauses(
 			_queries.term("completed", completed),
@@ -192,7 +200,7 @@ public class TaskResourceImpl
 
 		if (Validator.isNotNull(key)) {
 			booleanQuery.addMustQueryClauses(
-				_queries.wildcard("taskName", "*" + key + "*"));
+				_queries.wildcard("name", "*" + key + "*"));
 		}
 
 		booleanQuery.addShouldQueryClauses(
@@ -281,13 +289,13 @@ public class TaskResourceImpl
 		};
 	}
 
-	private BooleanQuery _createTokensBooleanQuery(
+	private BooleanQuery _createTasksBooleanQuery(
 		boolean completed, Date dateEnd, Date dateStart, long processId,
 		Set<String> taskNames) {
 
 		BooleanQuery booleanQuery = _queries.booleanQuery();
 
-		booleanQuery.addMustNotQueryClauses(_queries.term("tokenId", "0"));
+		booleanQuery.addMustNotQueryClauses(_queries.term("taskId", "0"));
 
 		if (completed && (dateEnd != null) && (dateStart != null)) {
 			booleanQuery.addMustQueryClauses(
@@ -298,7 +306,7 @@ public class TaskResourceImpl
 		}
 
 		if (!taskNames.isEmpty()) {
-			TermsQuery termsQuery = _queries.terms("taskName");
+			TermsQuery termsQuery = _queries.terms("name");
 
 			termsQuery.addValues(taskNames.toArray(new Object[0]));
 
@@ -313,7 +321,7 @@ public class TaskResourceImpl
 			_queries.term("processId", processId));
 	}
 
-	private BooleanQuery _createTokensBooleanQuery(
+	private BooleanQuery _createTasksBooleanQuery(
 		boolean completed, String key, long processId, String version) {
 
 		BooleanQuery booleanQuery = _queries.booleanQuery();
@@ -331,16 +339,17 @@ public class TaskResourceImpl
 
 		SearchSearchRequest searchSearchRequest = new SearchSearchRequest();
 
-		TermsAggregation termsAggregation = _aggregations.terms(
-			"taskName", "taskName");
+		TermsAggregation termsAggregation = _aggregations.terms("name", "name");
 
 		termsAggregation.setSize(10000);
 
 		searchSearchRequest.addAggregation(termsAggregation);
 
-		searchSearchRequest.setIndexNames("workflow-metrics-tokens");
+		searchSearchRequest.setIndexNames(
+			_taskWorkflowMetricsIndexNameBuilder.getIndexName(
+				contextCompany.getCompanyId()));
 		searchSearchRequest.setQuery(
-			_createTokensBooleanQuery(completed, key, processId, version));
+			_createTasksBooleanQuery(completed, key, processId, version));
 
 		SearchSearchResponse searchSearchResponse =
 			_searchRequestExecutor.executeSearchRequest(searchSearchRequest);
@@ -349,7 +358,7 @@ public class TaskResourceImpl
 			searchSearchResponse.getAggregationResultsMap();
 
 		TermsAggregationResult termsAggregationResult =
-			(TermsAggregationResult)aggregationResultsMap.get("taskName");
+			(TermsAggregationResult)aggregationResultsMap.get("name");
 
 		Collection<Bucket> buckets = termsAggregationResult.getBuckets();
 
@@ -367,7 +376,12 @@ public class TaskResourceImpl
 		SearchSearchRequest searchSearchRequest = new SearchSearchRequest();
 
 		TermsAggregation termsAggregation = _aggregations.terms(
-			"taskName", "taskName");
+			"taskName", null);
+
+		termsAggregation.setScript(
+			_scripts.script(
+				"doc.containsKey('name') ? doc.name.value : " +
+					"doc.taskName.value"));
 
 		FilterAggregation breachedFilterAggregation = _aggregations.filter(
 			"breached",
@@ -377,7 +391,9 @@ public class TaskResourceImpl
 			_resourceHelper.createBreachedScriptedMetricAggregation());
 
 		FilterAggregation countFilterAggregation = _aggregations.filter(
-			"countFilter", _resourceHelper.createTokensBooleanQuery(completed));
+			"countFilter",
+			_resourceHelper.createTasksBooleanQuery(
+				contextCompany.getCompanyId(), completed));
 
 		countFilterAggregation.addChildrenAggregations(
 			_aggregations.avg("durationAvg", "duration"),
@@ -415,7 +431,10 @@ public class TaskResourceImpl
 		searchSearchRequest.addAggregation(termsAggregation);
 
 		searchSearchRequest.setIndexNames(
-			"workflow-metrics-tokens", "workflow-metrics-sla-task-results");
+			_taskWorkflowMetricsIndexNameBuilder.getIndexName(
+				contextCompany.getCompanyId()),
+			_slaTaskResultWorkflowMetricsIndexNameBuilder.getIndexName(
+				contextCompany.getCompanyId()));
 		searchSearchRequest.setQuery(
 			_createBooleanQuery(
 				completed, dateEnd, dateStart, processId, tasksMap.keySet()));
@@ -457,7 +476,9 @@ public class TaskResourceImpl
 
 		searchSearchRequest.addAggregation(termsAggregation);
 
-		searchSearchRequest.setIndexNames("workflow-metrics-nodes");
+		searchSearchRequest.setIndexNames(
+			_nodeWorkflowMetricsIndexNameBuilder.getIndexName(
+				contextCompany.getCompanyId()));
 		searchSearchRequest.setQuery(
 			_createNodesBooleanQuery(key, processId, taskNames, version));
 
@@ -664,6 +685,10 @@ public class TaskResourceImpl
 	@Reference
 	private Language _language;
 
+	@Reference(target = "(workflow.metrics.index.entity.name=node)")
+	private WorkflowMetricsIndexNameBuilder
+		_nodeWorkflowMetricsIndexNameBuilder;
+
 	@Reference
 	private Queries _queries;
 
@@ -671,9 +696,20 @@ public class TaskResourceImpl
 	private ResourceHelper _resourceHelper;
 
 	@Reference
+	private Scripts _scripts;
+
+	@Reference
 	private SearchRequestExecutor _searchRequestExecutor;
+
+	@Reference(target = "(workflow.metrics.index.entity.name=sla-task-result)")
+	private WorkflowMetricsIndexNameBuilder
+		_slaTaskResultWorkflowMetricsIndexNameBuilder;
 
 	@Reference
 	private Sorts _sorts;
+
+	@Reference(target = "(workflow.metrics.index.entity.name=task)")
+	private WorkflowMetricsIndexNameBuilder
+		_taskWorkflowMetricsIndexNameBuilder;
 
 }

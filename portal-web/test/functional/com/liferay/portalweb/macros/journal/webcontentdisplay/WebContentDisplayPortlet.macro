@@ -19,14 +19,14 @@ definition {
 			var key_contentName = "${webContentTitle}";
 
 			AssertClick(
-				key_breadcrumbName = "Sites",
+				key_breadcrumbName = "Sites and Libraries",
 				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
-				value1 = "Sites");
+				value1 = "Sites and Libraries");
 
 			AssertClick(
-				key_groupTab = "Repository",
+				key_groupTab = "Asset Library",
 				locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
-				value1 = "Repository");
+				value1 = "Asset Library");
 
 			LexiconCard.clickCard(card = "${depotName}");
 
@@ -223,11 +223,13 @@ definition {
 
 		Search.searchCP(searchTerm = "${searchTerm}");
 
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
 		var key_webContentTitle = "${webContentTitle}";
 
 		AssertTextEquals(
-			key_webContentTitle = "${webContentTitle}",
-			locator1 = "Link#WEB_CONTENT_ARTICLE",
+			key_listEntry = "${webContentTitle}",
+			locator1 = "LexiconList#LIST_ENTRY_TITLE",
 			value1 = "${webContentTitle}");
 
 		if ("${addSearchedContent}" == "true") {
@@ -266,11 +268,13 @@ definition {
 
 		Search.searchCP(searchTerm = "${webContentTitle}");
 
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
 		var key_webContentTitle = "${webContentTitle}";
 
 		AssertElementNotPresent(
-			key_webContentTitle = "${webContentTitle}",
-			locator1 = "Link#WEB_CONTENT_ARTICLE");
+			key_listEntry = "${webContentTitle}",
+			locator1 = "LexiconList#LIST_ENTRY_TITLE");
 
 		SelectFrame(value1 = "relative=top");
 	}
@@ -296,7 +300,7 @@ definition {
 
 		Click(
 			key_card = "${otherSiteName}",
-			locator1 = "LexiconCard#CARD_TITLE");
+			locator1 = "LexiconCard#CARD_TITLE_LINK");
 
 		var key_listEntry = "${webContentTitle}";
 
@@ -343,14 +347,14 @@ definition {
 			var key_contentName = "${webContentTitle}";
 
 			AssertClick(
-				key_breadcrumbName = "Sites",
+				key_breadcrumbName = "Sites and Libraries",
 				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
-				value1 = "Sites");
+				value1 = "Sites and Libraries");
 
 			AssertClick(
-				key_groupTab = "Repository",
+				key_groupTab = "Asset Library",
 				locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
-				value1 = "Repository");
+				value1 = "Asset Library");
 
 			LexiconCard.clickCard(card = "${depotName}");
 
@@ -371,7 +375,7 @@ definition {
 
 			AssertClick(
 				key_listEntry = "${webContentTitle}",
-				locator1 = "LexiconList#LIST_ENTRY_TITLE",
+				locator1 = "LexiconList#LIST_ENTRY_TITLE_LINK",
 				value1 = "${webContentTitle}");
 
 			SelectFrame(locator1 = "IFrame#DIALOG");

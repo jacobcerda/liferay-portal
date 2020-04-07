@@ -19,12 +19,70 @@
 <%
 String className = GetterUtil.getString((String)request.getAttribute("liferay-ratings:ratings:className"));
 long classPK = GetterUtil.getLong((String)request.getAttribute("liferay-ratings:ratings:classPK"));
+Map<String, Object> data = (Map<String, Object>)request.getAttribute("liferay-ratings:ratings:data");
+boolean inTrash = GetterUtil.getBoolean(request.getAttribute("liferay-ratings:ratings:inTrash"));
+RatingsEntry ratingsEntry = (RatingsEntry)request.getAttribute("liferay-ratings:ratings:ratingsEntry");
+RatingsStats ratingsStats = (RatingsStats)request.getAttribute("liferay-ratings:ratings:ratingsStats");
 String type = GetterUtil.getString((String)request.getAttribute("liferay-ratings:ratings:type"));
 %>
 
-<liferay-ui:ratings
-	className="<%= className %>"
-	classPK="<%= classPK %>"
-	inTrash="<%= false %>"
-	type="<%= type %>"
-/>
+<liferay-util:html-top
+	outputKey="com.liferay.ratings.taglib.servlet.taglib#/page.jsp"
+>
+	<link href="<%= PortalUtil.getStaticResourceURL(request, application.getContextPath() + "/css/main.css") %>" rel="stylesheet" type="text/css" />
+</liferay-util:html-top>
+
+<c:choose>
+	<c:when test="<%= type.equals(RatingsType.LIKE.getValue()) %>">
+		<div>
+			<clay:button
+				disabled="<%= true %>"
+				elementClasses="btn-outline-borderless btn-outline-secondary btn-sm"
+				icon="heart"
+			/>
+
+			<react:component
+				data="<%= data %>"
+				module="js/components/RatingsLike.es"
+			/>
+		</div>
+	</c:when>
+	<c:when test="<%= type.equals(RatingsType.THUMBS.getValue()) %>">
+		<div>
+			<clay:button
+				disabled="<%= true %>"
+				elementClasses="btn-outline-borderless btn-outline-secondary btn-sm"
+				icon="thumbs-up"
+			/>
+
+			<clay:button
+				disabled="<%= true %>"
+				elementClasses="btn-outline-borderless btn-outline-secondary btn-sm"
+				icon="thumbs-down"
+			/>
+
+			<react:component
+				data="<%= data %>"
+				module="js/components/RatingsThumbs.es"
+			/>
+		</div>
+	</c:when>
+	<c:when test="<%= type.equals(RatingsType.STARS.getValue()) %>">
+		<div>
+			<react:component
+				data="<%= data %>"
+				module="js/components/RatingsStars.es"
+			/>
+		</div>
+	</c:when>
+	<c:otherwise>
+		<liferay-ui:ratings
+			className="<%= className %>"
+			classPK="<%= classPK %>"
+			inTrash="<%= inTrash %>"
+			ratingsEntry="<%= ratingsEntry %>"
+			ratingsStats="<%= ratingsStats %>"
+			type="<%= type %>"
+		/>
+	</c:otherwise>
+</c:choose>

@@ -17,6 +17,8 @@ import filterConstants from '../../shared/components/filter/util/filterConstants
 import QuickActionKebab from '../../shared/components/quick-action-kebab/QuickActionKebab.es';
 import ResultsBar from '../../shared/components/results-bar/ResultsBar.es';
 import ToolbarWithSelection from '../../shared/components/toolbar-with-selection/ToolbarWithSelection.es';
+import {capitalize} from '../../shared/util/util.es';
+import {AppContext} from '../AppContext.es';
 import AssigneeFilter from '../filter/AssigneeFilter.es';
 import ProcessStatusFilter, {
 	processStatusConstants,
@@ -24,8 +26,8 @@ import ProcessStatusFilter, {
 import ProcessStepFilter from '../filter/ProcessStepFilter.es';
 import SLAStatusFilter from '../filter/SLAStatusFilter.es';
 import TimeRangeFilter from '../filter/TimeRangeFilter.es';
-import {ModalContext} from './modal/ModalContext.es';
-import {InstanceListContext} from './store/InstanceListPageStore.es';
+import {InstanceListContext} from './InstanceListPageProvider.es';
+import {ModalContext} from './modal/ModalProvider.es';
 
 const Header = ({
 	filterKeys,
@@ -34,6 +36,7 @@ const Header = ({
 	selectedFilters,
 	totalCount,
 }) => {
+	const {userId} = useContext(AppContext);
 	const {
 		selectAll,
 		selectedItems,
@@ -41,32 +44,43 @@ const Header = ({
 		setSelectedItems,
 	} = useContext(InstanceListContext);
 	const previousCount = usePrevious(totalCount);
-	const {bulkModal, setBulkModal, setSingleModal} = useContext(ModalContext);
+	const {setVisibleModal} = useContext(ModalContext);
+
+	const handleClick = useCallback(
+		(bulkModal, singleModal) => {
+			const bulkOperation =
+				selectedItems.length > 1 ||
+				selectedItems[0].taskNames.length > 1;
+
+			setVisibleModal(bulkOperation ? bulkModal : singleModal);
+		},
+		[selectedItems, setVisibleModal]
+	);
+
+	const compareId = itemId => ({id}) => id === itemId;
 
 	const kebabItems = [
 		{
+			icon: 'arrow-start',
+			label: capitalize(Liferay.Language.get('transition')),
+			onClick: () => {
+				setVisibleModal('bulkTransition');
+			},
+		},
+		{
+			icon: 'date',
+			label: Liferay.Language.get('update-tasks-due-dates'),
+			onClick: () => handleClick('bulkUpdateDueDate', 'updateDueDate'),
+		},
+		{
 			icon: 'change',
 			label: Liferay.Language.get('reassign-task'),
-			onClick: () => {
-				if (
-					selectedItems.length > 1 ||
-					selectedItems[0].taskNames.length > 1
-				) {
-					setBulkModal({...bulkModal, visible: true});
-				}
-				else {
-					setSingleModal({
-						selectedItem: selectedItems[0],
-						visible: true,
-					});
-				}
-			},
+			onClick: () => handleClick('bulkReassign', 'singleReassign'),
 		},
 	];
 
 	const selectedOnPage = useMemo(
-		() =>
-			selectedItems.filter(item => items.find(({id}) => id === item.id)),
+		() => selectedItems.filter(({id}) => items.find(compareId(id))),
 		[items, selectedItems]
 	);
 
@@ -79,13 +93,23 @@ const Header = ({
 			selectedOnPage.length > 0 && !allPageSelected && !selectAll,
 	};
 
+	const isRemainingItem = useCallback(
+		clear => ({assigneeUsers = [], id, status}) => {
+			const assignedToUser = !!assigneeUsers.find(
+				({id}) => id === Number(userId)
+			);
+			const completed = status === processStatusConstants.completed;
+			const selected = clear && selectedItems.find(compareId(id));
+			const unassigned = !!assigneeUsers.find(({id}) => id === -1);
+
+			return (unassigned || assignedToUser) && !completed && !selected;
+		},
+		[selectedItems, userId]
+	);
+
 	const remainingItems = useMemo(() => {
-		return items.filter(
-			item =>
-				!selectedItems.find(({id}) => item.id === id) &&
-				item.status !== processStatusConstants.completed
-		);
-	}, [items, selectedItems]);
+		return items.filter(isRemainingItem(true));
+	}, [items, isRemainingItem]);
 
 	const toolbarActive = useMemo(() => selectedItems.length > 0, [
 		selectedItems,
@@ -97,11 +121,11 @@ const Header = ({
 			remainingItems.length > 0 &&
 			previousCount === totalCount
 		) {
-			setSelectedItems(
-				items.filter(
-					item => item.status !== processStatusConstants.completed
-				)
-			);
+			setSelectedItems([
+				...selectedItems,
+				...items.filter(isRemainingItem()),
+			]);
+			setSelectAll(items.length === remainingItems.length);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [items]);
@@ -120,9 +144,7 @@ const Header = ({
 		checked => () => {
 			const updatedItems = checked
 				? [...selectedItems, ...remainingItems]
-				: selectedItems.filter(
-						item => !items.find(({id}) => item.id === id)
-				  );
+				: selectedItems.filter(({id}) => !items.find(compareId(id)));
 
 			setSelectAll(totalCount > 0 && totalCount === updatedItems.length);
 			setSelectedItems(updatedItems);
@@ -135,14 +157,14 @@ const Header = ({
 		() => selectedFilters.find(filter => filter.key === 'statuses'),
 		[selectedFilters]
 	);
-	const {name} = statusesFilterItem ? statusesFilterItem.items[0] : {};
+	const {key} = statusesFilterItem ? statusesFilterItem.items[0] : {};
 	const completedStatusSelected = useMemo(
 		() =>
 			selectedFilters.length > 0 && statusesFilterItem
-				? name === processStatusConstants.completed
+				? key === processStatusConstants.completed
 				: false,
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[name]
+		[key]
 	);
 
 	const selectedFilterItems = useMemo(

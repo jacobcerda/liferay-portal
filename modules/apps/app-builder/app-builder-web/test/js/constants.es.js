@@ -17,10 +17,12 @@ const createItems = size => {
 
 	for (let i = 0; i < size; i++) {
 		items.push({
-			dateCreated: '01/01/2019',
-			dateModified: '01/02/2019',
+			dateCreated: '2020-03-26T11:26:54.262Z',
+			dateModified: '2020-03-26T11:26:54.262Z',
 			id: i + 1,
-			name: `Name ${i + 1}`,
+			name: {
+				en_US: `Item ${i + 1}`,
+			},
 		});
 	}
 
@@ -34,17 +36,18 @@ export const ACTIONS = [
 	},
 ];
 
-export const BODY = item => item;
-
 export const COLUMNS = [
 	{
-		name: 'Name',
+		key: 'name',
+		value: 'Name',
 	},
 	{
-		dateCreated: 'Created Date',
+		key: 'dateCreated',
+		value: 'Created Date',
 	},
 	{
-		dateModified: 'Modified Date',
+		key: 'dateModified',
+		value: 'Modified Date',
 	},
 ];
 
@@ -62,7 +65,6 @@ export const ITEMS = {
 
 export const RESPONSES = {
 	NO_ITEMS: {
-		items: [],
 		lastPage: 1,
 		page: 1,
 		pageSize: 20,

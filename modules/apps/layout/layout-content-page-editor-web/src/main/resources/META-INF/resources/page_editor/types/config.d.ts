@@ -3,6 +3,7 @@ import {PageTypes} from './PageTypes';
 export interface Config {
 	addFragmentEntryLinkCommentURL: string;
 	addFragmentEntryLinkURL: string;
+	addFragmentEntryLinksURL: string;
 	addItemURL: string;
 	addPortletURL: string;
 	addSegmentsExperienceURL: string;
@@ -21,10 +22,15 @@ export interface Config {
 		};
 	};
 
-	collections: Array<{
-		fragmentCollectionId: number;
-		name: string;
-	}>;
+	availableViewportSizes: {
+		[key: string]: {
+			icon: string;
+			label: string;
+			maxWidth: string;
+			minWidth: string;
+			sizeId: string;
+		};
+	};
 
 	defaultEditorConfigurations: {
 		[key: 'comment' | 'rich-text' | 'text']: {
@@ -46,22 +52,11 @@ export interface Config {
 	editFragmentEntryLinkCommentURL: string;
 	editFragmentEntryLinkURL: string;
 	editSegmentsEntryURL: string;
-
-	fragments: Array<{
-		fragmentEntries: Array<{
-			groupId: string;
-			name: string;
-			type: 0 | 1;
-			fragmentEntryKey: string;
-			imagePreviewURL: string;
-		}>;
-		fragmentCollectionId: string;
-		name: string;
-	}>;
-
 	getAssetFieldValueURL: string;
 	getAssetMappingFieldsURL: string;
 	getAvailableTemplatesURL: string;
+	getCollectionFieldURL: string;
+	getCollectionMappingFieldsURL: string;
 	getExperienceUsedPortletsURL: string;
 	getPageContentsURL: string;
 	imageSelectorURL: string;
@@ -106,6 +101,7 @@ export interface Config {
 		toolbarPluginId: string;
 	}>;
 
+	updateConfigurationValuesURL: string;
 	updateItemConfigURL: string;
 	updateLayoutPageTemplateDataURL: string;
 	updateRowColumnsURL: string;

@@ -40,7 +40,7 @@ import com.liferay.exportimport.lar.PermissionImporter;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.PortletRegistry;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
-import com.liferay.layout.admin.web.internal.exportimport.data.handler.util.LayoutPageTemplateStructureDataHandlerUtil;
+import com.liferay.layout.admin.web.internal.exportimport.data.handler.helper.LayoutPageTemplateStructureDataHandlerHelper;
 import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
@@ -311,16 +311,6 @@ public class LayoutStagedModelDataHandler
 	protected void doExportStagedModel(
 			PortletDataContext portletDataContext, Layout layout)
 		throws Exception {
-
-		Layout draftLayout = _layoutLocalService.fetchLayout(
-			_portal.getClassNameId(Layout.class), layout.getPlid());
-
-		boolean published = GetterUtil.getBoolean(
-			layout.getTypeSettingsProperty("published"));
-
-		if ((draftLayout != null) && (layout.isDraft() || !published)) {
-			return;
-		}
 
 		Element layoutElement = portletDataContext.getExportDataElement(layout);
 
@@ -675,6 +665,12 @@ public class LayoutStagedModelDataHandler
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				Layout.class);
 
+		layoutPlids.put(layout.getPlid(), importedLayout.getPlid());
+
+		layouts.put(oldLayoutId, importedLayout);
+
+		portletDataContext.setPlid(importedLayout.getPlid());
+
 		String draftLayoutUuid = layoutElement.attributeValue(
 			"draft-layout-uuid");
 
@@ -683,8 +679,15 @@ public class LayoutStagedModelDataHandler
 				portletDataContext.getReferenceDataElement(
 					layout, Layout.class, layout.getGroupId(), draftLayoutUuid);
 
-			StagedModelDataHandlerUtil.importStagedModel(
-				portletDataContext, draftLayoutElement);
+			long originalPlid = portletDataContext.getPlid();
+
+			try {
+				StagedModelDataHandlerUtil.importStagedModel(
+					portletDataContext, draftLayoutElement);
+			}
+			finally {
+				portletDataContext.setPlid(originalPlid);
+			}
 
 			Layout draftLayout = layouts.get(
 				GetterUtil.getLong(
@@ -718,12 +721,6 @@ public class LayoutStagedModelDataHandler
 
 			importedLayout.setMasterLayoutPlid(masterLayout.getPlid());
 		}
-
-		layoutPlids.put(layout.getPlid(), importedLayout.getPlid());
-
-		layouts.put(oldLayoutId, importedLayout);
-
-		portletDataContext.setPlid(importedLayout.getPlid());
 
 		long parentPlid = layout.getParentPlid();
 		long parentLayoutId = layout.getParentLayoutId();
@@ -1029,11 +1026,11 @@ public class LayoutStagedModelDataHandler
 			Element layoutElement)
 		throws Exception {
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			layout.getTypeSettingsProperties();
 
 		long linkToLayoutId = GetterUtil.getLong(
-			typeSettingsProperties.getProperty(
+			typeSettingsUnicodeProperties.getProperty(
 				"linkToLayoutId", StringPool.BLANK));
 
 		if (linkToLayoutId > 0) {
@@ -1092,9 +1089,11 @@ public class LayoutStagedModelDataHandler
 			return null;
 		}
 
-		UnicodeProperties typeSettings = layout.getTypeSettingsProperties();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			layout.getTypeSettingsProperties();
 
-		String url = GetterUtil.getString(typeSettings.getProperty("url"));
+		String url = GetterUtil.getString(
+			typeSettingsUnicodeProperties.getProperty("url"));
 
 		String friendlyURLPrivateGroupPath =
 			PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING;
@@ -1200,14 +1199,15 @@ public class LayoutStagedModelDataHandler
 			return;
 		}
 
-		UnicodeProperties typeSettings = layout.getTypeSettingsProperties();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			layout.getTypeSettingsProperties();
 
 		String url = (String)friendlyURLInfo[1];
 
 		int x = (Integer)friendlyURLInfo[2];
 		int y = (Integer)friendlyURLInfo[3];
 
-		typeSettings.setProperty(
+		typeSettingsUnicodeProperties.setProperty(
 			"url",
 			url.substring(0, x) + _SAME_GROUP_FRIENDLY_URL + url.substring(y));
 	}
@@ -1227,14 +1227,15 @@ public class LayoutStagedModelDataHandler
 
 		Group group = layout.getGroup();
 
-		UnicodeProperties typeSettings = layout.getTypeSettingsProperties();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			layout.getTypeSettingsProperties();
 
 		String url = (String)friendlyURLInfo[1];
 
 		int x = (Integer)friendlyURLInfo[2];
 		int y = (Integer)friendlyURLInfo[3];
 
-		typeSettings.setProperty(
+		typeSettingsUnicodeProperties.setProperty(
 			"url",
 			url.substring(0, x) + group.getFriendlyURL() + url.substring(y));
 	}
@@ -1504,7 +1505,7 @@ public class LayoutStagedModelDataHandler
 		for (Element layoutPageTemplateStructureElement :
 				layoutPageTemplateStructureElements) {
 
-			_layoutPageTemplateStructureDataHandlerUtil.
+			_layoutPageTemplateStructureDataHandlerHelper.
 				importLayoutPageTemplateStructure(
 					portletDataContext,
 					_portal.getClassNameId(Layout.class.getName()),
@@ -1769,11 +1770,11 @@ public class LayoutStagedModelDataHandler
 			Layout importedLayout, Element layoutElement)
 		throws Exception {
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			layout.getTypeSettingsProperties();
 
 		long linkToLayoutId = GetterUtil.getLong(
-			typeSettingsProperties.getProperty(
+			typeSettingsUnicodeProperties.getProperty(
 				"linkToLayoutId", StringPool.BLANK));
 
 		String linkedToLayoutUuid = layoutElement.attributeValue(
@@ -1790,7 +1791,7 @@ public class LayoutStagedModelDataHandler
 			linkedToLayoutUuid, scopeGroupId, privateLayout);
 
 		if (existingLayout != null) {
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				"linkToLayoutId", String.valueOf(existingLayout.getLayoutId()));
 		}
 
@@ -1858,7 +1859,7 @@ public class LayoutStagedModelDataHandler
 		Layout layout, String newTypeSettings, String portletsMergeMode) {
 
 		try {
-			UnicodeProperties previousTypeSettingsProperties =
+			UnicodeProperties previousTypeSettingsUnicodeProperties =
 				layout.getTypeSettingsProperties();
 
 			LayoutTypePortlet previousLayoutType =
@@ -1869,23 +1870,25 @@ public class LayoutStagedModelDataHandler
 
 			List<String> previousColumns = previousLayoutTemplate.getColumns();
 
-			UnicodeProperties newTypeSettingsProperties = new UnicodeProperties(
-				true);
+			UnicodeProperties newTypeSettingsUnicodeProperties =
+				new UnicodeProperties(true);
 
-			newTypeSettingsProperties.load(newTypeSettings);
+			newTypeSettingsUnicodeProperties.load(newTypeSettings);
 
-			String layoutTemplateId = newTypeSettingsProperties.getProperty(
-				LayoutTypePortletConstants.LAYOUT_TEMPLATE_ID);
+			String layoutTemplateId =
+				newTypeSettingsUnicodeProperties.getProperty(
+					LayoutTypePortletConstants.LAYOUT_TEMPLATE_ID);
 
-			previousTypeSettingsProperties.setProperty(
+			previousTypeSettingsUnicodeProperties.setProperty(
 				LayoutTypePortletConstants.LAYOUT_TEMPLATE_ID,
 				layoutTemplateId);
 
-			String nestedColumnIds = newTypeSettingsProperties.getProperty(
-				LayoutTypePortletConstants.NESTED_COLUMN_IDS);
+			String nestedColumnIds =
+				newTypeSettingsUnicodeProperties.getProperty(
+					LayoutTypePortletConstants.NESTED_COLUMN_IDS);
 
 			if (Validator.isNotNull(nestedColumnIds)) {
-				previousTypeSettingsProperties.setProperty(
+				previousTypeSettingsUnicodeProperties.setProperty(
 					LayoutTypePortletConstants.NESTED_COLUMN_IDS,
 					nestedColumnIds);
 
@@ -1894,9 +1897,10 @@ public class LayoutStagedModelDataHandler
 
 				for (String nestedColumnId : nestedColumnIdsArray) {
 					String nestedColumnValue =
-						newTypeSettingsProperties.getProperty(nestedColumnId);
+						newTypeSettingsUnicodeProperties.getProperty(
+							nestedColumnId);
 
-					previousTypeSettingsProperties.setProperty(
+					previousTypeSettingsUnicodeProperties.setProperty(
 						nestedColumnId, nestedColumnValue);
 				}
 			}
@@ -1908,8 +1912,8 @@ public class LayoutStagedModelDataHandler
 			String[] newPortletIds = new String[0];
 
 			for (String columnId : newLayoutTemplate.getColumns()) {
-				String columnValue = newTypeSettingsProperties.getProperty(
-					columnId);
+				String columnValue =
+					newTypeSettingsUnicodeProperties.getProperty(columnId);
 
 				String[] portletIds = StringUtil.split(columnValue);
 
@@ -1918,12 +1922,13 @@ public class LayoutStagedModelDataHandler
 				}
 				else {
 					String[] previousPortletIds = StringUtil.split(
-						previousTypeSettingsProperties.getProperty(columnId));
+						previousTypeSettingsUnicodeProperties.getProperty(
+							columnId));
 
 					portletIds = appendPortletIds(
 						previousPortletIds, portletIds, portletsMergeMode);
 
-					previousTypeSettingsProperties.setProperty(
+					previousTypeSettingsUnicodeProperties.setProperty(
 						columnId, StringUtil.merge(portletIds));
 				}
 			}
@@ -1933,14 +1938,15 @@ public class LayoutStagedModelDataHandler
 			String columnId = previousColumns.get(0);
 
 			String[] portletIds = StringUtil.split(
-				previousTypeSettingsProperties.getProperty(columnId));
+				previousTypeSettingsUnicodeProperties.getProperty(columnId));
 
 			appendPortletIds(portletIds, newPortletIds, portletsMergeMode);
 
-			previousTypeSettingsProperties.setProperty(
+			previousTypeSettingsUnicodeProperties.setProperty(
 				columnId, StringUtil.merge(portletIds));
 
-			layout.setTypeSettings(previousTypeSettingsProperties.toString());
+			layout.setTypeSettings(
+				previousTypeSettingsUnicodeProperties.toString());
 		}
 		catch (IOException ioException) {
 			layout.setTypeSettings(newTypeSettings);
@@ -2022,18 +2028,18 @@ public class LayoutStagedModelDataHandler
 	protected void resetLastMergeTime(Layout importedLayout, Layout layout)
 		throws PortalException {
 
-		UnicodeProperties typeSettings =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			importedLayout.getTypeSettingsProperties();
 
 		long lastMergeTime = GetterUtil.getLong(
-			typeSettings.getProperty(Sites.LAST_MERGE_TIME));
+			typeSettingsUnicodeProperties.getProperty(Sites.LAST_MERGE_TIME));
 
 		Date existingLayoutModifiedDate = layout.getModifiedDate();
 
 		if ((lastMergeTime != 0) && (existingLayoutModifiedDate != null) &&
 			(existingLayoutModifiedDate.getTime() <= lastMergeTime)) {
 
-			typeSettings.remove(Sites.LAST_MERGE_TIME);
+			typeSettingsUnicodeProperties.remove(Sites.LAST_MERGE_TIME);
 		}
 	}
 
@@ -2337,8 +2343,8 @@ public class LayoutStagedModelDataHandler
 	private LayoutLocalServiceHelper _layoutLocalServiceHelper;
 
 	@Reference
-	private LayoutPageTemplateStructureDataHandlerUtil
-		_layoutPageTemplateStructureDataHandlerUtil;
+	private LayoutPageTemplateStructureDataHandlerHelper
+		_layoutPageTemplateStructureDataHandlerHelper;
 
 	@Reference
 	private LayoutPageTemplateStructureLocalService
@@ -2425,16 +2431,16 @@ public class LayoutStagedModelDataHandler
 				return null;
 			}
 
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeProperties =
 				layout.getTypeSettingsProperties();
 
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				"privateLayout",
 				String.valueOf(linkedToLayout.isPrivateLayout()));
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				"linkToLayoutId", String.valueOf(linkedToLayout.getLayoutId()));
 
-			layout.setTypeSettingsProperties(typeSettingsProperties);
+			layout.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 
 			_layoutLocalService.updateLayout(layout);
 

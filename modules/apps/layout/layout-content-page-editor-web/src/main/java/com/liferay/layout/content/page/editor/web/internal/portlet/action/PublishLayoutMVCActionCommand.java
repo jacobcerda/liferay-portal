@@ -117,9 +117,10 @@ public class PublishLayoutMVCActionCommand
 				actionRequest);
 
 			WorkflowHandlerRegistryUtil.startWorkflowInstance(
-				layout.getCompanyId(), layout.getGroupId(), layout.getUserId(),
-				Layout.class.getName(), layout.getPlid(), layout,
-				serviceContext, Collections.emptyMap());
+				layout.getCompanyId(), layout.getGroupId(),
+				themeDisplay.getUserId(), Layout.class.getName(),
+				layout.getPlid(), layout, serviceContext,
+				Collections.emptyMap());
 		}
 		else {
 			layout = _layoutCopyHelper.copyLayout(draftLayout, layout);
@@ -135,11 +136,11 @@ public class PublishLayoutMVCActionCommand
 
 			draftLayout = _layoutLocalService.getLayout(themeDisplay.getPlid());
 
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeProperties =
 				draftLayout.getTypeSettingsProperties();
 
 			if (Validator.isNotNull(layoutPrototypeUuid)) {
-				typeSettingsProperties.setProperty(
+				typeSettingsUnicodeProperties.setProperty(
 					"layoutPrototypeUuid", layoutPrototypeUuid);
 			}
 

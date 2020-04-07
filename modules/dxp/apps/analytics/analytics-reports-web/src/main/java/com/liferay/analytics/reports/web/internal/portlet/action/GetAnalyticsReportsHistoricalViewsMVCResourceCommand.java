@@ -16,7 +16,7 @@ package com.liferay.analytics.reports.web.internal.portlet.action;
 
 import com.liferay.analytics.reports.web.internal.constants.AnalyticsReportsPortletKeys;
 import com.liferay.analytics.reports.web.internal.data.provider.AnalyticsReportsDataProvider;
-import com.liferay.analytics.reports.web.internal.data.time.TimeSpan;
+import com.liferay.analytics.reports.web.internal.model.TimeSpan;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -33,7 +33,6 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author David Arques
@@ -92,7 +91,7 @@ public class GetAnalyticsReportsHistoricalViewsMVCResourceCommand
 	private static final Log _log = LogFactoryUtil.getLog(
 		GetAnalyticsReportsHistoricalViewsMVCResourceCommand.class);
 
-	@Reference
-	private AnalyticsReportsDataProvider _analyticsReportsDataProvider;
+	private static final AnalyticsReportsDataProvider
+		_analyticsReportsDataProvider = new AnalyticsReportsDataProvider();
 
 }

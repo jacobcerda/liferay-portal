@@ -95,8 +95,19 @@ public class StructuredContentFolderResourceImpl
 		}
 
 		return _getFoldersPage(
-			_getSiteListActions(siteId), siteId,
-			parentStructuredContentFolderId, search, filter, pagination, sorts);
+			HashMapBuilder.<String, Map<String, String>>put(
+				"create",
+				addAction(
+					"UPDATE", "postSiteStructuredContentFolder",
+					"com.liferay.journal", siteId)
+			).put(
+				"get",
+				addAction(
+					"VIEW", "getSiteStructuredContentFoldersPage",
+					"com.liferay.journal", siteId)
+			).build(),
+			parentStructuredContentFolderId, siteId, filter, search, pagination,
+			sorts);
 	}
 
 	@Override
@@ -119,9 +130,29 @@ public class StructuredContentFolderResourceImpl
 			parentStructuredContentFolderId);
 
 		return _getFoldersPage(
-			_getStructuredContentFolderListActions(journalFolder),
-			journalFolder.getGroupId(), parentStructuredContentFolderId, search,
-			filter, pagination, sorts);
+			HashMapBuilder.<String, Map<String, String>>put(
+				"add-subfolder",
+				addAction(
+					"UPDATE", journalFolder,
+					"postStructuredContentFolderStructuredContentFolder")
+			).put(
+				"get",
+				addAction(
+					"VIEW", journalFolder,
+					"getStructuredContentFolderStructuredContentFoldersPage")
+			).put(
+				"subscribe",
+				addAction(
+					"SUBSCRIBE", journalFolder,
+					"putStructuredContentFolderSubscribe")
+			).put(
+				"unsubscribe",
+				addAction(
+					"SUBSCRIBE", journalFolder,
+					"putStructuredContentFolderUnsubscribe")
+			).build(),
+			parentStructuredContentFolderId, journalFolder.getGroupId(), filter,
+			search, pagination, sorts);
 	}
 
 	@Override
@@ -208,36 +239,6 @@ public class StructuredContentFolderResourceImpl
 					siteId, structuredContentFolder.getViewableByAsString())));
 	}
 
-	private Map<String, Map<String, String>> _getActions(
-		JournalFolder journalFolder) {
-
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"add-subfolder",
-			addAction(
-				"UPDATE", journalFolder,
-				"postStructuredContentFolderStructuredContentFolder")
-		).put(
-			"delete",
-			addAction("DELETE", journalFolder, "deleteStructuredContentFolder")
-		).put(
-			"get",
-			addAction("VIEW", journalFolder, "getStructuredContentFolder")
-		).put(
-			"replace",
-			addAction("UPDATE", journalFolder, "putStructuredContentFolder")
-		).put(
-			"subscribe",
-			addAction(
-				"SUBSCRIBE", journalFolder,
-				"putStructuredContentFolderSubscribe")
-		).put(
-			"unsubscribe",
-			addAction(
-				"SUBSCRIBE", journalFolder,
-				"putStructuredContentFolderUnsubscribe")
-		).build();
-	}
-
 	private Map<String, Serializable> _getExpandoBridgeAttributes(
 		StructuredContentFolder structuredContentFolder) {
 
@@ -248,9 +249,9 @@ public class StructuredContentFolderResourceImpl
 	}
 
 	private Page<StructuredContentFolder> _getFoldersPage(
-			Map<String, Map<String, String>> actions, Long siteId,
-			Long parentStructuredContentFolderId, String search, Filter filter,
-			Pagination pagination, Sort[] sorts)
+			Map<String, Map<String, String>> actions,
+			Long parentStructuredContentFolderId, Long siteId, Filter filter,
+			String keywords, Pagination pagination, Sort[] sorts)
 		throws Exception {
 
 		return SearchUtil.search(
@@ -267,7 +268,7 @@ public class StructuredContentFolderResourceImpl
 						BooleanClauseOccur.MUST);
 				}
 			},
-			filter, JournalFolder.class, search, pagination,
+			filter, JournalFolder.class, keywords, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ENTRY_CLASS_PK),
 			searchContext -> {
@@ -280,46 +281,6 @@ public class StructuredContentFolderResourceImpl
 					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))));
 	}
 
-	private Map<String, Map<String, String>> _getSiteListActions(Long siteId) {
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"create",
-			addAction(
-				"UPDATE", "postSiteStructuredContentFolder",
-				"com.liferay.journal", siteId)
-		).put(
-			"get",
-			addAction(
-				"VIEW", "getSiteStructuredContentFoldersPage",
-				"com.liferay.journal", siteId)
-		).build();
-	}
-
-	private Map<String, Map<String, String>>
-		_getStructuredContentFolderListActions(JournalFolder journalFolder) {
-
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"add-subfolder",
-			addAction(
-				"UPDATE", journalFolder,
-				"postStructuredContentFolderStructuredContentFolder")
-		).put(
-			"get",
-			addAction(
-				"VIEW", journalFolder,
-				"getStructuredContentFolderStructuredContentFoldersPage")
-		).put(
-			"subscribe",
-			addAction(
-				"SUBSCRIBE", journalFolder,
-				"putStructuredContentFolderSubscribe")
-		).put(
-			"unsubscribe",
-			addAction(
-				"SUBSCRIBE", journalFolder,
-				"putStructuredContentFolderUnsubscribe")
-		).build();
-	}
-
 	private StructuredContentFolder _toStructuredContentFolder(
 			JournalFolder journalFolder)
 		throws Exception {
@@ -327,8 +288,36 @@ public class StructuredContentFolderResourceImpl
 		return _structuredContentFolderDTOConverter.toDTO(
 			new DefaultDTOConverterContext(
 				contextAcceptLanguage.isAcceptAllLanguages(),
-				_getActions(journalFolder), _dtoConverterRegistry,
-				journalFolder.getFolderId(),
+				HashMapBuilder.<String, Map<String, String>>put(
+					"add-subfolder",
+					addAction(
+						"UPDATE", journalFolder,
+						"postStructuredContentFolderStructuredContentFolder")
+				).put(
+					"delete",
+					addAction(
+						"DELETE", journalFolder,
+						"deleteStructuredContentFolder")
+				).put(
+					"get",
+					addAction(
+						"VIEW", journalFolder, "getStructuredContentFolder")
+				).put(
+					"replace",
+					addAction(
+						"UPDATE", journalFolder, "putStructuredContentFolder")
+				).put(
+					"subscribe",
+					addAction(
+						"SUBSCRIBE", journalFolder,
+						"putStructuredContentFolderSubscribe")
+				).put(
+					"unsubscribe",
+					addAction(
+						"SUBSCRIBE", journalFolder,
+						"putStructuredContentFolderUnsubscribe")
+				).build(),
+				_dtoConverterRegistry, journalFolder.getFolderId(),
 				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
 				contextUser));
 	}

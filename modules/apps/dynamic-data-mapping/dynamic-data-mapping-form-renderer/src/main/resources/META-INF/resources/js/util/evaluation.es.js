@@ -66,7 +66,7 @@ const doEvaluate = debounce((fieldName, evaluatorContext, callback) => {
 			callback(null, mergedPages);
 		})
 		.catch(error => callback(error));
-}, 300);
+}, 600);
 
 export const evaluate = (fieldName, evaluatorContext) => {
 	return new Promise((resolve, reject) => {
@@ -109,41 +109,29 @@ export const mergePages = (
 	newPages,
 	sourcePages
 ) => {
-	const visitor = new PagesVisitor(newPages);
+	const newPagesVisitor = new PagesVisitor(newPages);
+	const sourcePagesVisitor = new PagesVisitor(sourcePages);
 
-	return visitor.mapFields(
-		(field, fieldIndex, columnIndex, rowIndex, pageIndex) => {
+	return newPagesVisitor.mapFields(
+		field => {
 			const sourceField =
-				sourcePages[pageIndex].rows[rowIndex].columns[columnIndex]
-					.fields[fieldIndex];
-
-			const displayErrors =
-				sourceField.displayErrors || field.fieldName === fieldName;
+				sourcePagesVisitor.findField(({name}) => name === field.name) ||
+				{};
 
 			let newField = {
 				...sourceField,
 				...field,
 				defaultLanguageId,
-				displayErrors,
+				displayErrors:
+					sourceField.displayErrors || field.fieldName === fieldName,
 				editingLanguageId,
 				valid: field.valid !== false,
 			};
 
-			if (sourceField.nestedFields && newField.nestedFields) {
-				newField = {
-					...newField,
-					nestedFields: sourceField.nestedFields.map(nestedField => {
-						return {
-							...nestedField,
-							...(newField.nestedFields.find(({fieldName}) => {
-								return fieldName === nestedField.fieldName;
-							}) || {}),
-						};
-					}),
-				};
-			}
-
-			if (newField.type === 'options') {
+			if (
+				newField.type === 'options' &&
+				sourceField.value !== undefined
+			) {
 				newField = {
 					...newField,
 					value: mergeFieldOptions(sourceField, newField),
@@ -160,6 +148,8 @@ export const mergePages = (
 			}
 
 			return newField;
-		}
+		},
+		false,
+		true
 	);
 };

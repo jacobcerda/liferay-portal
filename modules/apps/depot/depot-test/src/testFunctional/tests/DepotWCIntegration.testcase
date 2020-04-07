@@ -90,9 +90,10 @@ definition {
 	}
 
 	@description = "This test covers LPS-105119. It ensures that a web content in a depot can be selected through the field."
-	@ignore = "true"
 	@priority = "4"
 	test SelectDepotContentViaWebContentField {
+		property portal.upstream = "quarantine";
+
 		JSONLayout.addPublicLayout(
 			groupName = "Site Name",
 			layoutName = "Page Name");
@@ -101,7 +102,7 @@ definition {
 			content = "WC WebContent Content",
 			groupName = "Test Depot Name",
 			site = "false",
-			title = "WC WebContent Title");
+			title = "WC Depot WebContent");
 
 		DepotNavigator.openDepotAdmin();
 
@@ -162,14 +163,14 @@ definition {
 			pageName = "Page Name",
 			siteName = "Site Name");
 
-		WebContent.viewPGViaWCD(
-			webContentContent = "WC Depot WebContent",
-			webContentTitle = "Web Content Title");
+		WebContent.viewPGViaWCD(webContentContent = "WC Depot WebContent");
 	}
 
 	@description = "This ensures that a depot web content can be selected through the fragment in a content page on a connected site."
 	@priority = "5"
 	test SelectFromFragmentInContentPage {
+		property portal.upstream = "quarantine";
+
 		JSONWebcontent.addWebContent(
 			content = "WC WebContent Depot",
 			groupName = "Test Depot Name",
@@ -192,6 +193,7 @@ definition {
 
 		PageEditor.editContentDisplay(
 			depotName = "Test Depot Name",
+			fragmentName = "Content",
 			webcontent = "true",
 			webContentContent = "WC WebContent Depot",
 			webContentTitle = "WC WebContent Title");
@@ -201,13 +203,15 @@ definition {
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/site-name/test-content-page-name");
 
 		AssertTextEquals.assertPartialTextAceEditor(
-			locator1 = "PageEditor#CONTENT_PAGE_TEXT_CONTENT",
+			locator1 = "PageEditor#CONTENT_PAGE_WEB_CONTENT_CONTENT",
 			value1 = "WC WebContent Depot");
 	}
 
 	@description = "This ensures that a depot web content can be selected through the fragment in a display page template on a connected site."
 	@priority = "5"
 	test SelectFromFragmentInDisplayPageTemplate {
+		property portal.upstream = "quarantine";
+
 		JSONWebcontent.addWebContent(
 			content = "WC WebContent Depot",
 			groupName = "Test Depot Name",
@@ -230,6 +234,7 @@ definition {
 
 		PageEditor.editContentDisplay(
 			depotName = "Test Depot Name",
+			fragmentName = "Content",
 			webcontent = "true",
 			webContentContent = "WC WebContent Depot",
 			webContentTitle = "WC WebContent Title");
@@ -253,7 +258,7 @@ definition {
 		Navigator.openWithAppendToBaseURL(urlAppend = "web/site-name/w/webcontent-title");
 
 		AssertTextEquals.assertPartialTextAceEditor(
-			locator1 = "PageEditor#CONTENT_PAGE_TEXT_CONTENT",
+			locator1 = "PageEditor#CONTENT_PAGE_WEB_CONTENT_CONTENT",
 			value1 = "WC WebContent Depot");
 	}
 
@@ -333,6 +338,8 @@ definition {
 	@description = "This ensures that a depot web content can be selected through WCD in a display page template on a connected site."
 	@priority = "4"
 	test SelectFromWidgetInDisplayPageTemplate {
+		property portal.upstream = "quarantine";
+
 		JSONWebcontent.addWebContent(
 			content = "WC WebContent Depot",
 			groupName = "Test Depot Name",

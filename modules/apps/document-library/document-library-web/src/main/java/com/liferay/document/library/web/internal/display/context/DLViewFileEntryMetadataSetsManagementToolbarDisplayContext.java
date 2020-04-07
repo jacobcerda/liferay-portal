@@ -15,11 +15,16 @@
 package com.liferay.document.library.web.internal.display.context;
 
 import com.liferay.document.library.web.internal.display.context.util.DLRequestHelper;
+import com.liferay.document.library.web.internal.security.permission.resource.DDMStructurePermission;
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -49,6 +54,8 @@ public class DLViewFileEntryMetadataSetsManagementToolbarDisplayContext
 			dlViewFileEntryMetadataSetsDisplayContext.getStructureSearch());
 
 		_dlRequestHelper = new DLRequestHelper(httpServletRequest);
+		_dlViewFileEntryMetadataSetsDisplayContext =
+			dlViewFileEntryMetadataSetsDisplayContext;
 	}
 
 	@Override
@@ -101,6 +108,20 @@ public class DLViewFileEntryMetadataSetsManagementToolbarDisplayContext
 	}
 
 	@Override
+	public Boolean isShowCreationMenu() {
+		try {
+			return _isShowAddButton();
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug("Unable to get creation menu", portalException);
+			}
+
+			return false;
+		}
+	}
+
+	@Override
 	protected String[] getNavigationKeys() {
 		return new String[] {"all"};
 	}
@@ -110,6 +131,31 @@ public class DLViewFileEntryMetadataSetsManagementToolbarDisplayContext
 		return new String[] {"modified-date", "id"};
 	}
 
+	private boolean _isShowAddButton() throws PortalException {
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)liferayPortletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		Group group = themeDisplay.getScopeGroup();
+
+		if ((!group.hasLocalOrRemoteStagingGroup() || group.isStagingGroup()) &&
+			DDMStructurePermission.containsAddDDMStructurePermission(
+				_dlRequestHelper.getPermissionChecker(),
+				_dlRequestHelper.getScopeGroupId(),
+				_dlViewFileEntryMetadataSetsDisplayContext.
+					getStructureClassNameId())) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DLViewFileEntryMetadataSetsManagementToolbarDisplayContext.class);
+
 	private final DLRequestHelper _dlRequestHelper;
+	private final DLViewFileEntryMetadataSetsDisplayContext
+		_dlViewFileEntryMetadataSetsDisplayContext;
 
 }

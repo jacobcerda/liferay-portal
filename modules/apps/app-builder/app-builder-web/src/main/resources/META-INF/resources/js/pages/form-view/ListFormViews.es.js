@@ -12,13 +12,13 @@
  * details.
  */
 
-import moment from 'moment';
 import React, {useContext} from 'react';
 
 import {AppContext} from '../../AppContext.es';
 import Button from '../../components/button/Button.es';
 import ListView from '../../components/list-view/ListView.es';
 import {confirmDelete} from '../../utils/client.es';
+import {fromNow} from '../../utils/time.es';
 
 export default ({
 	match: {
@@ -78,7 +78,7 @@ export default ({
 			]}
 			addButton={() => (
 				<Button
-					className="nav-btn nav-btn-monospaced navbar-breakpoint-down-d-none"
+					className="nav-btn nav-btn-monospaced"
 					onClick={() => Liferay.Util.navigate(addURL)}
 					symbol="plus"
 					tooltip={Liferay.Language.get('new-form-view')}
@@ -103,8 +103,8 @@ export default ({
 		>
 			{item => ({
 				dataDefinitionId,
-				dateCreated: moment(item.dateCreated).fromNow(),
-				dateModified: moment(item.dateModified).fromNow(),
+				dateCreated: fromNow(item.dateCreated),
+				dateModified: fromNow(item.dateModified),
 				id: item.id,
 				name: <a href={getItemURL(item)}>{item.name.en_US}</a>,
 			})}

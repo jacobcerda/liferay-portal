@@ -16,6 +16,7 @@ package com.liferay.layout.page.template.headless.delivery.dto.v1_0;
 
 import com.liferay.fragment.contributor.FragmentCollectionContributor;
 import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
+import com.liferay.fragment.entry.processor.util.EditableFragmentEntryProcessorUtil;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
@@ -33,11 +34,13 @@ import com.liferay.headless.delivery.dto.v1_0.FragmentFieldHTML;
 import com.liferay.headless.delivery.dto.v1_0.FragmentFieldImage;
 import com.liferay.headless.delivery.dto.v1_0.FragmentFieldText;
 import com.liferay.headless.delivery.dto.v1_0.FragmentImage;
+import com.liferay.headless.delivery.dto.v1_0.FragmentInlineValue;
 import com.liferay.headless.delivery.dto.v1_0.FragmentInstanceDefinition;
 import com.liferay.headless.delivery.dto.v1_0.FragmentLink;
-import com.liferay.headless.delivery.dto.v1_0.InlineLink;
-import com.liferay.headless.delivery.dto.v1_0.InlineValue;
+import com.liferay.headless.delivery.dto.v1_0.FragmentMappedValue;
+import com.liferay.headless.delivery.dto.v1_0.Mapping;
 import com.liferay.layout.util.structure.FragmentLayoutStructureItem;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -54,13 +57,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Rubén Pulido
@@ -86,7 +88,22 @@ public class FragmentInstanceDefinitionConverterUtil {
 		FragmentEntryConfigurationParser fragmentEntryConfigurationParser,
 		FragmentLayoutStructureItem fragmentLayoutStructureItem,
 		FragmentRendererTracker fragmentRendererTracker,
-		boolean saveInlineContent, boolean saveMappingConfiguration) {
+		boolean saveInlineContent, boolean saveMapping) {
+
+		return toFragmentInstanceDefinition(
+			fragmentCollectionContributorTracker,
+			fragmentEntryConfigurationParser, fragmentLayoutStructureItem,
+			fragmentRendererTracker, saveInlineContent, saveMapping, 0);
+	}
+
+	public static FragmentInstanceDefinition toFragmentInstanceDefinition(
+		FragmentCollectionContributorTracker
+			fragmentCollectionContributorTracker,
+		FragmentEntryConfigurationParser fragmentEntryConfigurationParser,
+		FragmentLayoutStructureItem fragmentLayoutStructureItem,
+		FragmentRendererTracker fragmentRendererTracker,
+		boolean saveInlineContent, boolean saveMapping,
+		long segmentsExperienceId) {
 
 		FragmentEntryLink fragmentEntryLink =
 			FragmentEntryLinkLocalServiceUtil.fetchFragmentEntryLink(
@@ -106,12 +123,11 @@ public class FragmentInstanceDefinitionConverterUtil {
 			{
 				fragment = new Fragment() {
 					{
-						fragmentCollectionName = _getFragmentCollectionName(
+						collectionName = _getFragmentCollectionName(
 							fragmentCollectionContributorTracker, fragmentEntry,
 							fragmentRendererTracker, rendererKey);
-						fragmentKey = _getFragmentKey(
-							fragmentEntry, rendererKey);
-						fragmentName = _getFragmentName(
+						key = _getFragmentKey(fragmentEntry, rendererKey);
+						name = _getFragmentName(
 							fragmentEntry, fragmentEntryLink,
 							fragmentRendererTracker, rendererKey);
 					}
@@ -119,13 +135,26 @@ public class FragmentInstanceDefinitionConverterUtil {
 				fragmentConfig = _getFragmentConfig(
 					fragmentEntryConfigurationParser, fragmentEntryLink);
 				fragmentFields = _getFragmentFields(
-					fragmentEntryLink, saveInlineContent);
+					fragmentEntryLink, saveInlineContent, saveMapping,
+					segmentsExperienceId);
 			}
 		};
 	}
 
+	private static List<String> _getAvailableLanguageIds() {
+		Set<Locale> availableLocales = LanguageUtil.getAvailableLocales();
+
+		Stream<Locale> stream = availableLocales.stream();
+
+		return stream.map(
+			availableLocale -> LanguageUtil.getLanguageId(availableLocale)
+		).collect(
+			Collectors.toList()
+		);
+	}
+
 	private static List<FragmentField> _getBackgroundImageFragmentFields(
-		JSONObject jsonObject) {
+		JSONObject jsonObject, long segmentsExperienceId) {
 
 		List<FragmentField> fragmentFields = new ArrayList<>();
 
@@ -135,7 +164,8 @@ public class FragmentInstanceDefinitionConverterUtil {
 			JSONObject imageJSONObject = jsonObject.getJSONObject(
 				backgroundImageId);
 
-			Map<String, String> localeMap = _toLocaleMap(imageJSONObject);
+			Map<String, String> localeMap = _toLocaleMap(
+				imageJSONObject, segmentsExperienceId);
 
 			fragmentFields.add(
 				new FragmentField() {
@@ -145,7 +175,9 @@ public class FragmentInstanceDefinitionConverterUtil {
 							{
 								backgroundImage = new FragmentImage() {
 									{
-										url = new InlineValue() {
+										title = _toTitleFragmentInlineValue(
+											imageJSONObject, localeMap);
+										url = new FragmentInlineValue() {
 											{
 												value_i18n = localeMap;
 											}
@@ -159,20 +191,6 @@ public class FragmentInstanceDefinitionConverterUtil {
 		}
 
 		return fragmentFields;
-	}
-
-	private static Map<String, String> _getEditableTypes(String html) {
-		Map<String, String> editableTypes = new HashMap<>();
-
-		Document document = Jsoup.parse(html);
-
-		Elements elements = document.getElementsByTag("lfr-editable");
-
-		elements.forEach(
-			element -> editableTypes.put(
-				element.attr("id"), element.attr("type")));
-
-		return editableTypes;
 	}
 
 	private static String _getFragmentCollectionName(
@@ -256,7 +274,7 @@ public class FragmentInstanceDefinitionConverterUtil {
 						if (value instanceof JSONObject) {
 							JSONObject valueJSONObject = (JSONObject)value;
 
-							value = _toMap(valueJSONObject);
+							value = valueJSONObject.getString("color");
 						}
 
 						put(key, value);
@@ -288,9 +306,10 @@ public class FragmentInstanceDefinitionConverterUtil {
 	}
 
 	private static FragmentField[] _getFragmentFields(
-		FragmentEntryLink fragmentEntryLink, boolean saveInlineContent) {
+		FragmentEntryLink fragmentEntryLink, boolean saveInlineContent,
+		boolean saveMapping, long segmentsExperienceId) {
 
-		if (!saveInlineContent) {
+		if (!saveInlineContent && !saveMapping) {
 			return new FragmentField[0];
 		}
 
@@ -310,17 +329,20 @@ public class FragmentInstanceDefinitionConverterUtil {
 			_getBackgroundImageFragmentFields(
 				editableValuesJSONObject.getJSONObject(
 					"com.liferay.fragment.entry.processor.background.image." +
-						"BackgroundImageFragmentEntryProcessor")));
+						"BackgroundImageFragmentEntryProcessor"),
+				segmentsExperienceId));
 
-		Map<String, String> editableTypes = _getEditableTypes(
-			fragmentEntryLink.getHtml());
+		Map<String, String> editableTypes =
+			EditableFragmentEntryProcessorUtil.getEditableTypes(
+				fragmentEntryLink.getHtml());
 
 		fragmentFields.addAll(
 			_getTextFragmentFields(
 				editableTypes,
 				editableValuesJSONObject.getJSONObject(
 					"com.liferay.fragment.entry.processor.editable." +
-						"EditableFragmentEntryProcessor")));
+						"EditableFragmentEntryProcessor"),
+				saveMapping, segmentsExperienceId));
 
 		return fragmentFields.toArray(new FragmentField[0]);
 	}
@@ -372,7 +394,8 @@ public class FragmentInstanceDefinitionConverterUtil {
 	}
 
 	private static List<FragmentField> _getTextFragmentFields(
-		Map<String, String> editableTypes, JSONObject jsonObject) {
+		Map<String, String> editableTypes, JSONObject jsonObject,
+		boolean saveMapping, long segmentsExperienceId) {
 
 		List<FragmentField> fragmentFields = new ArrayList<>();
 
@@ -380,15 +403,51 @@ public class FragmentInstanceDefinitionConverterUtil {
 
 		for (String textId : textIds) {
 			fragmentFields.add(
-				_toFragmentField(editableTypes, jsonObject, textId));
+				_toFragmentField(
+					editableTypes, jsonObject, saveMapping,
+					segmentsExperienceId, textId));
 		}
 
 		return fragmentFields;
 	}
 
+	private static boolean _isSaveFragmentMappedValue(
+		JSONObject jsonObject, boolean saveMapping) {
+
+		if (saveMapping && jsonObject.has("classNameId") &&
+			jsonObject.has("classPK") && jsonObject.has("fieldId")) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private static FragmentInlineValue _toDescriptionFragmentInlineValue(
+		JSONObject jsonObject) {
+
+		JSONObject configJSONObject = jsonObject.getJSONObject("config");
+
+		if (configJSONObject == null) {
+			return null;
+		}
+
+		String alt = configJSONObject.getString("alt");
+
+		if (Validator.isNull(alt)) {
+			return null;
+		}
+
+		return new FragmentInlineValue() {
+			{
+				value = alt;
+			}
+		};
+	}
+
 	private static FragmentField _toFragmentField(
 		Map<String, String> editableTypes, JSONObject jsonObject,
-		String textId) {
+		boolean saveMapping, long segmentsExperienceId, String textId) {
 
 		JSONObject textJSONObject = jsonObject.getJSONObject(textId);
 
@@ -402,83 +461,137 @@ public class FragmentInstanceDefinitionConverterUtil {
 							textId, "text");
 
 						if (Objects.equals(type, "html")) {
-							return _toFragmentFieldHTML(textJSONObject);
+							return _toFragmentFieldHTML(
+								textJSONObject, saveMapping,
+								segmentsExperienceId);
 						}
 
 						if (Objects.equals(type, "image")) {
-							return _toFragmentFieldImage(textJSONObject);
+							return _toFragmentFieldImage(
+								textJSONObject, saveMapping,
+								segmentsExperienceId);
 						}
 
-						return _toFragmentFieldText(textJSONObject);
+						return _toFragmentFieldText(
+							textJSONObject, saveMapping, segmentsExperienceId);
 					});
 			}
 		};
 	}
 
 	private static FragmentFieldHTML _toFragmentFieldHTML(
-		JSONObject jsonObject) {
+		JSONObject jsonObject, boolean saveMapping, long segmentsExperienceId) {
 
 		return new FragmentFieldHTML() {
 			{
-				html = new InlineValue() {
-					{
-						value_i18n = _toLocaleMap(jsonObject);
-					}
-				};
+				setHtml(
+					() -> {
+						if (_isSaveFragmentMappedValue(
+								jsonObject, saveMapping)) {
+
+							return _toFragmentMappedValue(jsonObject);
+						}
+
+						return new FragmentInlineValue() {
+							{
+								value_i18n = _toLocaleMap(
+									jsonObject, segmentsExperienceId);
+							}
+						};
+					});
 			}
 		};
 	}
 
 	private static FragmentFieldImage _toFragmentFieldImage(
-		JSONObject jsonObject) {
+		JSONObject jsonObject, boolean saveMapping, long segmentsExperienceId) {
 
-		Map<String, String> localeMap = _toLocaleMap(jsonObject);
+		Map<String, String> localeMap = _toLocaleMap(
+			jsonObject, segmentsExperienceId);
 
 		return new FragmentFieldImage() {
 			{
 				fragmentImage = new FragmentImage() {
 					{
-						url = new InlineValue() {
-							{
-								value_i18n = localeMap;
-							}
-						};
+						description = _toDescriptionFragmentInlineValue(
+							jsonObject);
+						title = _toTitleFragmentInlineValue(
+							jsonObject, localeMap);
+
+						setUrl(
+							() -> {
+								if (_isSaveFragmentMappedValue(
+										jsonObject, saveMapping)) {
+
+									return _toFragmentMappedValue(jsonObject);
+								}
+
+								return new FragmentInlineValue() {
+									{
+										value_i18n = localeMap;
+									}
+								};
+							});
 					}
 				};
-				fragmentLink = _toFragmentLink(jsonObject);
+				fragmentLink = _toFragmentLink(jsonObject, saveMapping);
 			}
 		};
 	}
 
 	private static FragmentFieldText _toFragmentFieldText(
-		JSONObject jsonObject) {
+		JSONObject jsonObject, boolean saveMapping, long segmentsExperienceId) {
 
 		return new FragmentFieldText() {
 			{
-				fragmentLink = _toFragmentLink(jsonObject);
-				text = new InlineValue() {
-					{
-						value_i18n = _toLocaleMap(jsonObject);
-					}
-				};
+				fragmentLink = _toFragmentLink(jsonObject, saveMapping);
+
+				setText(
+					() -> {
+						if (_isSaveFragmentMappedValue(
+								jsonObject, saveMapping)) {
+
+							return _toFragmentMappedValue(jsonObject);
+						}
+
+						return new FragmentInlineValue() {
+							{
+								value_i18n = _toLocaleMap(
+									jsonObject, segmentsExperienceId);
+							}
+						};
+					});
 			}
 		};
 	}
 
-	private static FragmentLink _toFragmentLink(JSONObject jsonObject) {
+	private static FragmentLink _toFragmentLink(
+		JSONObject jsonObject, boolean saveMapping) {
+
 		JSONObject configJSONObject = jsonObject.getJSONObject("config");
 
-		if (configJSONObject.isNull("href")) {
+		if (configJSONObject.isNull("href") &&
+			!_isSaveFragmentMappedValue(configJSONObject, saveMapping)) {
+
 			return null;
 		}
 
 		return new FragmentLink() {
 			{
-				value = new InlineLink() {
-					{
-						href = configJSONObject.getString("href");
-					}
-				};
+				setHref(
+					() -> {
+						if (_isSaveFragmentMappedValue(
+								configJSONObject, saveMapping)) {
+
+							return _toFragmentMappedValue(configJSONObject);
+						}
+
+						return new FragmentInlineValue() {
+							{
+								value = configJSONObject.getString("href");
+							}
+						};
+					});
 
 				setTarget(
 					() -> {
@@ -496,9 +609,37 @@ public class FragmentInstanceDefinitionConverterUtil {
 		};
 	}
 
-	private static Map<String, String> _toLocaleMap(JSONObject jsonObject) {
+	private static FragmentMappedValue _toFragmentMappedValue(
+		JSONObject jsonObject) {
+
+		return new FragmentMappedValue() {
+			{
+				mapping = new Mapping() {
+					{
+						fieldKey = jsonObject.getString("fieldId");
+						itemKey = StringBundler.concat(
+							jsonObject.getString("classNameId"),
+							StringPool.POUND, jsonObject.getString("classPK"));
+					}
+				};
+			}
+		};
+	}
+
+	private static Map<String, String> _toLocaleMap(
+		JSONObject jsonObject, long segmentsExperienceId) {
+
+		if (jsonObject.has("segments-experience-id-" + segmentsExperienceId)) {
+			return _toLocaleMap(
+				jsonObject.getJSONObject(
+					"segments-experience-id-" + segmentsExperienceId),
+				segmentsExperienceId);
+		}
+
 		return new HashMap<String, String>() {
 			{
+				List<String> availableLanguageIds = _getAvailableLanguageIds();
+
 				Set<String> keys = jsonObject.keySet();
 
 				Iterator<String> iterator = keys.iterator();
@@ -506,10 +647,7 @@ public class FragmentInstanceDefinitionConverterUtil {
 				while (iterator.hasNext()) {
 					String key = iterator.next();
 
-					if (!key.equals("classNameId") && !key.equals("classPK") &&
-						!key.equals("config") && !key.equals("defaultValue") &&
-						!key.equals("fieldId")) {
-
+					if (availableLanguageIds.contains(key)) {
 						put(key, jsonObject.getString(key));
 					}
 				}
@@ -517,30 +655,26 @@ public class FragmentInstanceDefinitionConverterUtil {
 		};
 	}
 
-	private static Map<String, String> _toMap(JSONObject jsonObject) {
-		HashMap<String, String> map = new HashMap<String, String>() {
-			{
-				Set<String> keys = jsonObject.keySet();
+	private static FragmentInlineValue _toTitleFragmentInlineValue(
+		JSONObject jsonObject, Map<String, String> map) {
 
-				Iterator<String> iterator = keys.iterator();
+		JSONObject configJSONObject = jsonObject.getJSONObject("config");
 
-				while (iterator.hasNext()) {
-					String key = iterator.next();
-
-					String value = jsonObject.getString(key);
-
-					if (Validator.isNotNull(value)) {
-						put(key, value);
-					}
-				}
-			}
-		};
-
-		if (map.isEmpty()) {
+		if (configJSONObject == null) {
 			return null;
 		}
 
-		return map;
+		String imageTitle = configJSONObject.getString("imageTitle");
+
+		if (Validator.isNull(imageTitle) || map.containsValue(imageTitle)) {
+			return null;
+		}
+
+		return new FragmentInlineValue() {
+			{
+				value = imageTitle;
+			}
+		};
 	}
 
 }

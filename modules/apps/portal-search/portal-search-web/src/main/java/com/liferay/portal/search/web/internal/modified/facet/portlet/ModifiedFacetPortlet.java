@@ -91,6 +91,11 @@ public class ModifiedFacetPortlet extends MVCPortlet {
 		ModifiedFacetDisplayContext modifiedFacetDisplayContext =
 			buildDisplayContext(portletSharedSearchResponse, renderRequest);
 
+		if (modifiedFacetDisplayContext.isRenderNothing()) {
+			renderRequest.setAttribute(
+				WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, Boolean.TRUE);
+		}
+
 		renderRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT, modifiedFacetDisplayContext);
 

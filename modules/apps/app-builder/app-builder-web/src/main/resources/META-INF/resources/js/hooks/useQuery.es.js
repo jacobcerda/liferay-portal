@@ -32,6 +32,10 @@ export const toQuery = (string, defaultQuery = {}) => {
 	const params = new URLSearchParams(string);
 
 	params.forEach((value, key) => {
+		if (!isNaN(value)) {
+			value = parseInt(value, 10);
+		}
+
 		query[key] = value;
 	});
 

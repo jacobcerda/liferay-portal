@@ -22,6 +22,7 @@ const items = [
 	{
 		assetTitle: 'New Post 1',
 		assetType: 'Blog',
+		assigneeUsers: [{id: -1, name: 'Unassigned'}],
 		dateCreated: new Date('2019-01-01'),
 		id: 1,
 		taskNames: [],
@@ -29,6 +30,7 @@ const items = [
 	{
 		assetTitle: 'New Post 2',
 		assetType: 'Blog',
+		assigneeUsers: [{id: -1, name: 'Unassigned'}],
 		creatorUser: {
 			name: 'User 1',
 		},
@@ -48,6 +50,9 @@ const routeParams = {
 describe('The instance list card should', () => {
 	const clientMock = {
 		get: jest
+			.fn()
+			.mockResolvedValue({data: {items, totalCount: items.length + 1}}),
+		request: jest
 			.fn()
 			.mockResolvedValue({data: {items, totalCount: items.length + 1}}),
 	};

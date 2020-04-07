@@ -55,17 +55,17 @@ describe('The ProcessMetrics component should', () => {
 		).toHaveTextContent('set-up-slas');
 
 		expect(
-			processMetricsDashBoard.children[2].children[0]
+			processMetricsDashBoard.children[1].children[1]
 		).toHaveTextContent('no-slas-are-defined-for-this-process');
 
 		expect(
-			processMetricsDashBoard.children[2].children[0]
+			processMetricsDashBoard.children[1].children[1]
 		).toHaveTextContent('add-a-new-sla');
 	});
 });
 
 describe('The ProcessMetrics component should', () => {
-	let getByTestId;
+	let getAllByTestId;
 
 	beforeAll(() => {
 		cleanup();
@@ -78,12 +78,13 @@ describe('The ProcessMetrics component should', () => {
 				<ProcessMetrics />
 			</MockRouter>
 		);
-		getByTestId = component.getByTestId;
+		getAllByTestId = component.getAllByTestId;
 	});
 
 	test('Active the tab by clicking it', () => {
-		const tabElements = getByTestId('tabElements');
-		fireEvent.click(tabElements.children[1].children[0]);
-		expect(tabElements.children[1].children[0]).toHaveClass('active');
+		const tabLinks = getAllByTestId('tabLink');
+
+		fireEvent.click(tabLinks[1]);
+		expect(tabLinks[1]).toHaveClass('active');
 	});
 });

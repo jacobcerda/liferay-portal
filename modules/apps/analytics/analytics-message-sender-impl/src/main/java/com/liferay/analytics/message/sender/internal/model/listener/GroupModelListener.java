@@ -62,6 +62,14 @@ public class GroupModelListener extends BaseEntityModelListener<Group> {
 
 	@Override
 	public void onAfterRemove(Group group) throws ModelListenerException {
+		if (!analyticsConfigurationTracker.isActive()) {
+			return;
+		}
+
+		if (isExcluded(group)) {
+			return;
+		}
+
 		updateConfigurationProperties(
 			group.getCompanyId(), "syncedGroupIds",
 			String.valueOf(group.getGroupId()), "liferayAnalyticsGroupIds");

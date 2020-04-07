@@ -22,8 +22,8 @@ import {
 	getLayoutDataItemPropTypes,
 } from '../../../prop-types/index';
 import {LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS} from '../../config/constants/layoutDataFloatingToolbarButtons';
-import {config} from '../../config/index';
-import selectShowLayoutItemTopper from '../../selectors/selectShowLayoutItemTopper';
+import selectCanUpdateLayoutContent from '../../selectors/selectCanUpdateLayoutContent';
+import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
 import {useDispatch, useSelector} from '../../store/index';
 import duplicateItem from '../../thunks/duplicateItem';
 import {useSelectItem} from '../Controls';
@@ -49,11 +49,11 @@ const ContainerWithControls = React.forwardRef(
 			},
 		});
 
-		const segmentsExperienceId = useSelector(
-			state => state.segmentsExperienceId
-		);
+		const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
 		const selectItem = useSelectItem();
-		const showLayoutItemTopper = useSelector(selectShowLayoutItemTopper);
+		const canUpdateLayoutContent = useSelector(
+			selectCanUpdateLayoutContent
+		);
 
 		const handleButtonClick = id => {
 			if (id === LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS.duplicateItem.id) {
@@ -77,12 +77,9 @@ const ContainerWithControls = React.forwardRef(
 
 		if (!hasDropZoneChild(item, layoutData)) {
 			buttons.push(LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS.duplicateItem);
-
-			if (config.fragmentCompositionsEnabled) {
-				buttons.push(
-					LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS.saveFragmentComposition
-				);
-			}
+			buttons.push(
+				LAYOUT_DATA_FLOATING_TOOLBAR_BUTTONS.saveFragmentComposition
+			);
 		}
 
 		buttons.push(
@@ -118,7 +115,7 @@ const ContainerWithControls = React.forwardRef(
 			</Container>
 		);
 
-		return showLayoutItemTopper ? (
+		return canUpdateLayoutContent ? (
 			<Topper item={item} itemRef={ref} layoutData={layoutData}>
 				{() => content}
 			</Topper>

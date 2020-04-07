@@ -47,6 +47,7 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -127,10 +128,13 @@ public abstract class AssetListEntryLocalServiceBaseImpl
 	 *
 	 * @param assetListEntry the asset list entry
 	 * @return the asset list entry that was removed
+	 * @throws PortalException
 	 */
 	@Indexable(type = IndexableType.DELETE)
 	@Override
-	public AssetListEntry deleteAssetListEntry(AssetListEntry assetListEntry) {
+	public AssetListEntry deleteAssetListEntry(AssetListEntry assetListEntry)
+		throws PortalException {
+
 		return assetListEntryPersistence.remove(assetListEntry);
 	}
 
@@ -384,6 +388,10 @@ public abstract class AssetListEntryLocalServiceBaseImpl
 
 		return assetListEntryLocalService.deleteAssetListEntry(
 			(AssetListEntry)persistedModel);
+	}
+
+	public BasePersistence<AssetListEntry> getBasePersistence() {
+		return assetListEntryPersistence;
 	}
 
 	/**

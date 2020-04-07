@@ -33,6 +33,16 @@ definition {
 		}
 	}
 
+	macro changeLanguagesOrder {
+		var key_fromRowNumber = "${fromRowNumber}";
+		var key_toRowNumber = "${toRowNumber}";
+
+		DragAndDrop.javaScriptDragAndDropToObject(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_ORDER_FROM",
+			locator2 = "LanguageConfiguration#DEPOT_LANGUAGE_ORDER_TO",
+			value1 = "");
+	}
+
 	macro configureApplication {
 		if ("${status}" == "Enabled") {
 			for (var applicationList : list "${applicationList}") {
@@ -183,6 +193,8 @@ definition {
 
 			SelectFrame(locator1 = "IFrame#SELECT_SITES");
 
+			Pause(locator1 = "3000");
+
 			Navigator.gotoNavItem(navItem = "My Sites");
 
 			SiteSelector.selectSite(site = "${siteName}");
@@ -190,6 +202,10 @@ definition {
 			SelectFrame(value1 = "relative=top");
 
 			Alert.viewSuccessMessage();
+
+			AssertElementPresent.pauseAssertVisible(
+				key_tableEntry = "${siteName}",
+				locator1 = "LexiconTable#TABLE_ENTRY");
 		}
 	}
 
@@ -223,7 +239,7 @@ definition {
 				rowEntry = "${depotName}");
 		}
 
-		AssertConfirm(value1 = "Removing a asset library can affect sites that use the contents stored in it. Are you sure you want to continue removing this asset library?");
+		AssertConfirm(value1 = "Removing an asset library can affect sites that use the contents stored in it. Are you sure you want to continue removing this asset library?");
 
 		Alert.viewSuccessMessage();
 	}
@@ -270,9 +286,20 @@ definition {
 		}
 
 		if (isSet(depotNameEdit)) {
-			Type(
-				locator1 = "TextInput#NAME",
-				value1 = "${depotNameEdit}");
+			if (isSet(language)) {
+				PortletEntry.changeLocale(
+					fieldName = "Name",
+					locale = "${language}");
+
+				Type(
+					locator1 = "TextInput#NAME",
+					value1 = "${depotNameEdit}");
+			}
+			else {
+				Type(
+					locator1 = "TextInput#NAME",
+					value1 = "${depotNameEdit}");
+			}
 		}
 
 		if (isSet(depotDescriptionEdit)) {
@@ -293,7 +320,31 @@ definition {
 		}
 	}
 
+	macro view4LanguagesOrder {
+		AssertTextEquals.assertPartialText(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_LOCALIZATION_NAME_1",
+			value1 = "${localizationName1}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_LOCALIZATION_NAME_2",
+			value1 = "${localizationName2}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_LOCALIZATION_NAME_3",
+			value1 = "${localizationName3}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_LOCALIZATION_NAME_4",
+			value1 = "${localizationName4}");
+	}
+
 	macro viewApplication {
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		Click(
+			key_card = "${depotName}",
+			locator1 = "LexiconCard#CARD_TITLE");
+
 		if (isSet(noApplication)) {
 			for (var applicationList : list "${applicationList}") {
 				AssertElementNotPresent(
@@ -426,30 +477,36 @@ definition {
 			fieldName = "Description");
 	}
 
-	macro viewLanguageOptionsInWebContent {
+	macro viewLanguageOrderInWebContent {
 		Click(locator1 = "Button#LOCALIZATION_GENERIC");
 
-		for (var locale : list "${currentLanguageList}") {
-			AssertElementPresent(
-				key_locale = "${locale}",
-				locator1 = "Translation#LOCALIZATION_NAME");
-		}
+		Depot.view4LanguagesOrder(
+			localizationName1 = "${localizationName1}",
+			localizationName2 = "${localizationName2}",
+			localizationName3 = "${localizationName3}",
+			localizationName4 = "${localizationName4}");
 
 		Click(
 			key_portletName = "JournalPortlet_Menu",
 			locator1 = "Button#LANGUAGE_DROPDOWN");
 
-		for (var locale : list "${currentLanguageList}") {
-			AssertElementPresent(
-				key_locale = "${locale}",
-				locator1 = "Translation#LOCALIZATION_NAME");
-		}
+		Depot.view4LanguagesOrder(
+			localizationName1 = "${localizationName1}",
+			localizationName2 = "${localizationName2}",
+			localizationName3 = "${localizationName3}",
+			localizationName4 = "${localizationName4}");
 
 		Panel.expandPanel(panel = "Basic Information");
 
-		Page.viewFriendlyURLLanguageOptionsPG(
-			currentLanguageList = "${currentLanguageList}",
-			fieldName = "Summary");
+		Click(
+			key_fieldName = "Summary",
+			locator1 = "Button#LOCALIZATION");
+
+		Depot.view4LanguagesOrder(
+			localizationName1 = "${localizationName1}",
+			localizationName2 = "${localizationName2}",
+			localizationName3 = "${localizationName3}",
+			localizationName4 = "${localizationName4}");
 
 		Panel.expandPanel(panel = "Friendly URL");
 
@@ -457,11 +514,11 @@ definition {
 			key_portletName = "JournalPortlet_friendlyURLMenu",
 			locator1 = "Button#LANGUAGE_DROPDOWN");
 
-		for (var locale : list "${currentLanguageList}") {
-			AssertElementPresent(
-				key_locale = "${locale}",
-				locator1 = "Translation#LOCALIZATION_NAME");
-		}
+		Depot.view4LanguagesOrder(
+			localizationName1 = "${localizationName1}",
+			localizationName2 = "${localizationName2}",
+			localizationName3 = "${localizationName3}",
+			localizationName4 = "${localizationName4}");
 	}
 
 	macro viewNoConnectedSiteCP {

@@ -95,19 +95,24 @@ export const createComment = (articleBody, messageBoardMessageId) =>
             }
         }`);
 
-export const createQuestion = (articleBody, headline, tags, siteKey) => {
-	tags = tags.length ? tags.split(',').filter(x => x) : null;
-
-	return request(gql`
+export const createQuestion = (
+	articleBody,
+	headline,
+	messageBoardSectionId,
+	tags
+) =>
+	request(gql`
         mutation {
-            createSiteMessageBoardThread(messageBoardThread: {articleBody: ${articleBody}, encodingFormat: "html", headline: ${headline}, keywords: ${tags}, showAsQuestion: true, viewableBy: ANYONE}, siteKey: ${siteKey}){
+            createMessageBoardSectionMessageBoardThread(messageBoardSectionId: ${messageBoardSectionId}, messageBoardThread: {articleBody: ${articleBody}, encodingFormat: "html", headline: ${headline}, showAsQuestion: true, taxonomyCategoryIds: ${tags}, viewableBy: ANYONE}){
                 articleBody
                 headline
-                keywords
+                taxonomyCategoryBriefs {
+                	taxonomyCategoryId
+					taxonomyCategoryName 
+                }
                 showAsQuestion
             }
         }`);
-};
 
 export const createVoteMessage = (id, rating) =>
 	request(gql`
@@ -160,14 +165,31 @@ export const getTags = (page = 1, siteKey) =>
             }
         }`);
 
-export const getMessage = messageBoardMessageId =>
+export const getAllTags = siteKey =>
+	request(gql`   
+		query {
+			taxonomyVocabularies(siteKey: ${siteKey}){
+				items {
+					taxonomyCategories {
+						items {
+							id
+							name
+						}
+					}
+					assetTypes {
+						type
+					}
+				}
+			}
+		}`);
+
+export const getMessage = (friendlyUrlPath, siteKey) =>
 	request(gql`
         query {
-            messageBoardMessage(messageBoardMessageId: ${messageBoardMessageId}){
-                articleBody 
+            messageBoardMessageByFriendlyUrlPath(friendlyUrlPath: ${friendlyUrlPath}, siteKey: ${siteKey}){
+                articleBody
                 headline
-                id 
-                keywords 
+                id
             }
         }`);
 
@@ -203,7 +225,6 @@ export const getThread = (
                 friendlyUrlPath
                 headline
                 id 
-                keywords 
                 messageBoardMessages(page: ${page}, pageSize: 20, sort: ${sort}) {
                     items {
                     	actions
@@ -224,6 +245,7 @@ export const getThread = (
                         	rank
                         }
                         encodingFormat
+                        friendlyUrlPath
                         id
                         messageBoardMessages {
                             items {
@@ -253,6 +275,10 @@ export const getThread = (
                     ratingValue
                 }
                 subscribed
+				taxonomyCategoryBriefs {
+                	taxonomyCategoryId
+					taxonomyCategoryName 
+                }
                 viewCount
             }
         }`);
@@ -286,6 +312,7 @@ export const getMessages = (
 						rank
 					}
                     encodingFormat
+                    friendlyUrlPath
                     id
                     messageBoardMessages {
                         items {
@@ -310,14 +337,17 @@ export const getMessages = (
             }
         }`).then(x => x.items);
 
-export const getThreadContent = messageBoardThreadId =>
+export const getThreadContent = (friendlyUrlPath, siteKey) =>
 	request(gql`
         query {
-            messageBoardThread(messageBoardThreadId: ${messageBoardThreadId}){
+            messageBoardThreadByFriendlyUrlPath(friendlyUrlPath: ${friendlyUrlPath}, siteKey: ${siteKey}){
                 articleBody 
                 headline
                 id 
-                keywords 
+				taxonomyCategoryBriefs {
+                	taxonomyCategoryId
+					taxonomyCategoryName 
+                } 
             }
         }`);
 
@@ -334,13 +364,21 @@ export const getThreads = ({
 	page = 1,
 	pageSize = 30,
 	search = '',
+	section,
 	siteKey,
-	sort = 'dateModified:desc',
-	tag = '',
+	sort = 'dateCreated:desc',
+	taxonomyCategoryId = '',
 }) => {
-	let filter = '';
-	if (tag) {
-		filter = `keywords/any(x:x eq '${tag}')`;
+	let filter = `(messageBoardSectionId eq ${section.id} `;
+
+	for (let i = 0; i < section.messageBoardSections.items.length; i++) {
+		filter += `or messageBoardSectionId eq ${section.messageBoardSections.items[i].id} `;
+	}
+
+	filter += ')';
+
+	if (taxonomyCategoryId) {
+		filter = `taxonomyCategoryId/any(x:x eq ${taxonomyCategoryId})`;
 	}
 	else if (creatorId) {
 		filter = `creator/id eq ${creatorId}`;
@@ -348,74 +386,115 @@ export const getThreads = ({
 
 	return request(gql`
         query {
-            messageBoardThreads(filter: ${filter}, page: ${page}, pageSize: ${pageSize}, search: ${search}, siteKey: ${siteKey}, sort: ${sort}){
-                items {
-                    aggregateRating {
-                        ratingAverage
-                        ratingCount
-                        ratingValue
-                    } 
-                    articleBody
-                    creator {
-                        id
-                        image
-                        name
-                    } 
-                    dateModified
-                    friendlyUrlPath
-                    headline
-                    id 
-                    keywords 
-                    messageBoardMessages {
-                        items {
-                            showAsAnswer
-                        }
-                    }
-                    viewCount
-                } 
-                page 
-                pageSize 
-                totalCount
-            }
+			messageBoardThreads(filter: ${filter}, flatten:true, page: ${page}, pageSize: ${pageSize}, search: ${search}, siteKey: ${siteKey}, sort: ${sort}){
+				items {
+					aggregateRating {
+						ratingAverage
+						ratingCount
+						ratingValue
+					} 
+					articleBody
+					creator {
+						id
+						image
+						name
+					} 
+					dateModified
+					friendlyUrlPath
+					headline
+					id 
+					messageBoardMessages {
+						items {
+							showAsAnswer
+						}
+					}
+					messageBoardSection {
+						title
+					}
+					taxonomyCategoryBriefs {
+						taxonomyCategoryId
+						taxonomyCategoryName
+					} 
+					viewCount
+				}
+				page 
+				pageSize 
+				totalCount
+			}
         }`);
+};
+
+export const getSection = (title, siteKey) => {
+	const filter = `title eq '${title}' or id eq '${title}'`;
+
+	return request(gql`
+		query {
+			messageBoardSections(filter: ${filter}, flatten:true, pageSize: 1, siteKey: ${siteKey}, sort: "title:desc") {
+				items {
+					actions
+					id
+					messageBoardSections(sort: "title:asc") {
+						items {
+							id
+							parentMessageBoardSectionId
+							subscribed
+							title
+						}
+					}
+					parentMessageBoardSectionId
+					subscribed
+					title
+				}
+			}
+		}
+	`).then(data => data.items[0]);
 };
 
 export const getRankedThreads = (
 	dateModified,
 	page = 1,
 	pageSize = 20,
+	section,
 	sort = ''
 ) =>
 	request(gql`
         query {
-          messageBoardThreadsRanked(dateModified: ${dateModified.toISOString()}, page: ${page}, pageSize: ${pageSize}, sort: ${sort}){
-            items {
-                aggregateRating {
-                    ratingAverage
-                    ratingCount
-                    ratingValue
-                } 
-                articleBody
-                creator {
-                    id
-                    name
-                } 
-                dateModified
-                headline
-                id 
-                keywords 
-                messageBoardMessages {
-                    items {
-                        showAsAnswer
-                    }
-                }
-                viewCount
-            }   
-            page
-            pageSize
-            totalCount
-          }
-        }`);
+			messageBoardThreadsRanked(dateModified: ${dateModified.toISOString()}, messageBoardSectionId: ${
+		section.id
+	}, page: ${page}, pageSize: ${pageSize}, sort: ${sort}){
+				items {
+					aggregateRating {
+						ratingAverage
+						ratingCount
+						ratingValue
+					} 
+					articleBody
+					creator {
+						id
+						name
+					} 
+					dateModified
+					headline
+					id  
+					messageBoardMessages {
+						items {
+							showAsAnswer
+						}
+					}
+					messageBoardSection {
+						title
+					}
+					taxonomyCategoryBriefs {
+						taxonomyCategoryId
+						taxonomyCategoryName
+					} 
+					viewCount
+				}   
+				page
+				pageSize
+				totalCount
+        	}
+		}`);
 
 export const getRelatedThreads = (search = '', siteKey) =>
 	request(gql`
@@ -432,6 +511,7 @@ export const getRelatedThreads = (search = '', siteKey) =>
                     	name
                 	} 
                     dateModified
+                    friendlyUrlPath
                     headline
                     id 
 					messageBoardSection {
@@ -443,6 +523,71 @@ export const getRelatedThreads = (search = '', siteKey) =>
                 totalCount
             }
         }`);
+
+export const getSections = siteKey =>
+	request(gql`
+		query {
+			messageBoardSections(siteKey: ${siteKey}, sort: "title:desc") {
+				items {
+					description
+					id
+					numberOfMessageBoardThreads
+					parentMessageBoardSectionId
+					subscribed
+					title
+				}
+			}
+		}
+`);
+
+export const getUserActivity = (siteKey, userId = '') => {
+	const filter = `creatorId eq ${userId}`;
+
+	return request(gql`
+		query {
+			messageBoardThreads(filter: ${filter}, flatten: true, siteKey: ${siteKey}, sort: "dateCreated:desc") {
+				items {
+					aggregateRating {
+						ratingAverage
+						ratingCount
+						ratingValue
+					}
+					articleBody
+					creator {
+						id
+						name
+						image
+					}
+					creatorStatistics {
+						postsNumber
+						rank
+					}
+					dateModified
+					friendlyUrlPath
+					headline
+					id
+					messageBoardSection {
+						title
+					}
+					messageBoardMessages {
+						items {
+						showAsAnswer
+						}
+					}
+					messageBoardSection {
+						title
+					}
+					taxonomyCategoryBriefs{
+						taxonomyCategoryId
+						taxonomyCategoryName
+					}
+				}
+			page
+			pageSize
+			totalCount
+			}
+		}`);
+};
 
 export const markAsAnswerMessageBoardMessage = (
 	messageBoardMessageId,
@@ -458,7 +603,7 @@ export const markAsAnswerMessageBoardMessage = (
 export const updateMessage = (articleBody, messageBoardMessageId) =>
 	request(gql`
         mutation {
-            patchMessageBoardMessage(messageBoardMessage: {articleBody: ${articleBody}}, messageBoardMessageId: ${messageBoardMessageId}){
+            patchMessageBoardMessage(messageBoardMessage: {articleBody: ${articleBody},  encodingFormat: "html"}, messageBoardMessageId: ${messageBoardMessageId}){
                 articleBody
             }
         }`);
@@ -466,33 +611,20 @@ export const updateMessage = (articleBody, messageBoardMessageId) =>
 export const updateThread = (
 	articleBody,
 	headline,
-	tags,
-	messageBoardThreadId
-) => {
-	tags = tags.length ? tags.split(',').filter(x => x) : null;
-
-	return request(gql`
+	messageBoardThreadId,
+	taxonomyCategoryIds
+) =>
+	request(gql`
         mutation {
-            patchMessageBoardThread(messageBoardThread: {articleBody: ${articleBody}, headline: ${headline}, keywords: ${tags}}, messageBoardThreadId: ${messageBoardThreadId}){
+            patchMessageBoardThread(messageBoardThread: {articleBody: ${articleBody}, encodingFormat: "html", headline: ${headline}, taxonomyCategoryIds: ${taxonomyCategoryIds}}, messageBoardThreadId: ${messageBoardThreadId}){
                 articleBody
                 headline
-                keywords
+				taxonomyCategoryBriefs {
+					taxonomyCategoryId
+					taxonomyCategoryName
+				} 
             }
         }`);
-};
-
-export const getMyUserAccount = () =>
-	request(gql`
-		query {
-			myUserAccount {
-				id
-				name
-				roleBriefs {
-					name
-				}
-			}
-		}
-	`);
 
 export const subscribe = messageBoardThreadId =>
 	request(gql`
@@ -505,5 +637,19 @@ export const unsubscribe = messageBoardThreadId =>
 	request(gql`
         mutation {
             updateMessageBoardThreadUnsubscribe(messageBoardThreadId: ${messageBoardThreadId})
+        }
+    `);
+
+export const subscribeSection = messageBoardSectionId =>
+	request(gql`
+        mutation {
+            updateMessageBoardSectionSubscribe(messageBoardSectionId: ${messageBoardSectionId})
+        }
+    `);
+
+export const unsubscribeSection = messageBoardSectionId =>
+	request(gql`
+        mutation {
+            updateMessageBoardSectionUnsubscribe(messageBoardSectionId: ${messageBoardSectionId})
         }
     `);

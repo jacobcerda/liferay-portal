@@ -69,6 +69,8 @@ definition {
 
 	@priority = "4"
 	test DeleteNotifications {
+		property portal.upstream = "quarantine";
+
 		Navigator.gotoPage(pageName = "Blogs Page");
 
 		Blogs.subscribePG();
@@ -120,6 +122,8 @@ definition {
 
 	@priority = "4"
 	test MarkAllNotificationsAsRead {
+		property portal.upstream = "quarantine";
+
 		Navigator.gotoPage(pageName = "Blogs Page");
 
 		Blogs.subscribePG();
@@ -161,6 +165,8 @@ definition {
 
 	@priority = "4"
 	test ViewMultipleNotifications {
+		property portal.upstream = "quarantine";
+
 		Navigator.gotoPage(pageName = "Blogs Page");
 
 		Blogs.subscribePG();
@@ -454,6 +460,8 @@ definition {
 
 	@priority = "4"
 	test ViewWebsiteNotificationForNewCommentViaBlogs {
+		property portal.upstream = "quarantine";
+
 		Navigator.gotoPage(pageName = "Blogs Page");
 
 		Blogs.addEntry(

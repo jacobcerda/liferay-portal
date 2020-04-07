@@ -1046,7 +1046,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 			204,
 			structuredContentResource.
 				putSiteStructuredContentPermissionHttpResponse(
-					testGroup.getGroupId(),
+					structuredContent.getSiteId(),
 					new Permission[] {
 						new Permission() {
 							{
@@ -1060,7 +1060,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 			404,
 			structuredContentResource.
 				putSiteStructuredContentPermissionHttpResponse(
-					testGroup.getGroupId(),
+					structuredContent.getSiteId(),
 					new Permission[] {
 						new Permission() {
 							{
@@ -1443,6 +1443,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 
 	@Test
 	public void testDeleteStructuredContent() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		StructuredContent structuredContent =
 			testDeleteStructuredContent_addStructuredContent();
 
@@ -1632,6 +1633,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 
 	@Test
 	public void testDeleteStructuredContentMyRating() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		StructuredContent structuredContent =
 			testDeleteStructuredContentMyRating_addStructuredContent();
 

@@ -23,6 +23,7 @@ import {PAGE_TYPES} from '../../config/constants/pageTypes';
 import {config} from '../../config/index';
 import InfoItemService from '../../services/InfoItemService';
 import {useDispatch, useSelector} from '../../store/index';
+import {useCollectionFields} from '../CollectionItemContext';
 
 const MAPPING_SOURCE_TYPE_IDS = {
 	content: 'content',
@@ -78,44 +79,100 @@ function loadFields({
 	return Promise.resolve([]);
 }
 
-export default function MappingSelector({
+export default function({fieldType, mappedItem, onMappingSelect}) {
+	const collectionFields = useCollectionFields();
+
+	return collectionFields ? (
+		<CollectionMappingSelector
+			collectionFields={collectionFields}
+			fieldType={fieldType}
+			mappedItem={mappedItem}
+			onMappingSelect={onMappingSelect}
+		/>
+	) : (
+		<MappingSelector
+			fieldType={fieldType}
+			mappedItem={mappedItem}
+			onMappingSelect={onMappingSelect}
+		/>
+	);
+}
+
+function CollectionMappingSelector({
+	collectionFields,
 	fieldType,
 	mappedItem,
 	onMappingSelect,
 }) {
+	const fields = collectionFields.filter(
+		field => COMPATIBLE_TYPES[fieldType].indexOf(field.type) !== -1
+	);
+
+	return (
+		<ClayForm.Group small>
+			<label htmlFor="mappingSelectorFieldSelect">
+				{Liferay.Language.get('field')}
+			</label>
+			<ClaySelectWithOption
+				aria-label={Liferay.Language.get('field')}
+				id="mappingSelectorFieldSelect"
+				onChange={event => {
+					if (event.target.value === UNMAPPED_OPTION.value) {
+						onMappingSelect({collectionFieldId: ''});
+					}
+					else {
+						onMappingSelect({
+							collectionFieldId: event.target.value,
+						});
+					}
+				}}
+				options={
+					fields && fields.length
+						? [
+								UNMAPPED_OPTION,
+								...fields.map(({key, label}) => ({
+									label,
+									value: key,
+								})),
+						  ]
+						: [UNMAPPED_OPTION]
+				}
+				value={mappedItem.collectionFieldId}
+			/>
+		</ClayForm.Group>
+	);
+}
+
+function MappingSelector({fieldType, mappedItem, onMappingSelect}) {
 	const dispatch = useDispatch();
 	const mappedInfoItems = useSelector(state => state.mappedInfoItems);
 
 	const {selectedMappingTypes} = config;
 
 	const [fields, setFields] = useState([]);
-	const [mappedItemTitle, setMappedItemTitle] = useState('');
 	const [selectedItem, setSelectedItem] = useState(mappedItem);
 	const [selectedSourceTypeId, setSelectedSourceTypeId] = useState(
-		MAPPING_SOURCE_TYPE_IDS.content
+		mappedItem.mappedField || config.pageType === PAGE_TYPES.display
+			? MAPPING_SOURCE_TYPE_IDS.structure
+			: MAPPING_SOURCE_TYPE_IDS.content
 	);
 
-	const onInfoItemSelect = selectedItem => {
-		loadFields({
-			dispatch,
-			fieldType,
-			selectedItem: {
-				className: selectedItem.className,
-				classNameId: selectedItem.classNameId,
-				classPK: selectedItem.classPK,
-				title: selectedItem.title,
-			},
-			selectedSourceTypeId,
-		}).then(newFields => {
-			setFields(newFields);
-		});
+	const onInfoItemSelect = selectedInfoItem => {
+		setSelectedItem(selectedInfoItem);
 
-		setSelectedItem({...selectedItem, fieldId: '', mappedField: ''});
+		onMappingSelect({
+			classNameId: '',
+			classPK: '',
+			fieldId: '',
+			mappedField: '',
+		});
 	};
 
 	const onFieldSelect = event => {
+		const fieldValue = event.target.value;
+
 		const data =
-			event.target.value === UNMAPPED_OPTION.value
+			fieldValue === UNMAPPED_OPTION.value
 				? {
 						classNameId: '',
 						classPK: '',
@@ -126,9 +183,9 @@ export default function MappingSelector({
 				? {
 						classNameId: selectedItem.classNameId,
 						classPK: selectedItem.classPK,
-						fieldId: event.target.value,
+						fieldId: fieldValue,
 				  }
-				: {mappedField: event.target.value};
+				: {mappedField: fieldValue};
 
 		if (selectedSourceTypeId === MAPPING_SOURCE_TYPE_IDS.content) {
 			const mappedInfoItem = mappedInfoItems.find(
@@ -142,6 +199,17 @@ export default function MappingSelector({
 					addMappedInfoItem({title: selectedItem.title, ...data})
 				);
 			}
+
+			setSelectedItem(selectedItem => ({
+				...selectedItem,
+				fieldId: fieldValue,
+			}));
+		}
+		else {
+			setSelectedItem(selectedItem => ({
+				...selectedItem,
+				mappedField: fieldValue,
+			}));
 		}
 
 		onMappingSelect(data);
@@ -150,24 +218,16 @@ export default function MappingSelector({
 	useEffect(() => {
 		const infoItem = mappedInfoItems.find(
 			infoItem =>
-				infoItem.classNameId === selectedItem.classNameId &&
-				infoItem.classPK === selectedItem.classPK
+				infoItem.classNameId === mappedItem.classNameId &&
+				infoItem.classPK === mappedItem.classPK
 		);
 
-		if (infoItem) {
-			setMappedItemTitle(infoItem.title);
-		}
-	}, [mappedInfoItems, selectedItem]);
-
-	useEffect(() => {
-		setSelectedSourceTypeId(
-			mappedItem.mappedField
-				? MAPPING_SOURCE_TYPE_IDS.structure
-				: MAPPING_SOURCE_TYPE_IDS.content
-		);
-
-		setSelectedItem(mappedItem);
-	}, [mappedItem]);
+		setSelectedItem(selectedItem => ({
+			...infoItem,
+			...mappedItem,
+			...selectedItem,
+		}));
+	}, [mappedItem, mappedInfoItems]);
 
 	useEffect(() => {
 		const data =
@@ -208,6 +268,15 @@ export default function MappingSelector({
 						id="mappingSelectorSourceSelect"
 						onChange={event => {
 							setSelectedSourceTypeId(event.target.value);
+
+							setSelectedItem({});
+
+							onMappingSelect({
+								classNameId: '',
+								classPK: '',
+								fieldId: '',
+								mappedField: '',
+							});
 						}}
 						options={[
 							{
@@ -233,9 +302,7 @@ export default function MappingSelector({
 					<ItemSelector
 						label={Liferay.Language.get('content')}
 						onItemSelect={onInfoItemSelect}
-						selectedItemTitle={
-							selectedItem.title || mappedItemTitle
-						}
+						selectedItemTitle={selectedItem.title}
 					/>
 				</ClayForm.Group>
 			)}

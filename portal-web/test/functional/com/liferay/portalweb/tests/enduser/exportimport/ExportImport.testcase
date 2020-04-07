@@ -191,11 +191,13 @@ definition {
 			fragmentName = "Content");
 
 		PageEditor.editFragmentText(
+			contributed = "false",
 			fragmentName = "Content",
 			id = "content",
 			text = "Editing Finished");
 
 		PageEditor.viewFragmentEditableText(
+			contributed = "false",
 			editableText = "Editing Finished",
 			fragmentName = "Content",
 			id = "content");
@@ -229,6 +231,7 @@ definition {
 			pageName = "Test Template Content Page");
 
 		PageEditor.viewFragmentEditableText(
+			contributed = "false",
 			editableText = "Editing Finished",
 			fragmentName = "Content",
 			id = "content");
@@ -346,7 +349,9 @@ definition {
 			collectionName = "Collection Name",
 			fragmentName = "Fragment Name");
 
-		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+		WebContentDisplayPortlet.selectWebContent(
+			contentPage = "true",
+			webContentTitle = "WC WebContent Title");
 
 		PageEditor.clickPublish();
 
@@ -935,110 +940,6 @@ definition {
 		AssetPublisherPortlet.viewConfigureSiteScope(siteName = "Site Name B");
 	}
 
-	@description = "This is a use case for LPS-96470."
-	@priority = "3"
-	test ExportImportSiteWithCommentsAndRatingsUnderBlogsEntry {
-		JSONLayout.addPublicLayout(
-			groupName = "Guest",
-			layoutName = "Blogs Page");
-
-		JSONLayout.addWidgetToPublicLayout(
-			column = "1",
-			groupName = "Guest",
-			layoutName = "Blogs Page",
-			widgetName = "Blogs");
-
-		JSONBlog.addEntry(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
-		Navigator.gotoPage(pageName = "Blogs Page");
-
-		BlogsNavigator.gotoEntryPG(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
-		Ratings.rate(ratingResult = "Thumb Up");
-
-		Comments.addPG(entryComment = "Blogs Entry Comment");
-
-		Ratings.rate(
-			commentRating = "true",
-			ratingResult = "Thumb Up");
-
-		Navigator.gotoPage(pageName = "Blogs Page");
-
-		BlogsNavigator.gotoEntryPG(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
-		Ratings.viewRating(
-			ratingResult = "Thumb Up",
-			voteCount = "1");
-
-		Comments.viewPG(
-			commentCount = "1",
-			entryComment = "Blogs Entry Comment",
-			userFullName = "Test Test (You)");
-
-		Ratings.viewRating(
-			commentRating = "true",
-			ratingResult = "Thumb Up",
-			voteCount = "1");
-
-		LAR.openExportAdmin(siteScopeName = "Guest");
-
-		LexiconEntry.gotoAdd();
-
-		LAR.configureExportOptions(checkContentNameList = "Blogs");
-
-		AssertClick(
-			locator1 = "SitePagesExport#EXPORT_BUTTON",
-			value1 = "Export");
-
-		var key_larFileName = "${larFileName}";
-
-		AssertTextEquals.assertPartialText(
-			locator1 = "SitePagesExport#CURRENT_AND_PREVIOUS_STATUS",
-			value1 = "Successful");
-
-		var larFileName = LAR.getLarFileName();
-
-		LAR.downloadLar();
-
-		JSONGroup.addGroup(groupName = "Second Site");
-
-		LAR.importSiteCP(
-			larFileName = "${larFileName}",
-			siteName = "Second Site");
-
-		Navigator.gotoSitePage(
-			pageName = "Blogs Page",
-			siteName = "Second Site");
-
-		BlogsEntry.viewEntry(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
-		BlogsNavigator.gotoEntryPG(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
-		Ratings.viewRating(
-			ratingResult = "Thumb Up",
-			voteCount = "1");
-
-		Comments.viewPG(
-			commentCount = "1",
-			entryComment = "Blogs Entry Comment",
-			userFullName = "Test Test (You)");
-
-		Ratings.viewRating(
-			commentRating = "true",
-			ratingResult = "Thumb Up",
-			voteCount = "1");
-	}
-
 	@description = "This is a use case for LPS-88331."
 	@priority = "3"
 	test ExportImportSiteWithNestedDocumentsAndMediaField {
@@ -1126,6 +1027,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-54392 and LPS-88014."
+	@ignore = "true"
 	@priority = "3"
 	test ExportImportSiteWithReferencedWebContent {
 		property test.name.skip.portal.instance = "ExportImport#ExportImportSiteWithReferencedWebContent";
@@ -1221,9 +1123,13 @@ definition {
 		AssertConsoleTextNotPresent(value1 = "java.lang.StringIndexOutOfBoundsException");
 	}
 
+	// Ignored because of the ticket LRQA-57518
+
+	@ignore = "true"
 	@priority = "4"
 	test ExportImportThemeSettings {
 		property osgi.app.includes = "frontend-theme-porygon";
+		property portal.upstream = "quarantine";
 
 		JSONGroup.addGroup(groupName = "Site Name");
 
@@ -1320,6 +1226,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-84204."
+	@ignore = "true"
 	@priority = "4"
 	test ExportImportWCDReferenceWhenNotStagedWebContent {
 		property test.name.skip.portal.instance = "ExportImport#ExportImportWCDReferenceWhenNotStagedWebContent";

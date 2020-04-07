@@ -63,6 +63,7 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.search.filter.TermFilter;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -78,7 +79,6 @@ import com.liferay.portal.vulcan.resource.EntityModelResource;
 import com.liferay.portal.vulcan.util.ActionUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
 import com.liferay.portal.vulcan.util.TransformUtil;
-import com.liferay.ratings.kernel.model.RatingsEntry;
 import com.liferay.ratings.kernel.model.RatingsStats;
 import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalService;
@@ -95,6 +95,7 @@ import java.util.Optional;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -150,7 +151,21 @@ public class MessageBoardThreadResourceImpl
 			messageBoardSectionId);
 
 		return _getSiteMessageBoardThreadsPage(
-			_getMessageBoardSectionListActions(mbCategory),
+			HashMapBuilder.<String, Map<String, String>>put(
+				"create",
+				addAction(
+					"ADD_MESSAGE", mbCategory.getCategoryId(),
+					"postMessageBoardSectionMessageBoardThread",
+					mbCategory.getUserId(), "com.liferay.message.boards",
+					mbCategory.getGroupId())
+			).put(
+				"get",
+				addAction(
+					"VIEW", mbCategory.getCategoryId(),
+					"getMessageBoardSectionMessageBoardThreadsPage",
+					mbCategory.getUserId(), "com.liferay.message.boards",
+					mbCategory.getGroupId())
+			).build(),
 			booleanQuery -> {
 				BooleanFilter booleanFilter =
 					booleanQuery.getPreBooleanFilter();
@@ -164,7 +179,7 @@ public class MessageBoardThreadResourceImpl
 					new TermFilter("parentMessageId", "0"),
 					BooleanClauseOccur.MUST);
 			},
-			mbCategory.getGroupId(), search, filter, pagination, sorts);
+			mbCategory.getGroupId(), filter, search, pagination, sorts);
 	}
 
 	@Override
@@ -223,7 +238,17 @@ public class MessageBoardThreadResourceImpl
 		throws Exception {
 
 		return _getSiteMessageBoardThreadsPage(
-			_getSiteListActions(siteId),
+			HashMapBuilder.<String, Map<String, String>>put(
+				"create",
+				addAction(
+					"ADD_MESSAGE", "postSiteMessageBoardThread",
+					"com.liferay.message.boards", siteId)
+			).put(
+				"get",
+				addAction(
+					"VIEW", "getSiteMessageBoardThreadsPage",
+					"com.liferay.message.boards", siteId)
+			).build(),
 			booleanQuery -> {
 				BooleanFilter booleanFilter =
 					booleanQuery.getPreBooleanFilter();
@@ -238,7 +263,7 @@ public class MessageBoardThreadResourceImpl
 					new TermFilter("parentMessageId", "0"),
 					BooleanClauseOccur.MUST);
 			},
-			siteId, search, filter, pagination, sorts);
+			siteId, filter, search, pagination, sorts);
 	}
 
 	@Override
@@ -360,45 +385,31 @@ public class MessageBoardThreadResourceImpl
 			encodingFormat = MBMessageConstants.DEFAULT_FORMAT;
 		}
 
+		ServiceContext serviceContext = ServiceContextUtil.createServiceContext(
+			messageBoardThread.getTaxonomyCategoryIds(),
+			messageBoardThread.getKeywords(),
+			_getExpandoBridgeAttributes(messageBoardThread), siteId,
+			messageBoardThread.getViewableByAsString());
+
+		UriBuilder uriBuilder = contextUriInfo.getBaseUriBuilder();
+
+		serviceContext.setAttribute(
+			"entryURL",
+			String.valueOf(
+				uriBuilder.replacePath(
+					"/"
+				).build()));
+
 		MBMessage mbMessage = _mbMessageService.addMessage(
 			siteId, messageBoardSectionId, messageBoardThread.getHeadline(),
 			messageBoardThread.getArticleBody(), encodingFormat,
 			Collections.emptyList(), false,
 			_toPriority(siteId, messageBoardThread.getThreadType()), false,
-			ServiceContextUtil.createServiceContext(
-				messageBoardThread.getTaxonomyCategoryIds(),
-				messageBoardThread.getKeywords(),
-				_getExpandoBridgeAttributes(messageBoardThread), siteId,
-				messageBoardThread.getViewableByAsString()));
+			serviceContext);
 
 		_updateQuestion(mbMessage, messageBoardThread);
 
 		return _toMessageBoardThread(mbMessage);
-	}
-
-	private Map<String, Map<String, String>> _getActions(MBMessage mbMessage) {
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"delete", addAction("DELETE", mbMessage, "deleteMessageBoardThread")
-		).put(
-			"get", addAction("VIEW", mbMessage, "getMessageBoardThread")
-		).put(
-			"replace", addAction("UPDATE", mbMessage, "putMessageBoardThread")
-		).put(
-			"reply-to-thread",
-			ActionUtil.addAction(
-				"REPLY_TO_MESSAGE", MessageBoardMessageResourceImpl.class,
-				mbMessage.getMessageId(),
-				"postMessageBoardThreadMessageBoardMessage",
-				contextScopeChecker, mbMessage.getUserId(),
-				"com.liferay.message.boards", mbMessage.getGroupId(),
-				contextUriInfo)
-		).put(
-			"subscribe",
-			addAction("UPDATE", mbMessage, "putMessageBoardThreadSubscribe")
-		).put(
-			"unsubscribe",
-			addAction("UPDATE", mbMessage, "putMessageBoardThreadUnsubscribe")
-		).build();
 	}
 
 	private DynamicQuery _getDynamicQuery(
@@ -468,71 +479,16 @@ public class MessageBoardThreadResourceImpl
 			contextAcceptLanguage.getPreferredLocale());
 	}
 
-	private Map<String, Map<String, String>> _getMessageBoardSectionListActions(
-		MBCategory mbCategory) {
-
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"create",
-			addAction(
-				"ADD_MESSAGE", mbCategory.getCategoryId(),
-				"postMessageBoardSectionMessageBoardThread",
-				mbCategory.getUserId(), "com.liferay.message.boards",
-				mbCategory.getGroupId())
-		).put(
-			"get",
-			addAction(
-				"VIEW", mbCategory.getCategoryId(),
-				"getMessageBoardSectionMessageBoardThreadsPage",
-				mbCategory.getUserId(), "com.liferay.message.boards",
-				mbCategory.getGroupId())
-		).build();
-	}
-
-	private Map<String, Map<String, String>> _getRatingActions(
-			RatingsEntry ratingsEntry)
-		throws Exception {
-
-		MBMessage mbMessage = _mbMessageService.getMessage(
-			ratingsEntry.getClassPK());
-
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"create",
-			addAction("UPDATE", mbMessage, "postMessageBoardThreadMyRating")
-		).put(
-			"delete",
-			addAction("UPDATE", mbMessage, "deleteMessageBoardThreadMyRating")
-		).put(
-			"get", addAction("VIEW", mbMessage, "getMessageBoardThreadMyRating")
-		).put(
-			"replace",
-			addAction("UPDATE", mbMessage, "putMessageBoardThreadMyRating")
-		).build();
-	}
-
-	private Map<String, Map<String, String>> _getSiteListActions(long groupId) {
-		return HashMapBuilder.<String, Map<String, String>>put(
-			"create",
-			addAction(
-				"ADD_MESSAGE", "postSiteMessageBoardThread",
-				"com.liferay.message.boards", groupId)
-		).put(
-			"get",
-			addAction(
-				"VIEW", "getSiteMessageBoardThreadsPage",
-				"com.liferay.message.boards", groupId)
-		).build();
-	}
-
 	private Page<MessageBoardThread> _getSiteMessageBoardThreadsPage(
 			Map<String, Map<String, String>> actions,
 			UnsafeConsumer<BooleanQuery, Exception> booleanQueryUnsafeConsumer,
-			Long siteId, String search, Filter filter, Pagination pagination,
+			Long siteId, Filter filter, String keywords, Pagination pagination,
 			Sort[] sorts)
 		throws Exception {
 
 		return SearchUtil.search(
 			actions, booleanQueryUnsafeConsumer, filter, MBMessage.class,
-			search, pagination,
+			keywords, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ENTRY_CLASS_PK),
 			searchContext -> {
@@ -548,9 +504,33 @@ public class MessageBoardThreadResourceImpl
 	private SPIRatingResource<Rating> _getSPIRatingResource() {
 		return new SPIRatingResource<>(
 			MBMessage.class.getName(), _ratingsEntryLocalService,
-			ratingsEntry -> RatingUtil.toRating(
-				_getRatingActions(ratingsEntry), _portal, ratingsEntry,
-				_userLocalService),
+			ratingsEntry -> {
+				MBMessage mbMessage = _mbMessageService.getMessage(
+					ratingsEntry.getClassPK());
+
+				return RatingUtil.toRating(
+					HashMapBuilder.<String, Map<String, String>>put(
+						"create",
+						addAction(
+							"UPDATE", mbMessage,
+							"postMessageBoardThreadMyRating")
+					).put(
+						"delete",
+						addAction(
+							"UPDATE", mbMessage,
+							"deleteMessageBoardThreadMyRating")
+					).put(
+						"get",
+						addAction(
+							"VIEW", mbMessage, "getMessageBoardThreadMyRating")
+					).put(
+						"replace",
+						addAction(
+							"UPDATE", mbMessage,
+							"putMessageBoardThreadMyRating")
+					).build(),
+					_portal, ratingsEntry, _userLocalService);
+			},
 			contextUser);
 	}
 
@@ -568,7 +548,35 @@ public class MessageBoardThreadResourceImpl
 
 		return new MessageBoardThread() {
 			{
-				actions = _getActions(mbMessage);
+				actions = HashMapBuilder.<String, Map<String, String>>put(
+					"delete",
+					addAction("DELETE", mbMessage, "deleteMessageBoardThread")
+				).put(
+					"get", addAction("VIEW", mbMessage, "getMessageBoardThread")
+				).put(
+					"replace",
+					addAction("UPDATE", mbMessage, "putMessageBoardThread")
+				).put(
+					"reply-to-thread",
+					ActionUtil.addAction(
+						"REPLY_TO_MESSAGE",
+						MessageBoardMessageResourceImpl.class,
+						mbMessage.getMessageId(),
+						"postMessageBoardThreadMessageBoardMessage",
+						contextScopeChecker, mbMessage.getUserId(),
+						"com.liferay.message.boards", mbMessage.getGroupId(),
+						contextUriInfo)
+				).put(
+					"subscribe",
+					addAction(
+						"SUBSCRIBE", mbMessage,
+						"putMessageBoardThreadSubscribe")
+				).put(
+					"unsubscribe",
+					addAction(
+						"SUBSCRIBE", mbMessage,
+						"putMessageBoardThreadUnsubscribe")
+				).build();
 				aggregateRating = AggregateRatingUtil.toAggregateRating(
 					_ratingsStatsLocalService.fetchStats(
 						MBMessage.class.getName(), mbMessage.getMessageId()));
@@ -579,7 +587,7 @@ public class MessageBoardThreadResourceImpl
 				creatorStatistics = CreatorStatisticsUtil.toCreatorStatistics(
 					_mbStatsUserLocalService,
 					contextAcceptLanguage.getPreferredLanguageId(),
-					contextUser);
+					_userLocalService.getUserById(mbThread.getUserId()));
 				customFields = CustomFieldsUtil.toCustomFields(
 					contextAcceptLanguage.isAcceptAllLanguages(),
 					MBMessage.class.getName(), mbMessage.getMessageId(),

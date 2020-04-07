@@ -16,12 +16,15 @@ package com.liferay.analytics.reports.web.internal.portlet.action;
 
 import com.liferay.analytics.reports.web.internal.constants.AnalyticsReportsPortletKeys;
 import com.liferay.analytics.reports.web.internal.data.provider.AnalyticsReportsDataProvider;
+import com.liferay.analytics.reports.web.internal.layout.seo.CanonicalURLProvider;
+import com.liferay.layout.seo.kernel.LayoutSEOLinkManager;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
-import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -48,17 +51,30 @@ public class GetAnalyticsReportsTotalViewsMVCResourceCommand
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 		throws Exception {
 
-		long plid = ParamUtil.getLong(resourceRequest, "plid");
+		CanonicalURLProvider canonicalURLProvider = new CanonicalURLProvider(
+			_portal.getHttpServletRequest(resourceRequest), _language,
+			_layoutSEOLinkManager, _portal);
 
 		JSONObject jsonObject = JSONUtil.put(
 			"analyticsReportsTotalViews",
-			_analyticsReportsDataProvider.getTotalViews(plid));
+			_analyticsReportsDataProvider.getTotalViews(
+				_portal.getCompanyId(resourceRequest),
+				canonicalURLProvider.getCanonicalURL()));
 
 		JSONPortletResponseUtil.writeJSON(
 			resourceRequest, resourceResponse, jsonObject);
 	}
 
+	private static final AnalyticsReportsDataProvider
+		_analyticsReportsDataProvider = new AnalyticsReportsDataProvider();
+
 	@Reference
-	private AnalyticsReportsDataProvider _analyticsReportsDataProvider;
+	private Language _language;
+
+	@Reference
+	private LayoutSEOLinkManager _layoutSEOLinkManager;
+
+	@Reference
+	private Portal _portal;
 
 }

@@ -12,11 +12,47 @@
  * details.
  */
 
-export default function getAllEditables(element) {
-	const editables = Array.from(element.querySelectorAll('lfr-editable'));
-	const backgroundEditables = Array.from(
-		element.querySelectorAll('[data-lfr-background-image-id]')
-	);
+import {BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/backgroundImageFragmentEntryProcessor';
+import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/editableFragmentEntryProcessor';
+import Processors from '../../processors/index';
 
-	return editables.concat(backgroundEditables);
+/**
+ * @return {Array<{editableId: string, editableValueNamespace: string, element: HTMLElement, processor: object }>}
+ */
+export default function getAllEditables(element) {
+	return [
+		...Array.from(element.querySelectorAll('lfr-editable')).map(
+			element => ({
+				editableId: element.getAttribute('id'),
+				editableValueNamespace: EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
+				element,
+				processor:
+					Processors[element.getAttribute('type')] ||
+					Processors.fallback,
+				type: element.getAttribute('type'),
+			})
+		),
+
+		...Array.from(element.querySelectorAll('[data-lfr-editable-id]')).map(
+			element => ({
+				editableId: element.dataset.lfrEditableId,
+				editableValueNamespace: EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
+				element,
+				processor:
+					Processors[element.dataset.lfrEditableType] ||
+					Processors.fallback,
+				type: element.dataset.lfrEditableType,
+			})
+		),
+
+		...Array.from(
+			element.querySelectorAll('[data-lfr-background-image-id]')
+		).map(element => ({
+			editableId: element.dataset.lfrBackgroundImageId,
+			editableValueNamespace: BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR,
+			element,
+			processor: Processors['background-image'],
+			type: 'background-image',
+		})),
+	];
 }

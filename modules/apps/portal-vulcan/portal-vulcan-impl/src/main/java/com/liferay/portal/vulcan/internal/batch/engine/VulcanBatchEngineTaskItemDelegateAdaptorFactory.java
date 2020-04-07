@@ -15,6 +15,7 @@
 package com.liferay.portal.vulcan.internal.batch.engine;
 
 import com.liferay.batch.engine.BatchEngineTaskItemDelegate;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
 
 import org.osgi.framework.BundleContext;
@@ -25,6 +26,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
@@ -44,7 +46,7 @@ public class VulcanBatchEngineTaskItemDelegateAdaptorFactory {
 		_serviceTracker = new ServiceTracker<>(
 			bundleContext, filter,
 			new VulcanBatchEngineTaskItemDelegateServiceTrackerCustomizer(
-				bundleContext));
+				bundleContext, _groupLocalService));
 
 		_serviceTracker.open();
 	}
@@ -53,6 +55,9 @@ public class VulcanBatchEngineTaskItemDelegateAdaptorFactory {
 	protected void deactivate() {
 		_serviceTracker.close();
 	}
+
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 	private ServiceTracker<?, ?> _serviceTracker;
 
@@ -73,7 +78,7 @@ public class VulcanBatchEngineTaskItemDelegateAdaptorFactory {
 			VulcanBatchEngineTaskItemDelegateAdaptor<?>
 				vulcanBatchEngineTaskItemDelegateAdaptor =
 					new VulcanBatchEngineTaskItemDelegateAdaptor<>(
-						vulcanBatchEngineTaskItemDelegate);
+						_groupLocalService, vulcanBatchEngineTaskItemDelegate);
 
 			return _bundleContext.registerService(
 				BatchEngineTaskItemDelegate.class,
@@ -99,12 +104,14 @@ public class VulcanBatchEngineTaskItemDelegateAdaptorFactory {
 		}
 
 		private VulcanBatchEngineTaskItemDelegateServiceTrackerCustomizer(
-			BundleContext bundleContext) {
+			BundleContext bundleContext, GroupLocalService groupLocalService) {
 
 			_bundleContext = bundleContext;
+			_groupLocalService = groupLocalService;
 		}
 
 		private final BundleContext _bundleContext;
+		private final GroupLocalService _groupLocalService;
 
 	}
 

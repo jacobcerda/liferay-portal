@@ -14,36 +14,41 @@
 
 import React, {useMemo, useState} from 'react';
 
-import {config} from '../../../app/config/index';
+import {useSelector} from '../../../app/store/index';
 import Collapse from '../../../common/components/Collapse';
 import SearchForm from '../../../common/components/SearchForm';
 import SidebarPanelContent from '../../../common/components/SidebarPanelContent';
 import SidebarPanelHeader from '../../../common/components/SidebarPanelHeader';
+import CollectionDisplay from './CollectionDisplay';
 import FragmentCard from './FragmentCard';
 import LayoutElements from './LayoutElements';
 
 export default function FragmentsSidebar() {
+	const fragments = useSelector(state => state.fragments);
+
 	const [searchValue, setSearchValue] = useState('');
 
-	const filtererdFragments = useMemo(() => {
+	const filteredFragments = useMemo(() => {
 		const searchValueLowerCase = searchValue.toLowerCase();
 
-		return config.fragments
-			.map(fragmentCollection => {
-				return {
-					...fragmentCollection,
-					fragmentEntries: fragmentCollection.fragmentEntries.filter(
-						fragmentEntry =>
-							fragmentEntry.name
-								.toLowerCase()
-								.indexOf(searchValueLowerCase) !== -1
-					),
-				};
-			})
-			.filter(fragmentCollection => {
-				return fragmentCollection.fragmentEntries.length > 0;
-			});
-	}, [searchValue]);
+		return searchValue
+			? fragments
+					.map(fragmentCollection => {
+						return {
+							...fragmentCollection,
+							fragmentEntries: fragmentCollection.fragmentEntries.filter(
+								fragmentEntry =>
+									fragmentEntry.name
+										.toLowerCase()
+										.indexOf(searchValueLowerCase) !== -1
+							),
+						};
+					})
+					.filter(fragmentCollection => {
+						return fragmentCollection.fragmentEntries.length > 0;
+					})
+			: fragments;
+	}, [fragments, searchValue]);
 
 	return (
 		<>
@@ -56,7 +61,7 @@ export default function FragmentsSidebar() {
 
 				{!searchValue.length && <LayoutElements />}
 
-				{filtererdFragments.map(fragmentCollection => (
+				{filteredFragments.map(fragmentCollection => (
 					<div key={fragmentCollection.fragmentCollectionId}>
 						<Collapse
 							label={fragmentCollection.name}
@@ -75,6 +80,7 @@ export default function FragmentsSidebar() {
 											}
 											key={fragmentEntry.fragmentEntryKey}
 											name={fragmentEntry.name}
+											type={fragmentEntry.type}
 										/>
 									)
 								)}
@@ -82,6 +88,8 @@ export default function FragmentsSidebar() {
 						</Collapse>
 					</div>
 				))}
+
+				{!searchValue.length && <CollectionDisplay />}
 			</SidebarPanelContent>
 		</>
 	);

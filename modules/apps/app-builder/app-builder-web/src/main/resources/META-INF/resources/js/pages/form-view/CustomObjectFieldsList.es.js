@@ -13,6 +13,7 @@
  */
 
 import {
+	DataDefinitionUtils,
 	DataLayoutBuilderActions,
 	DataLayoutVisitor,
 	DragTypes,
@@ -23,7 +24,6 @@ import React, {useContext} from 'react';
 import useDoubleClick from '../../hooks/useDoubleClick.es';
 import DataLayoutBuilderContext from './DataLayoutBuilderInstanceContext.es';
 import FormViewContext from './FormViewContext.es';
-import {dropCustomObjectField} from './actions.es';
 import useDeleteDefinitionField from './useDeleteDefinitionField.es';
 import useDeleteDefinitionFieldModal from './useDeleteDefinitionFieldModal.es';
 
@@ -33,26 +33,38 @@ const getFieldTypes = ({
 	fieldTypes,
 	focusedCustomObjectField,
 }) => {
-	const {dataDefinitionFields} = dataDefinition;
+	const dataDefinitionFields = [];
 	const {dataLayoutPages} = dataLayout;
 
-	return dataDefinitionFields.map(({fieldType, label, name}) => {
-		const fieldTypeSettings = fieldTypes.find(({name}) => {
-			return name === fieldType;
-		});
+	DataDefinitionUtils.forEachDataDefinitionField(
+		dataDefinition,
+		({fieldType, label, name}) => {
+			if (fieldType === 'section') {
+				return;
+			}
 
-		return {
-			active: name === focusedCustomObjectField.name,
-			className: 'custom-object-field',
-			description: fieldTypeSettings.label,
-			disabled: DataLayoutVisitor.containsField(dataLayoutPages, name),
-			dragAlignment: 'right',
-			dragType: DragTypes.DRAG_DATA_DEFINITION_FIELD,
-			icon: fieldTypeSettings.icon,
-			label: label.en_US,
-			name,
-		};
-	});
+			const fieldTypeSettings = fieldTypes.find(({name}) => {
+				return name === fieldType;
+			});
+
+			dataDefinitionFields.push({
+				active: name === focusedCustomObjectField.name,
+				className: 'custom-object-field',
+				description: fieldTypeSettings.label,
+				disabled: DataLayoutVisitor.containsField(
+					dataLayoutPages,
+					name
+				),
+				dragAlignment: 'right',
+				dragType: DragTypes.DRAG_DATA_DEFINITION_FIELD,
+				icon: fieldTypeSettings.icon,
+				label: label.en_US,
+				name,
+			});
+		}
+	);
+
+	return dataDefinitionFields;
 };
 
 export default ({keywords}) => {
@@ -76,7 +88,7 @@ export default ({keywords}) => {
 
 		dataLayoutBuilder.dispatch(
 			'fieldAdded',
-			dropCustomObjectField({
+			DataLayoutBuilderActions.dropCustomObjectField({
 				addedToPlaceholder: true,
 				dataDefinition,
 				dataDefinitionFieldName: name,
@@ -86,7 +98,6 @@ export default ({keywords}) => {
 					pageIndex: activePage,
 					rowIndex: pages[activePage].rows.length,
 				},
-				skipFieldNameGeneration: true,
 			})
 		);
 	};

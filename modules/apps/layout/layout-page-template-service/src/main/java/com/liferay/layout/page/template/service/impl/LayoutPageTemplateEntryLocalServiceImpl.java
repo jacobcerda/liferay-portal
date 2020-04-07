@@ -884,28 +884,27 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 		Map<Locale, String> titleMap = Collections.singletonMap(
 			LocaleUtil.getSiteDefault(), name);
 
-		String typeSettings = StringPool.BLANK;
+		UnicodeProperties typeSettingsUnicodeProperties =
+			new UnicodeProperties();
 
-		UnicodeProperties typeSettingsProperties = new UnicodeProperties();
-
-		typeSettingsProperties.put("published", "true");
+		typeSettingsUnicodeProperties.put("published", "true");
 
 		if ((type == LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT) ||
 			(masterLayoutPlid > 0)) {
 
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				"lfr-theme:regular:show-footer", Boolean.FALSE.toString());
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				"lfr-theme:regular:show-header", Boolean.FALSE.toString());
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				"lfr-theme:regular:show-header-search",
 				Boolean.FALSE.toString());
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				"lfr-theme:regular:wrap-widget-page-content",
 				Boolean.FALSE.toString());
 		}
 
-		typeSettings = typeSettingsProperties.toString();
+		String typeSettings = typeSettingsUnicodeProperties.toString();
 
 		serviceContext.setAttribute(
 			"layout.instanceable.allowed", Boolean.TRUE);

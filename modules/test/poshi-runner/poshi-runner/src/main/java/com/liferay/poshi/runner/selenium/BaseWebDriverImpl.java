@@ -44,7 +44,10 @@ import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -208,7 +211,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	public void assertAccessible() throws Exception {
 		WebDriver webDriver = WebDriverUtil.getWebDriver();
 
-		String sourceDirFilePath = LiferaySeleniumHelper.getSourceDirFilePath(
+		String sourceDirFilePath = LiferaySeleniumUtil.getSourceDirFilePath(
 			getTestDependenciesDirName());
 
 		File file = new File(sourceDirFilePath + "/axe.min.js");
@@ -296,7 +299,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void assertConsoleErrors() throws Exception {
-		LiferaySeleniumHelper.assertConsoleErrors();
+		LiferaySeleniumUtil.assertConsoleErrors();
 	}
 
 	@Override
@@ -438,7 +441,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 					continue;
 				}
 
-				if (LiferaySeleniumHelper.isInIgnoreErrorsFile(
+				if (LiferaySeleniumUtil.isInIgnoreErrorsFile(
 						javaScriptErrorValue, "javascript")) {
 
 					continue;
@@ -453,7 +456,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 		}
 
 		if (!exceptions.isEmpty()) {
-			LiferaySeleniumHelper.addToJavaScriptExceptions(exceptions);
+			LiferaySeleniumUtil.addToJavaScriptExceptions(exceptions);
 
 			throw exceptions.get(0);
 		}
@@ -461,7 +464,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void assertLiferayErrors() throws Exception {
-		LiferaySeleniumHelper.assertConsoleErrors();
+		LiferaySeleniumUtil.assertConsoleErrors();
 	}
 
 	@Override
@@ -471,12 +474,12 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void assertNoJavaScriptExceptions() throws Exception {
-		LiferaySeleniumHelper.assertNoJavaScriptExceptions();
+		LiferaySeleniumUtil.assertNoJavaScriptExceptions();
 	}
 
 	@Override
 	public void assertNoLiferayExceptions() throws Exception {
-		LiferaySeleniumHelper.assertNoLiferayExceptions();
+		LiferaySeleniumUtil.assertNoLiferayExceptions();
 	}
 
 	@Override
@@ -855,8 +858,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	public void connectToEmailAccount(String emailAddress, String emailPassword)
 		throws Exception {
 
-		LiferaySeleniumHelper.connectToEmailAccount(
-			emailAddress, emailPassword);
+		LiferaySeleniumUtil.connectToEmailAccount(emailAddress, emailPassword);
 	}
 
 	@Override
@@ -871,7 +873,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void deleteAllEmails() throws Exception {
-		LiferaySeleniumHelper.deleteAllEmails();
+		LiferaySeleniumUtil.deleteAllEmails();
 	}
 
 	@Override
@@ -991,12 +993,12 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void echo(String message) {
-		LiferaySeleniumHelper.echo(message);
+		LiferaySeleniumUtil.echo(message);
 	}
 
 	@Override
 	public void fail(String message) {
-		LiferaySeleniumHelper.fail(message);
+		LiferaySeleniumUtil.fail(message);
 	}
 
 	@Override
@@ -1108,12 +1110,12 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public String getEmailBody(String index) throws Exception {
-		return LiferaySeleniumHelper.getEmailBody(index);
+		return LiferaySeleniumUtil.getEmailBody(index);
 	}
 
 	@Override
 	public String getEmailSubject(String index) throws Exception {
-		return LiferaySeleniumHelper.getEmailSubject(index);
+		return LiferaySeleniumUtil.getEmailSubject(index);
 	}
 
 	@Override
@@ -1304,12 +1306,12 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public String getNumberDecrement(String value) {
-		return LiferaySeleniumHelper.getNumberDecrement(value);
+		return LiferaySeleniumUtil.getNumberDecrement(value);
 	}
 
 	@Override
 	public String getNumberIncrement(String value) {
-		return LiferaySeleniumHelper.getNumberIncrement(value);
+		return LiferaySeleniumUtil.getNumberIncrement(value);
 	}
 
 	@Override
@@ -2190,7 +2192,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void pause(String waitTime) throws Exception {
-		LiferaySeleniumHelper.pause(waitTime);
+		LiferaySeleniumUtil.pause(waitTime);
 	}
 
 	@Override
@@ -2221,6 +2223,43 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	}
 
 	@Override
+	public void robotType(String value) {
+		Keyboard keyboard = new DesktopKeyboard();
+
+		keyboard.type(value);
+	}
+
+	@Override
+	public void robotTypeShortcut(String value) {
+		Keyboard keyboard = new DesktopKeyboard();
+
+		List<String> keys = Arrays.asList(value.split("\\s\\+\\s"));
+
+		Collections.sort(keys, Comparator.comparing(String::length));
+
+		Collections.reverse(keys);
+
+		for (String key : keys) {
+			if (key.length() == 1) {
+				keyboard.type(key);
+			}
+			else {
+				keyboard.keyDown(_keyCodeMap.get(key.toUpperCase()));
+			}
+		}
+
+		Collections.reverse(keys);
+
+		for (String key : keys) {
+			if (key.length() == 1) {
+			}
+			else {
+				keyboard.keyUp(_keyCodeMap.get(key.toUpperCase()));
+			}
+		}
+	}
+
+	@Override
 	public void runScript(String script) {
 		getEval(script);
 	}
@@ -2233,7 +2272,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 		_screenshotCount++;
 
-		LiferaySeleniumHelper.captureScreen(
+		LiferaySeleniumUtil.captureScreen(
 			_CURRENT_DIR_NAME + "test-results/functional/screenshots/" +
 				_screenshotCount + ".jpg");
 	}
@@ -2254,7 +2293,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			_screenshotErrorCount++;
 		}
 
-		LiferaySeleniumHelper.captureScreen(
+		LiferaySeleniumUtil.captureScreen(
 			_CURRENT_DIR_NAME + "test-results/functional/screenshots" +
 				"/ScreenshotBeforeAction" + _screenshotErrorCount + ".jpg");
 	}
@@ -2335,7 +2374,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void selectFieldText() {
-		LiferaySeleniumHelper.selectFieldText();
+		LiferaySeleniumUtil.selectFieldText();
 	}
 
 	@Override
@@ -2746,7 +2785,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			FileUtil.getSeparator() + _TEST_DEPENDENCIES_DIR_NAME +
 				FileUtil.getSeparator() + value;
 
-		filePath = LiferaySeleniumHelper.getSourceDirFilePath(filePath);
+		filePath = LiferaySeleniumUtil.getSourceDirFilePath(filePath);
 
 		filePath = StringUtil.replace(filePath, "/", FileUtil.getSeparator());
 
@@ -2846,9 +2885,38 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			return;
 		}
 
-		webElement.clear();
+		int maxRetries = 3;
+		int retryCount = 0;
 
-		typeKeys(locator, value);
+		while (retryCount < maxRetries) {
+			webElement.clear();
+
+			typeKeys(locator, value);
+
+			String webElementTagNametagName = webElement.getTagName();
+
+			if (!webElementTagNametagName.equals("input")) {
+				break;
+			}
+
+			String typedValue = webElement.getAttribute("value");
+
+			if (typedValue.equals(value)) {
+				return;
+			}
+
+			retryCount++;
+
+			String message =
+				"Actual typed value: '" + typedValue +
+					"' did not match expected typed value: '" + value + "'.";
+
+			if (retryCount < maxRetries) {
+				System.out.println(
+					message + " Retrying LiferaySelenium.type() attempt #" +
+						(retryCount + 1) + ".");
+			}
+		}
 	}
 
 	@Override
@@ -3030,7 +3098,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void typeScreen(String value) {
-		LiferaySeleniumHelper.typeScreen(value);
+		LiferaySeleniumUtil.typeScreen(value);
 	}
 
 	@Override
@@ -3050,7 +3118,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			FileUtil.getSeparator() + _testDependenciesDirName +
 				FileUtil.getSeparator() + value;
 
-		filePath = LiferaySeleniumHelper.getSourceDirFilePath(filePath);
+		filePath = LiferaySeleniumUtil.getSourceDirFilePath(filePath);
 
 		if (value.endsWith(".jar") || value.endsWith(".lar") ||
 			value.endsWith(".war") || value.endsWith(".zip")) {
@@ -3433,42 +3501,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	}
 
 	protected By getBy(String locator) {
-		if (locator.startsWith("//")) {
-			return By.xpath(locator);
-		}
-		else if (locator.startsWith("class=")) {
-			locator = locator.substring(6);
-
-			return By.className(locator);
-		}
-		else if (locator.startsWith("css=")) {
-			locator = locator.substring(4);
-
-			return By.cssSelector(locator);
-		}
-		else if (locator.startsWith("link=")) {
-			locator = locator.substring(5);
-
-			return By.linkText(locator);
-		}
-		else if (locator.startsWith("name=")) {
-			locator = locator.substring(5);
-
-			return By.name(locator);
-		}
-		else if (locator.startsWith("tag=")) {
-			locator = locator.substring(4);
-
-			return By.tagName(locator);
-		}
-		else if (locator.startsWith("xpath=") || locator.startsWith("xPath=")) {
-			locator = locator.substring(6);
-
-			return By.xpath(locator);
-		}
-		else {
-			return By.id(locator);
-		}
+		return LiferaySeleniumUtil.getBy(locator);
 	}
 
 	protected Condition getConfirmationCondition(String pattern) {
@@ -3501,7 +3534,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 			@Override
 			public boolean evaluate() throws Exception {
-				return !LiferaySeleniumHelper.isConsoleTextPresent(text);
+				return !LiferaySeleniumUtil.isConsoleTextPresent(text);
 			}
 
 		};
@@ -3514,7 +3547,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 			@Override
 			public boolean evaluate() throws Exception {
-				return LiferaySeleniumHelper.isConsoleTextPresent(text);
+				return LiferaySeleniumUtil.isConsoleTextPresent(text);
 			}
 
 		};
@@ -3704,7 +3737,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			FileUtil.getSeparator() + getSikuliImagesDirName() + image;
 
 		File file = new File(
-			LiferaySeleniumHelper.getSourceDirFilePath(filePath));
+			LiferaySeleniumUtil.getSourceDirFilePath(filePath));
 
 		return new ImageTarget(file);
 	}
@@ -4473,6 +4506,16 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 		"\\(|\\$\\{line\\.separator\\}");
 	private static final Pattern _coordinatePairsPattern = Pattern.compile(
 		"[+-]?\\d+\\,[+-]?\\d+(\\|[+-]?\\d+\\,[+-]?\\d+)*");
+	private static final Map<String, Integer> _keyCodeMap =
+		new Hashtable<String, Integer>() {
+			{
+				put("ALT", Integer.valueOf(KeyEvent.VK_ALT));
+				put("COMMAND", Integer.valueOf(KeyEvent.VK_META));
+				put("CONTROL", Integer.valueOf(KeyEvent.VK_CONTROL));
+				put("CTRL", Integer.valueOf(KeyEvent.VK_CONTROL));
+				put("SHIFT", Integer.valueOf(KeyEvent.VK_SHIFT));
+			}
+		};
 
 	private String _clipBoard = "";
 	private String _defaultWindowHandle;

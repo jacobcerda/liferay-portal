@@ -32,7 +32,7 @@ definition {
 			locator1 = "Configuration#SCOPE_SELECT",
 			value1 = "Select");
 
-		MenuItem.click(menuItem = "Other Site...");
+		MenuItem.click(menuItem = "Other Site or Asset Library...");
 
 		SelectFrame(value1 = "relative=top");
 
@@ -65,7 +65,7 @@ definition {
 		if (isSet(otherSite)) {
 			Click(locator1 = "Configuration#SCOPE_SELECT");
 
-			MenuItem.click(menuItem = "Other Site...");
+			MenuItem.click(menuItem = "Other Site or Asset Library...");
 
 			SelectFrame(value1 = "relative=top");
 
@@ -255,16 +255,8 @@ definition {
 	}
 
 	macro configureDisplaySettings {
-		if ("${displayPage}" == "true") {
-			var key_portletName = "${portletName}";
+		AssetPublisherPortlet.gotoConfigurationPG(portletName = "${portletName}");
 
-			Click.clickNoWaitForVisible(locator1 = "PageEditor#WIDGETS_OPTIONS_ICON");
-
-			SelectFrame(locator1 = "IFrame#DIALOG");
-		}
-		else {
-			AssetPublisherPortlet.gotoConfigurationPG(portletName = "${portletName}");
-		}
 		Navigator.gotoNavTab(navTab = "Display Settings");
 
 		Panel.expandPanel(panel = "Set and Enable");
@@ -511,7 +503,7 @@ definition {
 			MenuItem.click(menuItem = "${siteName}");
 		}
 		else {
-			MenuItem.click(menuItem = "Other Site...");
+			MenuItem.click(menuItem = "Other Site or Asset Library...");
 
 			SelectFrame(value1 = "relative=top");
 
@@ -852,7 +844,7 @@ definition {
 
 		Click(locator1 = "APConfiguration#ASSET_SELECTION_ASSET_LIST");
 
-		Panel.expandPanel(panel = "Select Content Set");
+		Panel.expandPanel(panel = "Select Collection");
 
 		Button.clickSelect();
 
@@ -862,9 +854,9 @@ definition {
 
 		if (isSet(depotName)) {
 			AssertClick(
-				key_breadcrumbName = "Sites",
+				key_breadcrumbName = "Sites and Libraries",
 				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
-				value1 = "Sites");
+				value1 = "Sites and Libraries");
 
 			AssertClick(
 				key_groupTab = "Asset Library",
@@ -884,6 +876,8 @@ definition {
 		SelectFrameTop();
 
 		SelectFrame(locator1 = "IFrame#DIALOG");
+
+		Pause(locator1 = "3000");
 
 		Button.clickSave();
 
@@ -1138,11 +1132,13 @@ definition {
 				locator1 = "MenuItem#ANY_MENU_ITEM",
 				value1 = "Global");
 
-			MenuItem.click(menuItem = "Other Site...");
+			MenuItem.click(menuItem = "Other Site or Asset Library...");
 
 			SelectFrame(value1 = "relative=top");
 
 			SelectFrame(locator1 = "IFrame#SELECT_SITES");
+
+			Navigator.gotoNavTab(navTab = "My Sites");
 
 			var key_siteName = "${liferaySiteName}";
 
@@ -1166,9 +1162,9 @@ definition {
 
 			if ("${childSite}" == "true") {
 				AssertTextEquals(
-					key_menuItem = "Other Site...",
+					key_menuItem = "Other Site or Asset Library...",
 					locator1 = "MenuItem#ANY_MENU_ITEM",
-					value1 = "Other Site...");
+					value1 = "Other Site or Asset Library...");
 			}
 			else {
 				MenuItem.viewNotPresent(menuItem = "OTHER_SITE");

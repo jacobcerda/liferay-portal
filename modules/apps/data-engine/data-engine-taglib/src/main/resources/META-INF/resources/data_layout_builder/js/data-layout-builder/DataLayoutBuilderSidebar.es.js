@@ -30,10 +30,10 @@ import {
 	dropLayoutBuilderField,
 } from '../actions.es';
 import Button from '../components/button/Button.es';
+import FieldSets from '../components/field-sets/FieldSets.es';
 import FieldTypeList from '../components/field-types/FieldTypeList.es';
-import FieldSets from '../components/fieldsets/Fieldsets.es';
+import RuleList from '../components/rules/RuleList.es';
 import Sidebar from '../components/sidebar/Sidebar.es';
-import {useSidebarContent} from '../hooks/index.es';
 import isClickOutside from '../utils/clickOutside.es';
 import renderSettingsForm, {
 	getEvents,
@@ -43,7 +43,12 @@ import DataLayoutBuilderContext from './DataLayoutBuilderContext.es';
 
 const DefaultSidebarBody = ({keywords}) => {
 	const [dataLayoutBuilder] = useContext(DataLayoutBuilderContext);
-	const [{fieldsets}] = useContext(AppContext);
+
+	const [
+		{
+			config: {allowFieldSets, allowRules},
+		},
+	] = useContext(AppContext);
 
 	const onDoubleClick = ({name}) => {
 		const {activePage, pages} = dataLayoutBuilder.getStore();
@@ -82,10 +87,17 @@ const DefaultSidebarBody = ({keywords}) => {
 		},
 	];
 
-	if (fieldsets.length > 0) {
+	if (allowFieldSets) {
 		tabs.push({
 			label: Liferay.Language.get('fieldsets'),
 			render: () => <FieldSets />,
+		});
+	}
+
+	if (allowRules) {
+		tabs.push({
+			label: Liferay.Language.get('rules'),
+			render: () => <RuleList />,
 		});
 	}
 
@@ -108,9 +120,10 @@ const SettingsSidebarBody = () => {
 		: fieldSettingsContext;
 
 	useEffect(() => {
-		const filteredSettingsContext = getFilteredSettingsContext(
-			settingsContext
-		);
+		const filteredSettingsContext = getFilteredSettingsContext({
+			config: state.config,
+			settingsContext,
+		});
 
 		const dispatchEvent = (type, payload) => {
 			if (hasFocusedCustomObjectField && type === 'fieldEdited') {
@@ -177,6 +190,7 @@ const SettingsSidebarBody = () => {
 		formRef,
 		hasFocusedCustomObjectField,
 		settingsContext,
+		state.config,
 	]);
 
 	useEffect(() => {
@@ -277,9 +291,6 @@ export default () => {
 	const [dataLayoutBuilder] = useContext(DataLayoutBuilderContext);
 	const [{focusedCustomObjectField, focusedField}] = useContext(AppContext);
 	const [keywords, setKeywords] = useState('');
-	const [sidebarClosed, setSidebarClosed] = useState(false);
-
-	useSidebarContent(dataLayoutBuilder.containerRef, sidebarClosed);
 
 	const sidebarRef = useRef();
 
@@ -290,6 +301,7 @@ export default () => {
 					target,
 					sidebarRef.current,
 					'.data-layout-builder-sidebar',
+					'.ddm-field-actions-container',
 					'.ddm-form-builder',
 					'.dropdown-menu'
 				)
@@ -303,42 +315,6 @@ export default () => {
 		return () => window.removeEventListener('click', eventHandler);
 	}, [dataLayoutBuilder, sidebarRef]);
 
-	useEffect(() => {
-		const productMenuToggle = document.querySelector(
-			'.product-menu-toggle'
-		);
-
-		if (productMenuToggle) {
-			const sidenav = Liferay.SideNavigation.instance(productMenuToggle);
-
-			if (!sidebarClosed) {
-				sidenav.hide();
-			}
-		}
-	}, [sidebarClosed]);
-
-	useLayoutEffect(() => {
-		const productMenuToggle = document.querySelector(
-			'.product-menu-toggle'
-		);
-
-		if (productMenuToggle) {
-			Liferay.SideNavigation.hide(productMenuToggle);
-
-			const sidenav = Liferay.SideNavigation.instance(productMenuToggle);
-			const openEventListener = sidenav.on(
-				'openStart.lexicon.sidenav',
-				() => {
-					setSidebarClosed(true);
-				}
-			);
-
-			return () => {
-				openEventListener.removeListener();
-			};
-		}
-	}, []);
-
 	const hasFocusedField = Object.keys(focusedField).length > 0;
 	const hasFocusedCustomObjectField =
 		Object.keys(focusedCustomObjectField).length > 0;
@@ -346,10 +322,7 @@ export default () => {
 
 	return (
 		<Sidebar
-			closeable={!displaySettings || sidebarClosed}
-			closed={sidebarClosed}
 			onSearch={displaySettings ? false : setKeywords}
-			onToggle={closed => setSidebarClosed(closed)}
 			ref={sidebarRef}
 		>
 			<>

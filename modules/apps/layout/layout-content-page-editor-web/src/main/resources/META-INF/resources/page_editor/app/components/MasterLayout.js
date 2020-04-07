@@ -23,17 +23,19 @@ import {
 	LayoutDataPropTypes,
 	getLayoutDataItemPropTypes,
 } from '../../prop-types/index';
-import {BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR} from '../config/constants/backgroundImageFragmentEntryProcessor';
-import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../config/constants/editableFragmentEntryProcessor';
 import {LAYOUT_DATA_ITEM_TYPES} from '../config/constants/layoutDataItemTypes';
 import {config} from '../config/index';
-import Processors from '../processors/index';
 import {useSelector} from '../store/index';
+import {useGetFieldValue} from './CollectionItemContext';
 import PageEditor from './PageEditor';
 import UnsafeHTML from './UnsafeHTML';
-import {Column, Container, Row} from './layout-data-items/index';
+import getAllEditables from './fragment-content/getAllEditables';
+import resolveEditableValue from './fragment-content/resolveEditableValue';
+import {Collection, Column, Container, Row} from './layout-data-items/index';
 
 const LAYOUT_DATA_ITEMS = {
+	[LAYOUT_DATA_ITEM_TYPES.collection]: Collection,
+	[LAYOUT_DATA_ITEM_TYPES.collectionItem]: CollectionItem,
 	[LAYOUT_DATA_ITEM_TYPES.column]: Column,
 	[LAYOUT_DATA_ITEM_TYPES.container]: Container,
 	[LAYOUT_DATA_ITEM_TYPES.dropZone]: DropZoneContainer,
@@ -101,10 +103,18 @@ MasterLayoutDataItem.propTypes = {
 };
 
 function DropZoneContainer() {
-	return <PageEditor withinMasterPage />;
+	const mainItem = useSelector(
+		state => state.layoutData.items[state.layoutData.rootItems.main]
+	);
+
+	return <PageEditor mainItem={mainItem} withinMasterPage />;
 }
 
 function Root({children}) {
+	return <div>{children}</div>;
+}
+
+function CollectionItem({children}) {
 	return <div>{children}</div>;
 }
 
@@ -116,6 +126,8 @@ const FragmentContent = React.memo(function FragmentContent({
 	const ref = useRef(null);
 	const isMounted = useIsMounted();
 	const [content, setContent] = useState(defaultContent);
+
+	const getFieldValue = useGetFieldValue();
 
 	useEffect(() => {
 		const element = ref.current;
@@ -149,62 +161,36 @@ const FragmentContent = React.memo(function FragmentContent({
 			}
 		}, 50);
 
-		Array.from(
-			element.querySelectorAll('[data-lfr-background-image-id]')
-		).map(editable => {
-			const editableId = editable.dataset.lfrBackgroundImageId;
-
-			const editableValue =
-				editableValues[BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR][
-					editableId
-				];
-
-			if (editableIsMapped(editableValue)) {
-				return;
-			}
-
-			const value = editableValue[languageId];
-
-			if (value) {
-				const processor = Processors['background-image'];
-
-				processor.render(editable, value);
-			}
+		getAllEditables(element).forEach(editable => {
+			resolveEditableValue(
+				editableValues,
+				editable.editableId,
+				editable.editableValueNamespace,
+				languageId,
+				null,
+				getFieldValue
+			).then(([value, editableConfig]) => {
+				editable.processor.render(
+					editable.element,
+					value,
+					editableConfig
+				);
+			});
 		});
-
-		Array.from(element.querySelectorAll('lfr-editable')).forEach(
-			editable => {
-				const editableId = editable.getAttribute('id');
-
-				const editableValue =
-					editableValues[EDITABLE_FRAGMENT_ENTRY_PROCESSOR][
-						editableId
-					];
-
-				if (editableIsMapped(editableValue)) {
-					return;
-				}
-
-				const value = editableValue[languageId];
-
-				const editableConfig = editableValue.config || {};
-
-				if (value && editableConfig) {
-					const processor =
-						Processors[editable.getAttribute('type')] ||
-						Processors.fallback;
-
-					processor.render(editable, value, editableConfig);
-				}
-			}
-		);
 
 		updateContent();
 
 		return () => {
 			element = null;
 		};
-	}, [defaultContent, content, isMounted, editableValues, languageId]);
+	}, [
+		defaultContent,
+		content,
+		isMounted,
+		editableValues,
+		languageId,
+		getFieldValue,
+	]);
 
 	return (
 		<UnsafeHTML
@@ -244,13 +230,3 @@ Fragment.propTypes = {
 		}),
 	}).isRequired,
 };
-
-function editableIsMapped(editableValue) {
-	return (
-		editableValue &&
-		((editableValue.classNameId &&
-			editableValue.classPK &&
-			editableValue.fieldId) ||
-			editableValue.mappedField)
-	);
-}
