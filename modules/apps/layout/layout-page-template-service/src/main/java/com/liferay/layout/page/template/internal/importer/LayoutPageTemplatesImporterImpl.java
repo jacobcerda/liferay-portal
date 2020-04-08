@@ -30,7 +30,9 @@ import com.liferay.headless.delivery.dto.v1_0.Settings;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateExportImportConstants;
+import com.liferay.layout.page.template.exception.MasterPageValidatorException;
 import com.liferay.layout.page.template.exception.PageDefinitionValidatorException;
+import com.liferay.layout.page.template.exception.PageTemplateValidatorException;
 import com.liferay.layout.page.template.importer.LayoutPageTemplatesImporter;
 import com.liferay.layout.page.template.importer.LayoutPageTemplatesImporterResultEntry;
 import com.liferay.layout.page.template.internal.importer.helper.LayoutStructureItemHelper;
@@ -43,7 +45,9 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionServ
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.page.template.validator.MasterPageValidator;
 import com.liferay.layout.page.template.validator.PageDefinitionValidator;
+import com.liferay.layout.page.template.validator.PageTemplateValidator;
 import com.liferay.layout.util.LayoutCopyHelper;
 import com.liferay.layout.util.structure.FragmentLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
@@ -227,6 +231,26 @@ public class LayoutPageTemplatesImporterImpl
 		return fragmentEntryLinks;
 	}
 
+	private String _getKey(String defaultKey, String name, ZipEntry zipEntry) {
+		String[] pathParts = StringUtil.split(
+			zipEntry.getName(), CharPool.SLASH);
+
+		String key = defaultKey;
+
+		if (Validator.isNotNull(name)) {
+			key = name;
+		}
+
+		if (pathParts.length > 1) {
+			key = pathParts[pathParts.length - 2];
+		}
+
+		key = StringUtil.replace(key, CharPool.SPACE, CharPool.DASH);
+		key = StringUtil.toLowerCase(key);
+
+		return key;
+	}
+
 	private LayoutPageTemplateCollection _getLayoutPageTemplateCollection(
 			long groupId, long layoutPageTemplateCollectionId,
 			PageTemplateCollectionEntry pageTemplateCollectionEntry,
@@ -298,8 +322,31 @@ public class LayoutPageTemplatesImporterImpl
 
 			String content = StringUtil.read(zipFile.getInputStream(zipEntry));
 
-			MasterPage masterPage = _objectMapper.readValue(
-				content, MasterPage.class);
+			MasterPage masterPage = null;
+
+			try {
+				MasterPageValidator.validateMasterPage(content);
+
+				masterPage = _objectMapper.readValue(content, MasterPage.class);
+			}
+			catch (MasterPageValidatorException masterPageValidatorException) {
+				if (_log.isWarnEnabled()) {
+					_log.warn("Invalid master page for: " + zipEntry.getName());
+				}
+
+				_layoutPageTemplatesImporterResultEntries.add(
+					new LayoutPageTemplatesImporterResultEntry(
+						zipEntry.getName(),
+						LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT,
+						LayoutPageTemplatesImporterResultEntry.Status.INVALID,
+						_getErrorMessage(
+							groupId,
+							"x-could-not-be-imported-because-its-master-page-" +
+								"is-invalid",
+							new String[] {zipEntry.getName()})));
+
+				continue;
+			}
 
 			try {
 				String pageDefinitionJSON = _getPageDefinitionJSON(
@@ -308,15 +355,15 @@ public class LayoutPageTemplatesImporterImpl
 				PageDefinitionValidator.validatePageDefinition(
 					pageDefinitionJSON);
 
-				PageDefinition pageDefinition = _objectMapper.readValue(
-					pageDefinitionJSON, PageDefinition.class);
-
-				ZipEntry thumbnailZipEntry = _getThumbnailZipEntry(
-					zipEntry.getName(), zipFile);
-
 				masterPageEntries.add(
 					new MasterPageEntry(
-						masterPage, pageDefinition, thumbnailZipEntry,
+						_getKey(
+							_MASTER_PAGE_ENTRY_KEY_DEFAULT,
+							masterPage.getName(), zipEntry),
+						masterPage,
+						_objectMapper.readValue(
+							pageDefinitionJSON, PageDefinition.class),
+						_getThumbnailZipEntry(zipEntry.getName(), zipFile),
 						zipEntry.getName()));
 			}
 			catch (PageDefinitionValidatorException
@@ -330,6 +377,7 @@ public class LayoutPageTemplatesImporterImpl
 				_layoutPageTemplatesImporterResultEntries.add(
 					new LayoutPageTemplatesImporterResultEntry(
 						masterPage.getName(),
+						LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT,
 						LayoutPageTemplatesImporterResultEntry.Status.INVALID,
 						_getErrorMessage(
 							groupId,
@@ -415,16 +463,43 @@ public class LayoutPageTemplatesImporterImpl
 				continue;
 			}
 
+			String content = StringUtil.read(zipFile.getInputStream(zipEntry));
+
+			PageTemplate pageTemplate = null;
+
+			try {
+				PageTemplateValidator.validatePageTemplate(content);
+
+				pageTemplate = _objectMapper.readValue(
+					content, PageTemplate.class);
+			}
+			catch (PageTemplateValidatorException
+						pageTemplateValidatorException) {
+
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Invalid page template for: " + zipEntry.getName());
+				}
+
+				_layoutPageTemplatesImporterResultEntries.add(
+					new LayoutPageTemplatesImporterResultEntry(
+						zipEntry.getName(),
+						LayoutPageTemplateEntryTypeConstants.TYPE_BASIC,
+						LayoutPageTemplatesImporterResultEntry.Status.INVALID,
+						_getErrorMessage(
+							groupId,
+							"x-could-not-be-imported-because-its-page-" +
+								"template-is-invalid",
+							new String[] {zipEntry.getName()})));
+
+				continue;
+			}
+
 			String pageTemplateCollectionKey = _getPageTemplateCollectionKey(
 				zipEntry.getName(), zipFile);
 
 			PageTemplateCollectionEntry pageTemplateCollectionEntry =
 				pageTemplateCollectionMap.get(pageTemplateCollectionKey);
-
-			String content = StringUtil.read(zipFile.getInputStream(zipEntry));
-
-			PageTemplate pageTemplate = _objectMapper.readValue(
-				content, PageTemplate.class);
 
 			try {
 				String pageDefinitionJSON = _getPageDefinitionJSON(
@@ -436,16 +511,13 @@ public class LayoutPageTemplatesImporterImpl
 				PageDefinition pageDefinition = _objectMapper.readValue(
 					pageDefinitionJSON, PageDefinition.class);
 
-				String pageTemplateEntryKey = _getPageTemplateEntryKey(
-					pageTemplate, zipEntry);
-
-				ZipEntry thumbnailZipEntry = _getThumbnailZipEntry(
-					zipEntry.getName(), zipFile);
-
 				pageTemplateCollectionEntry.addPageTemplateEntry(
-					pageTemplateEntryKey,
+					_getKey(
+						_PAGE_TEMPLATE_ENTRY_KEY_DEFAULT,
+						pageTemplate.getName(), zipEntry),
 					new PageTemplateEntry(
-						pageTemplate, pageDefinition, thumbnailZipEntry,
+						pageTemplate, pageDefinition,
+						_getThumbnailZipEntry(zipEntry.getName(), zipFile),
 						zipEntry.getName()));
 			}
 			catch (PageDefinitionValidatorException
@@ -460,6 +532,7 @@ public class LayoutPageTemplatesImporterImpl
 				_layoutPageTemplatesImporterResultEntries.add(
 					new LayoutPageTemplatesImporterResultEntry(
 						pageTemplate.getName(),
+						LayoutPageTemplateEntryTypeConstants.TYPE_BASIC,
 						LayoutPageTemplatesImporterResultEntry.Status.INVALID,
 						_getErrorMessage(
 							groupId,
@@ -500,30 +573,6 @@ public class LayoutPageTemplatesImporterImpl
 		}
 
 		return _PAGE_TEMPLATE_COLLECTION_KEY_DEFAULT;
-	}
-
-	private String _getPageTemplateEntryKey(
-		PageTemplate pageTemplate, ZipEntry zipEntry) {
-
-		String[] pathParts = StringUtil.split(
-			zipEntry.getName(), CharPool.SLASH);
-
-		String pageTemplateEntryKey = _PAGE_TEMPLATE_ENTRY_KEY_DEFAULT;
-
-		if (Validator.isNotNull(pageTemplate.getName())) {
-			pageTemplateEntryKey = pageTemplate.getName();
-		}
-
-		if (pathParts.length > 1) {
-			pageTemplateEntryKey = pathParts[pathParts.length - 2];
-		}
-
-		pageTemplateEntryKey = StringUtil.toLowerCase(pageTemplateEntryKey);
-
-		pageTemplateEntryKey = StringUtil.replace(
-			pageTemplateEntryKey, CharPool.SPACE, CharPool.DASH);
-
-		return pageTemplateEntryKey;
 	}
 
 	private long _getPreviewFileEntryId(
@@ -705,14 +754,14 @@ public class LayoutPageTemplatesImporterImpl
 
 				_layoutPageTemplatesImporterResultEntries.add(
 					new LayoutPageTemplatesImporterResultEntry(
-						name,
+						name, layoutPageTemplateEntryType,
 						LayoutPageTemplatesImporterResultEntry.Status.
 							IMPORTED));
 			}
 			else {
 				_layoutPageTemplatesImporterResultEntries.add(
 					new LayoutPageTemplatesImporterResultEntry(
-						name,
+						name, layoutPageTemplateEntryType,
 						LayoutPageTemplatesImporterResultEntry.Status.IGNORED,
 						_getErrorMessage(
 							groupId, _MESSAGE_KEY_IGNORED,
@@ -729,7 +778,8 @@ public class LayoutPageTemplatesImporterImpl
 
 			_layoutPageTemplatesImporterResultEntries.add(
 				new LayoutPageTemplatesImporterResultEntry(
-					name, LayoutPageTemplatesImporterResultEntry.Status.INVALID,
+					name, layoutPageTemplateEntryType,
+					LayoutPageTemplatesImporterResultEntry.Status.INVALID,
 					_getErrorMessage(
 						groupId, _MESSAGE_KEY_INVALID,
 						new String[] {
@@ -750,7 +800,8 @@ public class LayoutPageTemplatesImporterImpl
 
 			LayoutPageTemplateEntry layoutPageTemplateEntry =
 				_layoutPageTemplateEntryLocalService.
-					fetchLayoutPageTemplateEntry(groupId, masterPage.getKey());
+					fetchLayoutPageTemplateEntry(
+						groupId, masterPageEntry.getKey());
 
 			_processLayoutPageTemplateEntry(
 				groupId, 0, layoutPageTemplateEntry, masterPage.getName(),
@@ -978,6 +1029,9 @@ public class LayoutPageTemplatesImporterImpl
 		_layoutLocalService.updateLayout(layout);
 	}
 
+	private static final String _MASTER_PAGE_ENTRY_KEY_DEFAULT =
+		"imported-master-page";
+
 	private static final String _MESSAGE_KEY_IGNORED =
 		"x-was-ignored-because-a-x-with-the-same-key-already-exists";
 
@@ -1056,13 +1110,18 @@ public class LayoutPageTemplatesImporterImpl
 	private static class MasterPageEntry {
 
 		public MasterPageEntry(
-			MasterPage masterPage, PageDefinition pageDefinition,
+			String key, MasterPage masterPage, PageDefinition pageDefinition,
 			ZipEntry thumbnailZipEntry, String zipPath) {
 
+			_key = key;
 			_masterPage = masterPage;
 			_pageDefinition = pageDefinition;
 			_thumbnailZipEntry = thumbnailZipEntry;
 			_zipPath = zipPath;
+		}
+
+		public String getKey() {
+			return _key;
 		}
 
 		public MasterPage getMasterPage() {
@@ -1081,6 +1140,7 @@ public class LayoutPageTemplatesImporterImpl
 			return _zipPath;
 		}
 
+		private final String _key;
 		private final MasterPage _masterPage;
 		private final PageDefinition _pageDefinition;
 		private final ZipEntry _thumbnailZipEntry;

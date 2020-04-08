@@ -12,14 +12,13 @@
  * details.
  */
 
-import {COLLECTION_LIST_FORMATS} from './collectionListFormats';
 import {CONTAINER_TYPES} from './containerTypes';
 import {LAYOUT_DATA_ITEM_TYPES} from './layoutDataItemTypes';
 
 export const LAYOUT_DATA_ITEM_DEFAULT_CONFIGURATIONS = {
 	[LAYOUT_DATA_ITEM_TYPES.collection]: {
 		collection: {},
-		listFormat: COLLECTION_LIST_FORMATS.stacked,
+		numberOfColumns: 1,
 		numberOfItems: 3,
 	},
 

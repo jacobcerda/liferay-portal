@@ -55,6 +55,28 @@ SegmentsEntry segmentsEntry = (SegmentsEntry)row.getObject();
 		/>
 	</c:if>
 
+	<%
+	Group group = GroupLocalServiceUtil.getGroup(segmentsEntry.getGroupId());
+	%>
+
+	<c:if test="<%= !group.isCompany() && SegmentsEntryPermission.contains(permissionChecker, segmentsEntry, ActionKeys.ASSIGN_USER_ROLES) %>">
+
+		<%
+		Map<String, Object> data = HashMapBuilder.<String, Object>put(
+			"roleIds", StringUtil.merge(segmentsEntry.getRoleIds())
+		).put(
+			"segmentsEntryId", segmentsEntry.getSegmentsEntryId()
+		).build();
+		%>
+
+		<liferay-ui:icon
+			data="<%= data %>"
+			linkCssClass="assign-site-roles-link"
+			message="assign-site-roles"
+			url="javascript:;"
+		/>
+	</c:if>
+
 	<c:if test="<%= SegmentsEntryPermission.contains(permissionChecker, segmentsEntry, ActionKeys.PERMISSIONS) %>">
 		<liferay-security:permissionsURL
 			modelResource="<%= SegmentsEntry.class.getName() %>"

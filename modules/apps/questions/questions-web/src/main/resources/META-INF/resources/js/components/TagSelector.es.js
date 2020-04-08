@@ -19,7 +19,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import {AppContext} from '../AppContext.es';
 import {getAllTags} from '../utils/client.es';
 
-export default ({tagsChange, tags = [], ...props}) => {
+export default ({tagsChange, tagsLoaded, tags = [], ...props}) => {
 	const context = useContext(AppContext);
 
 	const [error, setError] = useState(false);
@@ -53,6 +53,15 @@ export default ({tagsChange, tags = [], ...props}) => {
 			setItems(tags);
 		}
 	}, [tags]);
+
+	useEffect(() => {
+		if (inputValue) {
+			tagsLoaded(false);
+		}
+		else {
+			tagsLoaded(true);
+		}
+	}, [inputValue, tagsLoaded]);
 
 	const maxTags = tags => tags.length > 5;
 	const duplicatedTags = tags =>

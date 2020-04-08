@@ -38,6 +38,7 @@ export default withRouter(
 		const [headline, setHeadline] = useState('');
 		const [id, setId] = useState('');
 		const [tags, setTags] = useState([]);
+		const [tagsLoaded, setTagsLoaded] = useState(true);
 
 		const loadThread = () =>
 			getThreadContent(questionId, context.siteKey).then(
@@ -145,31 +146,20 @@ export default withRouter(
 								</ClayForm.Group>
 
 								<ClayForm.Group className="c-mt-4">
-									<label htmlFor="basicInput">
-										{Liferay.Language.get('tags')}
-									</label>
-
 									<TagSelector
 										tags={tags}
 										tagsChange={tags => setTags(tags)}
+										tagsLoaded={setTagsLoaded}
 									/>
-
-									<ClayForm.FeedbackGroup>
-										<ClayForm.FeedbackItem>
-											<span className="small text-secondary">
-												{Liferay.Language.get(
-													'add-up-to-5-tags-to-describe-what-your-question-is-about'
-												)}
-											</span>
-										</ClayForm.FeedbackItem>
-									</ClayForm.FeedbackGroup>
 								</ClayForm.Group>
 							</ClayForm>
 
 							<div className="c-mt-4 d-flex flex-column-reverse flex-sm-row">
 								<ClayButton
 									className="c-mt-4 c-mt-sm-0"
-									disabled={!articleBody || !headline}
+									disabled={
+										!articleBody || !headline || !tagsLoaded
+									}
 									displayType="primary"
 									onClick={submit}
 								>

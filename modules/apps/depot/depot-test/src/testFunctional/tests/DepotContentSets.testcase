@@ -26,7 +26,7 @@ definition {
 		}
 	}
 
-	@description = "This ensures that the documents with document type can be selected through Content Sets in a depot."
+	@description = "This ensures that the documents with document type can be selected through Collections in a depot."
 	@priority = "5"
 	test AddDocTypeDocumentsManually {
 		property portal.upstream = "quarantine";
@@ -63,7 +63,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.addManualSelection(
 			assetListTitle = "Depot Manual Asset List",
@@ -73,7 +73,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetTypeList(
 			assetListName = "Depot Manual Asset List",
@@ -85,7 +85,7 @@ definition {
 
 			DepotNavigator.gotoDepot(
 				depotName = "Test Depot Name",
-				portlet = "Content Sets");
+				portlet = "Collections");
 
 			AssetListsAdmin.selectAsset(
 				assetListName = "Depot Manual Asset List",
@@ -98,7 +98,7 @@ definition {
 
 			DepotNavigator.gotoDepot(
 				depotName = "Test Depot Name",
-				portlet = "Content Sets");
+				portlet = "Collections");
 
 			AssetListsAdmin.viewContent(
 				assetListTitle = "Depot Manual Asset List",
@@ -180,7 +180,7 @@ definition {
 			assetType = "Web Content Article");
 	}
 
-	@description = "This ensures that content sets from a site can select the basic web content stored in a depot."
+	@description = "This ensures that collections from a site can select the basic web content stored in a depot."
 	@priority = "5"
 	test CreateSetOnSiteUsingDepotWC {
 		property portal.upstream = "quarantine";
@@ -265,7 +265,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetTypeList(
 			allAssetsDisabled = "ture",
@@ -276,7 +276,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetTypeList(
 			allAssetsDisabled = "true",
@@ -329,7 +329,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetTypeList(
 			assetListName = "Depot Manual Asset List",
@@ -340,7 +340,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetTypeList(
 			assetListName = "Depot Dynamic Asset List",
@@ -387,7 +387,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetTypeList(
 			assetListName = "Depot Manual Asset List",
@@ -398,7 +398,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetTypeList(
 			assetListName = "Depot Dynamic Asset List",
@@ -406,7 +406,7 @@ definition {
 			dynamicSelection = "true");
 	}
 
-	@description = "This ensures that the image is displayed by AP through Content Sets in a depot."
+	@description = "This ensures that the image is displayed by AP through Collections in a depot."
 	@priority = "5"
 	test DisplayImageInAP {
 		property portal.upstream = "quarantine";
@@ -426,7 +426,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.addManualSelection(
 			assetListTitle = "Depot Manual Asset List",
@@ -436,7 +436,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetList(
 			assetListTitle = "Depot Manual Asset List",
@@ -446,7 +446,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.selectAsset(
 			assetListName = "Depot Manual Asset List",
@@ -522,7 +522,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.addDynamicSelection(
 			assetListTitle = "Depot Dynamic Asset List",
@@ -532,7 +532,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetList(
 			assetListTitle = "Depot Dynamic Asset List",
@@ -542,7 +542,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-depot-name");
 
@@ -634,7 +634,7 @@ definition {
 		}
 	}
 
-	@description = "This ensures that the asset can be removed in Content Sets."
+	@description = "This ensures that the asset can be removed in Collections."
 	@priority = "4"
 	test RemoveAssetFromContentSet {
 		DepotNavigator.openDepotAdmin();
@@ -657,7 +657,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.addManualSelection(
 			assetListTitle = "Depot Manual Asset List",
@@ -667,7 +667,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetList(
 			assetListTitle = "Depot Manual Asset List",
@@ -678,7 +678,7 @@ definition {
 
 			DepotNavigator.gotoDepot(
 				depotName = "Test Depot Name",
-				portlet = "Content Sets");
+				portlet = "Collections");
 
 			AssetListsAdmin.selectAsset(
 				assetListName = "Depot Manual Asset List",
@@ -693,7 +693,7 @@ definition {
 
 			DepotNavigator.gotoDepot(
 				depotName = "Test Depot Name",
-				portlet = "Content Sets");
+				portlet = "Collections");
 
 			AssetListsAdmin.viewContent(
 				assetListTitle = "Depot Manual Asset List",
@@ -705,7 +705,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewNoContent(
 			assetListTitle = "Depot Manual Asset List",
@@ -849,7 +849,7 @@ definition {
 		}
 	}
 
-	@description = "This ensures that multiple documents can be selected through Content Sets in a depot."
+	@description = "This ensures that multiple documents can be selected through Collections in a depot."
 	@priority = "5"
 	test SelectMultipleDocumentsManually {
 		DepotNavigator.openDepotAdmin();
@@ -864,7 +864,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.addManualSelection(assetListTitle = "Depot Manual Asset List");
 
@@ -872,7 +872,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetList(
 			assetListTitle = "Depot Manual Asset List",
@@ -883,7 +883,7 @@ definition {
 
 			DepotNavigator.gotoDepot(
 				depotName = "Test Depot Name",
-				portlet = "Content Sets");
+				portlet = "Collections");
 
 			AssetListsAdmin.selectAsset(
 				assetListName = "Depot Manual Asset List",
@@ -896,7 +896,7 @@ definition {
 
 			DepotNavigator.gotoDepot(
 				depotName = "Test Depot Name",
-				portlet = "Content Sets");
+				portlet = "Collections");
 
 			AssetListsAdmin.viewContent(
 				assetListTitle = "Depot Manual Asset List",
@@ -905,7 +905,7 @@ definition {
 		}
 	}
 
-	@description = "This ensures that multiple web content can be selected through Content Sets in a depot."
+	@description = "This ensures that multiple web content can be selected through Collections in a depot."
 	@priority = "5"
 	test SelectMultipleWebContentManually {
 		property portal.upstream = "quarantine";
@@ -922,7 +922,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.addManualSelection(
 			assetListTitle = "Depot Manual Asset List",
@@ -932,7 +932,7 @@ definition {
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssetListsAdmin.viewAssetList(
 			assetListTitle = "Depot Manual Asset List",
@@ -943,7 +943,7 @@ definition {
 
 			DepotNavigator.gotoDepot(
 				depotName = "Test Depot Name",
-				portlet = "Content Sets");
+				portlet = "Collections");
 
 			AssetListsAdmin.selectAsset(
 				assetListName = "Depot Manual Asset List",
@@ -956,7 +956,7 @@ definition {
 
 			DepotNavigator.gotoDepot(
 				depotName = "Test Depot Name",
-				portlet = "Content Sets");
+				portlet = "Collections");
 
 			AssetListsAdmin.viewContent(
 				assetListTitle = "Depot Manual Asset List",
@@ -1123,21 +1123,20 @@ definition {
 		}
 	}
 
-	@description = "This ensures that Content Sets can be set in a depot."
+	@description = "This ensures that Collections can be set in a depot."
 	@priority = "5"
 	test Smoke {
-		property portal.acceptance = "quarantine";
-		property portal.upstream = "quarantine";
+		property portal.acceptance = "true";
 
 		DepotNavigator.openDepotAdmin();
 
 		DepotNavigator.gotoDepot(
 			depotName = "Test Depot Name",
-			portlet = "Content Sets");
+			portlet = "Collections");
 
 		AssertTextEquals(
 			locator1 = "Message#EMPTY_INFO_TAGLIB_TITLE",
-			value1 = "No Content Sets yet.");
+			value1 = "No Collections yet.");
 
 		AssertTextEquals(
 			locator1 = "Message#EMPTY_INFO_TAGLIB_DESCRIPTION",

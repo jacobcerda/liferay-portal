@@ -138,6 +138,8 @@ public class StartupAction extends SimpleAction {
 		}
 		else {
 			StartupHelperUtil.verifyRequiredSchemaVersion();
+
+			DBUpgrader.checkReleaseState();
 		}
 
 		Registry registry = RegistryUtil.getRegistry();
@@ -192,18 +194,19 @@ public class StartupAction extends SimpleAction {
 
 			StartupHelperUtil.initResourceActions();
 
+			ResourceActionLocalServiceUtil.checkResourceActions();
+
+			DBUpgrader.verify();
+
 			DLFileEntryTypeLocalServiceUtil.getBasicDocumentDLFileEntryType();
 		}
-
-		ResourceActionLocalServiceUtil.checkResourceActions();
-
-		// Verify
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Verify database");
+		else {
+			ResourceActionLocalServiceUtil.checkResourceActions();
 		}
 
-		DBUpgrader.verify();
+		if (PropsValues.DATABASE_INDEXES_UPDATE_ON_STARTUP) {
+			StartupHelperUtil.updateIndexes(true);
+		}
 
 		// Liferay JspFactory
 

@@ -1137,6 +1137,7 @@ definition {
 		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property environment.acceptance = "true";
+		property portal.upstream = "quarantine";
 		property testray.component.names = "Training";
 
 		Navigator.openURL();
@@ -1990,8 +1991,6 @@ definition {
 
 	@priority = "5"
 	test ViewMultipleFacetURLs {
-		property portal.upstream = "quarantine";
-
 		var searchPage = "Search Page";
 
 		JSONCategory.addVocabulary(

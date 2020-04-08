@@ -172,7 +172,7 @@ definition {
 
 	macro configureSearchOptions {
 		Portlet.gotoPortletOptions(
-			portletName = "portlet_SearchOptionsPortlet",
+			portletName = "Search Options",
 			portletOption = "Configuration");
 
 		SelectFrame(locator1 = "IFrame#CONFIGURATION");
@@ -452,13 +452,13 @@ definition {
 			column = "3",
 			groupName = "Test Site Name",
 			layoutName = "${layoutName}",
-			widgetName = "Low Level Search Options");
+			widgetName = "Search Options");
 
 		JSONLayout.addWidgetToPublicLayout(
 			column = "3",
 			groupName = "Test Site Name",
 			layoutName = "${layoutName}",
-			widgetName = "Search Options");
+			widgetName = "Low Level Search Options");
 	}
 
 	macro setupSimilarResultsPage {

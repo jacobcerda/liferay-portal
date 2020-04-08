@@ -12,6 +12,8 @@
  * details.
  */
 
+import ClayButton from '@clayui/button';
+import {ClayInput} from '@clayui/form';
 import ClayModal, {useModal} from '@clayui/modal';
 import {RuleEditor} from 'dynamic-data-mapping-form-builder';
 import React, {useContext, useEffect, useRef, useState} from 'react';
@@ -19,7 +21,6 @@ import React, {useContext, useEffect, useRef, useState} from 'react';
 import AppContext from '../../AppContext.es';
 import DataLayoutBuilderContext from '../../data-layout-builder/DataLayoutBuilderContext.es';
 import {getItem} from '../../utils/client.es';
-import Button from '../button/Button.es';
 
 class RuleEditorWrapper extends RuleEditor {
 	getChildContext() {
@@ -120,18 +121,35 @@ const RuleEditorModalContent = ({onClose}) => {
 			<ClayModal.Header>
 				{Liferay.Language.get('add-rule')}
 			</ClayModal.Header>
+			<ClayModal.Header withTitle={false}>
+				<ClayInput.Group className="pl-4 pr-4">
+					<ClayInput.GroupItem>
+						<ClayInput
+							aria-label={Liferay.Language.get('untitled-rule')}
+							className="form-control-inline"
+							placeholder={Liferay.Language.get('untitled-rule')}
+							type="text"
+						/>
+					</ClayInput.GroupItem>
+				</ClayInput.Group>
+			</ClayModal.Header>
 			<ClayModal.Body>
-				<div ref={ruleEditorRef}></div>
+				<div className="pl-4 pr-4" ref={ruleEditorRef}></div>
 			</ClayModal.Body>
 			<ClayModal.Footer
 				last={
-					<Button
-						onClick={() => {
-							ruleEditor._handleRuleAdded();
-						}}
-					>
-						{Liferay.Language.get('save')}
-					</Button>
+					<ClayButton.Group spaced>
+						<ClayButton displayType="secondary" onClick={onClose}>
+							{Liferay.Language.get('cancel')}
+						</ClayButton>
+						<ClayButton
+							onClick={() => {
+								ruleEditor._handleRuleAdded();
+							}}
+						>
+							{Liferay.Language.get('save')}
+						</ClayButton>
+					</ClayButton.Group>
 				}
 			/>
 		</>
@@ -144,15 +162,14 @@ const RuleEditorModal = ({isVisible, onClose}) => {
 	});
 
 	if (!isVisible) {
-		return <></>;
+		return null;
 	}
 
 	return (
 		<ClayModal
 			className="data-layout-builder-rule-editor-modal"
 			observer={observer}
-			size="lg"
-			status="info"
+			size="full-screen"
 		>
 			<RuleEditorModalContent onClose={onClose} />
 		</ClayModal>
