@@ -105,12 +105,6 @@ public abstract class BaseWorkflowMetricsIndexerTestCase
 		return addKaleoInstance(getKaleoDefinition(), _createWorkflowContext());
 	}
 
-	protected KaleoInstance addKaleoInstance(KaleoDefinition kaleoDefinition)
-		throws Exception {
-
-		return addKaleoInstance(kaleoDefinition, _createWorkflowContext());
-	}
-
 	protected KaleoInstance addKaleoInstance(
 			KaleoDefinition kaleoDefinition,
 			Map<String, Serializable> workflowContext)
@@ -127,8 +121,7 @@ public abstract class BaseWorkflowMetricsIndexerTestCase
 				kaleoDefinition.getKaleoDefinitionId(),
 				kaleoDefinitionVersion.getKaleoDefinitionVersionId(),
 				kaleoDefinitionVersion.getName(), kaleoDefinition.getVersion(),
-				_createWorkflowContext(),
-				ServiceContextTestUtil.getServiceContext());
+				workflowContext, ServiceContextTestUtil.getServiceContext());
 
 		_kaleoInstances.add(kaleoInstance);
 

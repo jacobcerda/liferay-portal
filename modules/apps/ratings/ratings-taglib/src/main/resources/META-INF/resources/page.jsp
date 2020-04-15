@@ -43,7 +43,7 @@ String type = GetterUtil.getString((String)request.getAttribute("liferay-ratings
 
 			<react:component
 				data="<%= data %>"
-				module="js/components/RatingsLike.es"
+				module="js/components/RatingsLike"
 			/>
 		</div>
 	</c:when>
@@ -63,15 +63,35 @@ String type = GetterUtil.getString((String)request.getAttribute("liferay-ratings
 
 			<react:component
 				data="<%= data %>"
-				module="js/components/RatingsThumbs.es"
+				module="js/components/RatingsThumbs"
 			/>
 		</div>
 	</c:when>
-	<c:when test="<%= type.equals(RatingsType.STARS.getValue()) %>">
+	<c:when test="<%= type.equals(RatingsType.STACKED_STARS.getValue()) || type.equals(RatingsType.STARS.getValue()) %>">
 		<div>
+			<div class="autofit-row autofit-row-center ratings ratings-stars">
+				<div class="autofit-col">
+					<div class="dropdown">
+						<clay:button
+							disabled="<%= true %>"
+							elementClasses="btn btn-outline-borderless btn-outline-secondary btn-sm dropdown-toggle"
+							icon="star-o"
+							label="-"
+						/>
+					</div>
+				</div>
+
+				<div class="autofit-col">
+					<clay:icon
+						elementClasses="ratings-stars-average-icon"
+						symbol="star"
+					/>
+				</div>
+			</div>
+
 			<react:component
 				data="<%= data %>"
-				module="js/components/RatingsStars.es"
+				module="js/components/RatingsStars"
 			/>
 		</div>
 	</c:when>

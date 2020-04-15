@@ -41,6 +41,7 @@ import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,6 +68,7 @@ public class UpgradeDDMFormInstanceSettingsTest {
 		setUpUpgradeDDMFormInstanceSettings();
 	}
 
+	@Ignore
 	@Test
 	public void testAddRequireAuthenticationSetting() throws Exception {
 		String settings = createSettings(false);
@@ -87,6 +89,7 @@ public class UpgradeDDMFormInstanceSettingsTest {
 		Assert.assertTrue(containsField(fieldValues, "requireAuthentication"));
 	}
 
+	@Ignore
 	@Test
 	public void testEnableAutosaveSetting() throws Exception {
 		String settings = createSettings(false);
@@ -169,10 +172,8 @@ public class UpgradeDDMFormInstanceSettingsTest {
 
 		DDMFormInstanceLocalServiceUtil.updateDDMFormInstance(formInstance);
 
-		formInstance = DDMFormInstanceLocalServiceUtil.getFormInstance(
+		return DDMFormInstanceLocalServiceUtil.getFormInstance(
 			formInstance.getFormInstanceId());
-
-		return formInstance;
 	}
 
 	protected String createSettings(boolean hasSetting) {
@@ -229,10 +230,8 @@ public class UpgradeDDMFormInstanceSettingsTest {
 
 		EntityCacheUtil.clearCache();
 
-		formInstance = DDMFormInstanceLocalServiceUtil.getDDMFormInstance(
+		return DDMFormInstanceLocalServiceUtil.getDDMFormInstance(
 			formInstance.getFormInstanceId());
-
-		return formInstance;
 	}
 
 	protected void setUpUpgradeDDMFormInstanceSettings() {

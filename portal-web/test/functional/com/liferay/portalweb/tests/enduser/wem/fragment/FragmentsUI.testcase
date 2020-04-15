@@ -112,12 +112,8 @@ definition {
 	}
 
 	@description = "Edit a fragment and assert the edits persist."
-	@ignore = "true"
 	@priority = "5"
 	test EditFragment {
-
-		// Ignore test until LPS-111437 is resolved
-
 		property portal.acceptance = "true";
 		property testray.component.names = "Training";
 

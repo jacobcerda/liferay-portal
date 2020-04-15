@@ -405,7 +405,6 @@ definition {
 			privacy = "Public Pages");
 	}
 
-	@ignore = "true"
 	@priority = "4"
 	test EnableStagingWithWebContentReferencedFromDeletedSite {
 		JSONWebcontent.addWebContent(
@@ -1699,7 +1698,7 @@ definition {
 			pageName = "Staging Test Page",
 			siteName = "Site Name");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryPG(
 			entryContent = "Bodzavirágból, bodzavirágból hullik a, hullik a sárga virágpor.",
 			entryTitle = "Tavaszi felhők");
 	}
@@ -1976,6 +1975,9 @@ definition {
 		DMDocument.viewStagingDetailsPG();
 	}
 
+	// Ignored because of the ticket LPS-111590
+
+	@ignore = "true"
 	@priority = "5"
 	test StagingOnlyApprovedPublishToLive {
 		property portal.acceptance = "quarantine";

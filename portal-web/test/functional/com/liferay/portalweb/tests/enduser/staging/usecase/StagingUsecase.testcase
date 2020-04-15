@@ -1035,7 +1035,9 @@ definition {
 
 		Portlet.addPG(portletName = "Asset Publisher");
 
-		AssetPublisherPortlet.configureTagsFilterPG(tagNameList = "tag1");
+		AssetPublisherPortlet.configureTagsFilterPG(
+			queryAndOperator = "Any",
+			tagNameList = "tag1");
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
 
@@ -1103,7 +1105,6 @@ definition {
 			webContentTitle = "Web Content Title 2");
 	}
 
-	@ignore = "true"
 	@priority = "4"
 	test StagingPublishChildSiteWithReference {
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
