@@ -289,6 +289,14 @@ public abstract class BaseAssigneeResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("reviewer", additionalAssertFieldName)) {
+				if (assignee.getReviewer() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
@@ -370,9 +378,43 @@ public abstract class BaseAssigneeResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("reviewer", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						assignee1.getReviewer(), assignee2.getReviewer())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
+		}
+
+		return true;
+	}
+
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
 		}
 
 		return true;
@@ -405,6 +447,17 @@ public abstract class BaseAssigneeResourceTestCase {
 			if (Objects.equals("name", fieldName)) {
 				if (!Objects.deepEquals(
 						assignee.getName(), jsonObject.getString("name"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("reviewer", fieldName)) {
+				if (!Objects.deepEquals(
+						assignee.getReviewer(),
+						jsonObject.getBoolean("reviewer"))) {
 
 					return false;
 				}
@@ -490,6 +543,11 @@ public abstract class BaseAssigneeResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("reviewer")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
 	}
@@ -517,6 +575,7 @@ public abstract class BaseAssigneeResourceTestCase {
 				id = RandomTestUtil.randomLong();
 				image = RandomTestUtil.randomString();
 				name = RandomTestUtil.randomString();
+				reviewer = RandomTestUtil.randomBoolean();
 			}
 		};
 	}

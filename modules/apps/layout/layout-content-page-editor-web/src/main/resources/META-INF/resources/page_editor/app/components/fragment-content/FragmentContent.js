@@ -27,25 +27,22 @@ import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperience
 import FragmentService from '../../services/FragmentService';
 import {useDispatch, useSelector} from '../../store/index';
 import {useGetFieldValue} from '../CollectionItemContext';
-import PageEditor from '../PageEditor';
+import Layout from '../Layout';
 import UnsafeHTML from '../UnsafeHTML';
 import {
 	useEditableProcessorUniqueId,
 	useSetEditableProcessorUniqueId,
 } from './EditableProcessorContext';
-import FragmentContentDecoration from './FragmentContentDecoration';
 import FragmentContentFloatingToolbar from './FragmentContentFloatingToolbar';
 import FragmentContentInteractionsFilter from './FragmentContentInteractionsFilter';
 import FragmentContentProcessor from './FragmentContentProcessor';
 import getAllEditables from './getAllEditables';
-import getEditableElementId from './getEditableElementId';
 import getEditableUniqueId from './getEditableUniqueId';
 import resolveEditableValue from './resolveEditableValue';
 
 const FragmentContent = React.forwardRef(
 	({fragmentEntryLinkId, itemId}, ref) => {
 		const dispatch = useDispatch();
-		const element = ref.current;
 		const isMounted = useIsMounted();
 		const editableProcessorUniqueId = useEditableProcessorUniqueId();
 		const setEditableProcessorUniqueId = useSetEditableProcessorUniqueId();
@@ -64,9 +61,15 @@ const FragmentContent = React.forwardRef(
 
 		const updateEditables = useCallback(
 			parent => {
+				let updatedEditableValues = [];
 				if (isMounted()) {
-					setEditables(parent ? getAllEditables(parent) : []);
+					updatedEditableValues = parent
+						? getAllEditables(parent)
+						: [];
+					setEditables(updatedEditableValues);
 				}
+
+				return updatedEditableValues;
 			},
 			[isMounted]
 		);
@@ -101,15 +104,22 @@ const FragmentContent = React.forwardRef(
 				dispatch(
 					updateFragmentEntryLinkContent({
 						content,
+						editableValues,
 						fragmentEntryLinkId,
 					})
 				)
 			);
-		}, [dispatch, fragmentEntryLinkId, segmentsExperienceId]);
+		}, [
+			dispatch,
+			editableValues,
+			fragmentEntryLinkId,
+			segmentsExperienceId,
+		]);
 
 		useEffect(() => {
 			let element = document.createElement('div');
 			element.innerHTML = defaultContent;
+			const updatedEditables = updateEditables(element);
 
 			const updateContent = debounce(() => {
 				if (isMounted() && element) {
@@ -118,7 +128,7 @@ const FragmentContent = React.forwardRef(
 			}, 50);
 
 			if (!editableProcessorUniqueId) {
-				editables.forEach(editable => {
+				updatedEditables.forEach(editable => {
 					resolveEditableValue(
 						editableValues,
 						editable.editableId,
@@ -132,6 +142,8 @@ const FragmentContent = React.forwardRef(
 							value,
 							editableConfig
 						);
+
+						editable.element.classList.add('page-editor__editable');
 
 						updateContent();
 					});
@@ -147,11 +159,11 @@ const FragmentContent = React.forwardRef(
 			defaultContent,
 			editableProcessorUniqueId,
 			editableValues,
-			editables,
 			getFieldValue,
 			isMounted,
 			languageId,
 			prefixedSegmentsExperienceId,
+			updateEditables,
 		]);
 
 		const dropZones = useSelector(state => {
@@ -181,7 +193,7 @@ const FragmentContent = React.forwardRef(
 
 						const Component = () =>
 							mainItemId && (
-								<PageEditor
+								<Layout
 									mainItemId={mainItemId}
 									withinMasterPage
 								/>
@@ -236,16 +248,6 @@ const FragmentContent = React.forwardRef(
 					editables={editables}
 					fragmentEntryLinkId={fragmentEntryLinkId}
 				/>
-
-				{editableElements.map(editableElement => (
-					<FragmentContentDecoration
-						editableElement={editableElement}
-						element={element}
-						fragmentEntryLinkId={fragmentEntryLinkId}
-						itemId={itemId}
-						key={getEditableElementId(editableElement)}
-					/>
-				))}
 			</>
 		);
 	}

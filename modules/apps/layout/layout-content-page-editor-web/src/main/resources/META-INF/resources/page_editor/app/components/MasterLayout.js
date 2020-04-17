@@ -12,7 +12,6 @@
  * details.
  */
 
-import classNames from 'classnames';
 import {useIsMounted} from 'frontend-js-react-web';
 import {debounce} from 'frontend-js-web';
 import {closest} from 'metal-dom';
@@ -28,7 +27,7 @@ import {config} from '../config/index';
 import {useSelector} from '../store/index';
 import {useGetFieldValue} from './CollectionItemContext';
 import {useSelectItem} from './Controls';
-import PageEditor from './PageEditor';
+import Layout from './Layout';
 import UnsafeHTML from './UnsafeHTML';
 import getAllEditables from './fragment-content/getAllEditables';
 import resolveEditableValue from './fragment-content/resolveEditableValue';
@@ -48,19 +47,11 @@ const LAYOUT_DATA_ITEMS = {
 export default function MasterPage() {
 	const fragmentEntryLinks = useSelector(state => state.fragmentEntryLinks);
 	const masterLayoutData = useSelector(state => state.masterLayoutData);
-	const sidebarOpen = useSelector(
-		state => state.sidebar.panelId && state.sidebar.open
-	);
 
 	const mainItem = masterLayoutData.items[masterLayoutData.rootItems.main];
 
 	return (
-		<div
-			className={classNames('master-page', 'master-page--with-sidebar', {
-				'master-page--with-sidebar-open': sidebarOpen,
-			})}
-			id="master-layout"
-		>
+		<div className="master-page" id="master-layout">
 			<MasterLayoutDataItem
 				fragmentEntryLinks={fragmentEntryLinks}
 				item={mainItem}
@@ -106,7 +97,7 @@ MasterLayoutDataItem.propTypes = {
 function DropZoneContainer() {
 	const mainItemId = useSelector(state => state.layoutData.rootItems.main);
 
-	return <PageEditor mainItemId={mainItemId} withinMasterPage />;
+	return <Layout mainItemId={mainItemId} withinMasterPage />;
 }
 
 function Root({children}) {
