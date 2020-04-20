@@ -695,17 +695,23 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 								Class<?> clazz = ${schemaVarName}1.getClass();
 
-								Method method = clazz.getMethod( "get" + StringUtil.upperCaseFirstLetter(entityField.getName()));
+								String entityFieldName = entityField.getName();
+
+								Method method = clazz.getMethod( "get" + StringUtil.upperCaseFirstLetter(entityFieldName));
 
 								Class<?> returnType = method.getReturnType();
 
 								if (returnType.isAssignableFrom(Map.class)) {
-									BeanUtils.setProperty(${schemaVarName}1, entityField.getName(), Collections.singletonMap("Aaa", "Aaa"));
-									BeanUtils.setProperty(${schemaVarName}2, entityField.getName(), Collections.singletonMap("Bbb", "Bbb"));
+									BeanUtils.setProperty(${schemaVarName}1, entityFieldName, Collections.singletonMap("Aaa", "Aaa"));
+									BeanUtils.setProperty(${schemaVarName}2, entityFieldName, Collections.singletonMap("Bbb", "Bbb"));
+								}
+								else if (entityFieldName.contains("email")) {
+									BeanUtils.setProperty(${schemaVarName}1, entityFieldName, "aaa" + StringUtil.toLowerCase(RandomTestUtil.randomString()) + "@liferay.com");
+									BeanUtils.setProperty(${schemaVarName}2, entityFieldName, "bbb" + StringUtil.toLowerCase(RandomTestUtil.randomString()) + "@liferay.com");
 								}
 								else {
-									BeanUtils.setProperty(${schemaVarName}1, entityField.getName(), "Aaa" + RandomTestUtil.randomString());
-									BeanUtils.setProperty(${schemaVarName}2, entityField.getName(), "Bbb" + RandomTestUtil.randomString());
+									BeanUtils.setProperty(${schemaVarName}1, entityFieldName, "aaa" + StringUtil.toLowerCase(RandomTestUtil.randomString()));
+									BeanUtils.setProperty(${schemaVarName}2, entityFieldName, "bbb" + StringUtil.toLowerCase(RandomTestUtil.randomString()));
 								}
 							});
 					}
@@ -1245,6 +1251,10 @@ public abstract class Base${schemaName}ResourceTestCase {
 				<#if !properties?keys?seq_contains("id")>
 					Assert.assertTrue(false);
 				<#else>
+					<#list javaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
+						${javaMethodParameter.parameterType} ${javaMethodParameter.parameterName} = test${javaMethodSignature.methodName?cap_first}_get${javaMethodParameter.parameterName?cap_first}();
+					</#list>
+
 					List<GraphQLField> graphQLFields = new ArrayList<>();
 
 					List<GraphQLField> itemsGraphQLFields = getGraphQLFields();
@@ -1266,9 +1276,14 @@ public abstract class Base${schemaName}ResourceTestCase {
 											put("pageSize", 2);
 										</#if>
 									</#list>
-									<#if javaMethodSignature.methodName?contains("Site")>
-										put("siteKey", "\"" + testGroup.getGroupId() + "\"");
-									</#if>
+
+									<#list javaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
+										<#if stringUtil.equals(javaMethodParameter.parameterName, "siteId")>
+											put("siteKey", "\"" + ${javaMethodParameter.parameterName} + "\"");
+										<#else>
+											put("${javaMethodParameter.parameterName}", ${javaMethodParameter.parameterName});
+										</#if>
+									</#list>
 								}
 							},
 							graphQLFields.toArray(new GraphQLField[0])));
@@ -1311,19 +1326,21 @@ public abstract class Base${schemaName}ResourceTestCase {
 								{
 									<#list javaMethodSignature.javaMethodParameters as javaMethodParameter>
 										<#if freeMarkerTool.isPathParameter(javaMethodParameter, javaMethodSignature.operation)>
-											put("${javaMethodParameter.parameterName}",
-												<#if stringUtil.equals(javaMethodParameter.parameterName, schemaVarName + "Id")>
+											<#if stringUtil.equals(javaMethodParameter.parameterName, schemaVarName + "Id")>
+												put("${javaMethodParameter.parameterName}",
 													<#if stringUtil.equals(properties.id, "String")>
 														"\"" + ${schemaVarName}.getId() + "\""
 													<#else>
 														${schemaVarName}.getId()
 													</#if>
-												<#elseif properties?keys?seq_contains(javaMethodParameter.parameterName)>
-													${schemaVarName}.get${javaMethodParameter.parameterName?cap_first}()
-												<#else>
-													null
-												</#if>
-											);
+												);
+											<#elseif stringUtil.equals(javaMethodParameter.parameterName, "siteId")>
+												put("siteKey", "\"" + ${schemaVarName}.get${javaMethodParameter.parameterName?cap_first}() + "\"");
+											<#elseif properties?keys?seq_contains(javaMethodParameter.parameterName)>
+												put("${javaMethodParameter.parameterName}", ${schemaVarName}.get${javaMethodParameter.parameterName?cap_first}());
+											<#else>
+												put("${javaMethodParameter.parameterName}", null);
+											</#if>
 										</#if>
 									</#list>
 								}
@@ -1339,7 +1356,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 					Assert.assertTrue(true);
 				</#if>
 			}
-		<#elseif freeMarkerTool.hasHTTPMethod(javaMethodSignature, "post") && stringUtil.equals(javaMethodSignature.methodName, "postSite" + schemaName)>
+		<#elseif freeMarkerTool.hasHTTPMethod(javaMethodSignature, "post") && stringUtil.equals(javaMethodSignature.methodName, "postSite" + schemaName) && !freeMarkerTool.hasRequestBodyMediaType(javaMethodSignature, "multipart/form-data")>
 			@Test
 			public void testGraphQL${javaMethodSignature.methodName?cap_first}() throws Exception {
 				${schemaName} random${schemaName} = random${schemaName}();
@@ -1956,6 +1973,10 @@ public abstract class Base${schemaName}ResourceTestCase {
 						${propertyName} = testGroup.getGroupId();
 					<#elseif stringUtil.equals(properties[propertyName], "Integer")>
 						${propertyName} = RandomTestUtil.randomInt();
+					<#elseif propertyName?contains("email")>
+						${propertyName} = StringUtil.toLowerCase(RandomTestUtil.randomString()) + "@liferay.com";
+					<#elseif stringUtil.equals(properties[propertyName], "String")>
+						${propertyName} = StringUtil.toLowerCase(RandomTestUtil.randomString());
 					<#elseif randomDataTypes?seq_contains(properties[propertyName])>
 						${propertyName} = RandomTestUtil.random${properties[propertyName]}();
 					<#elseif stringUtil.equals(properties[propertyName], "Date")>

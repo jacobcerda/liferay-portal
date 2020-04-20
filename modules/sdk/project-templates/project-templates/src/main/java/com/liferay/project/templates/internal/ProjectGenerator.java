@@ -121,6 +121,11 @@ public class ProjectGenerator {
 			buildType = "maven";
 		}
 
+		if (buildType.equals("maven") && template.contains("-ext")) {
+			throw new IllegalArgumentException(
+				"EXT project is not supported for Maven");
+		}
+
 		Properties properties = new Properties();
 
 		_setProperty(properties, "author", author);

@@ -120,7 +120,7 @@ public class ExportImportLayoutPageTemplateEntriesTest {
 					getLayoutPageTemplateCollectionId(),
 				"Page Template One",
 				LayoutPageTemplateEntryTypeConstants.TYPE_BASIC, 0,
-				WorkflowConstants.STATUS_DRAFT, _serviceContext1);
+				WorkflowConstants.STATUS_APPROVED, _serviceContext1);
 
 		String html =
 			"<lfr-editable id=\"element-text\" type=\"text\">Test Text " +
@@ -133,7 +133,7 @@ public class ExportImportLayoutPageTemplateEntriesTest {
 		FragmentEntryLink fragmentEntryLink =
 			_fragmentEntryLinkLocalService.addFragmentEntryLink(
 				TestPropsValues.getUserId(), _group1.getGroupId(), 0,
-				fragmentEntry.getFragmentEntryId(),
+				fragmentEntry.getFragmentEntryId(), 0,
 				_portal.getClassNameId(Layout.class),
 				layoutPageTemplateEntry1.getPlid(), StringPool.BLANK, html,
 				StringPool.BLANK,

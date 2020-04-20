@@ -25,7 +25,10 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Eudaldo Alonso
  */
-@Component(service = FragmentCollectionContributor.class)
+@Component(
+	property = "fragment.collection.key=FOOTERS",
+	service = FragmentCollectionContributor.class
+)
 public class FootersFragmentCollectionContributor
 	extends BaseFragmentCollectionContributor {
 
@@ -38,6 +41,11 @@ public class FootersFragmentCollectionContributor
 	public ServletContext getServletContext() {
 		return _servletContext;
 	}
+
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.site.navigation.menu.web)"
+	)
+	private ServletContext _portletServletContext;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.fragment.collection.contributor.footers)"

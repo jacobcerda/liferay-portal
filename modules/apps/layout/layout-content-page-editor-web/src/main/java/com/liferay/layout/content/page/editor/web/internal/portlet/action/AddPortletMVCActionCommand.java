@@ -137,12 +137,12 @@ public class AddPortletMVCActionCommand
 			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroupId(),
 			themeDisplay.getLayout(), portletId, ActionKeys.ADD_TO_PAGE);
 
-		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			actionRequest);
+		long segmentsExperienceId = ParamUtil.getLong(
+			actionRequest, "segmentsExperienceId",
+			SegmentsExperienceConstants.ID_DEFAULT);
 
 		String instanceId = _getPortletInstanceId(
-			themeDisplay.getLayout(), portletId,
-			ParamUtil.getLong(actionRequest, "segmentsExperienceId"));
+			themeDisplay.getLayout(), portletId, segmentsExperienceId);
 
 		JSONObject editableValueJSONObject =
 			_fragmentEntryProcessorRegistry.getDefaultEditableValuesJSONObject(
@@ -154,13 +154,17 @@ public class AddPortletMVCActionCommand
 			"portletId", portletId
 		);
 
+		ServiceContext serviceContext = ServiceContextFactory.getInstance(
+			actionRequest);
+
 		FragmentEntryLink fragmentEntryLink =
 			_fragmentEntryLinkLocalService.addFragmentEntryLink(
 				serviceContext.getUserId(), serviceContext.getScopeGroupId(), 0,
-				0, _portal.getClassNameId(Layout.class), themeDisplay.getPlid(),
-				StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-				StringPool.BLANK, editableValueJSONObject.toString(),
-				StringPool.BLANK, 0, null, serviceContext);
+				0, segmentsExperienceId, _portal.getClassNameId(Layout.class),
+				themeDisplay.getPlid(), StringPool.BLANK, StringPool.BLANK,
+				StringPool.BLANK, StringPool.BLANK,
+				editableValueJSONObject.toString(), StringPool.BLANK, 0, null,
+				serviceContext);
 
 		JSONObject jsonObject = addFragmentEntryLinkToLayoutData(
 			actionRequest, fragmentEntryLink.getFragmentEntryLinkId());

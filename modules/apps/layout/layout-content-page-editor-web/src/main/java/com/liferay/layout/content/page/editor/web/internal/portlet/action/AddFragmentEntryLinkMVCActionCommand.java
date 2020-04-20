@@ -69,10 +69,6 @@ public class AddFragmentEntryLinkMVCActionCommand
 			ActionRequest actionRequest)
 		throws PortalException {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		long groupId = ParamUtil.getLong(actionRequest, "groupId");
 		String fragmentEntryKey = ParamUtil.getString(
 			actionRequest, "fragmentEntryKey");
 
@@ -80,7 +76,8 @@ public class AddFragmentEntryLinkMVCActionCommand
 			actionRequest);
 
 		FragmentEntry fragmentEntry = FragmentEntryLinkUtil.getFragmentEntry(
-			groupId, _fragmentCollectionContributorTracker, fragmentEntryKey,
+			serviceContext.getScopeGroupId(),
+			_fragmentCollectionContributorTracker, fragmentEntryKey,
 			serviceContext.getLocale());
 
 		FragmentRenderer fragmentRenderer =
@@ -89,6 +86,10 @@ public class AddFragmentEntryLinkMVCActionCommand
 		if ((fragmentEntry == null) && (fragmentRenderer == null)) {
 			throw new NoSuchEntryException();
 		}
+
+		long segmentsExperienceId = ParamUtil.getLong(
+			actionRequest, "segmentsExperienceId",
+			SegmentsExperienceConstants.ID_DEFAULT);
 
 		if (fragmentEntry != null) {
 			String contributedRendererKey = null;
@@ -99,16 +100,16 @@ public class AddFragmentEntryLinkMVCActionCommand
 
 			return _fragmentEntryLinkService.addFragmentEntryLink(
 				serviceContext.getScopeGroupId(), 0,
-				fragmentEntry.getFragmentEntryId(),
-				_portal.getClassNameId(Layout.class), themeDisplay.getPlid(),
+				fragmentEntry.getFragmentEntryId(), segmentsExperienceId,
+				_portal.getClassNameId(Layout.class), serviceContext.getPlid(),
 				fragmentEntry.getCss(), fragmentEntry.getHtml(),
 				fragmentEntry.getJs(), fragmentEntry.getConfiguration(), null,
 				StringPool.BLANK, 0, contributedRendererKey, serviceContext);
 		}
 
 		return _fragmentEntryLinkService.addFragmentEntryLink(
-			serviceContext.getScopeGroupId(), 0, 0,
-			_portal.getClassNameId(Layout.class), themeDisplay.getPlid(),
+			serviceContext.getScopeGroupId(), 0, 0, segmentsExperienceId,
+			_portal.getClassNameId(Layout.class), serviceContext.getPlid(),
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, 0,
 			fragmentEntryKey, serviceContext);

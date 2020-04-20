@@ -103,13 +103,10 @@ export const createQuestion = (
 ) =>
 	request(gql`
         mutation {
-            createMessageBoardSectionMessageBoardThread(messageBoardSectionId: ${messageBoardSectionId}, messageBoardThread: {articleBody: ${articleBody}, encodingFormat: "html", headline: ${headline}, showAsQuestion: true, taxonomyCategoryIds: ${tags}, viewableBy: ANYONE}){
+            createMessageBoardSectionMessageBoardThread(messageBoardSectionId: ${messageBoardSectionId}, messageBoardThread: {articleBody: ${articleBody}, encodingFormat: "html", headline: ${headline}, showAsQuestion: true, keywords: ${tags}, viewableBy: ANYONE}){
                 articleBody
                 headline
-                taxonomyCategoryBriefs {
-                	taxonomyCategoryId
-					taxonomyCategoryName 
-                }
+                keywords
                 showAsQuestion
             }
         }`);
@@ -173,22 +170,14 @@ export const getTags = (page = 1, siteKey) =>
         }`);
 
 export const getAllTags = siteKey =>
-	request(gql`   
-		query {
-			taxonomyVocabularies(siteKey: ${siteKey}){
-				items {
-					taxonomyCategories {
-						items {
-							id
-							name
-						}
-					}
-					assetTypes {
-						type
-					}
-				}
-			}
-		}`);
+	request(gql`
+	query {
+		keywords(siteKey:${siteKey}) {
+		  items{
+			name
+		  }
+		}
+	  }`);
 
 export const getMessage = (friendlyUrlPath, siteKey) =>
 	request(gql`
@@ -231,7 +220,8 @@ export const getThread = (
                 encodingFormat
                 friendlyUrlPath
                 headline
-                id 
+				id
+				keywords
                 messageBoardMessages(page: ${page}, pageSize: 20, sort: ${sort}) {
                     items {
                     	actions
@@ -282,10 +272,6 @@ export const getThread = (
                     ratingValue
                 }
                 subscribed
-				taxonomyCategoryBriefs {
-                	taxonomyCategoryId
-					taxonomyCategoryName 
-                }
                 viewCount
             }
         }`);
@@ -348,13 +334,10 @@ export const getThreadContent = (friendlyUrlPath, siteKey) =>
 	request(gql`
         query {
             messageBoardThreadByFriendlyUrlPath(friendlyUrlPath: ${friendlyUrlPath}, siteKey: ${siteKey}){
-                articleBody 
+                articleBody
                 headline
-                id 
-				taxonomyCategoryBriefs {
-                	taxonomyCategoryId
-					taxonomyCategoryName 
-                } 
+                id
+				keywords
             }
         }`);
 
@@ -368,13 +351,13 @@ export const hasListPermissions = (permission, siteKey) =>
 
 export const getThreads = ({
 	creatorId = '',
+	keywords = '',
 	page = 1,
 	pageSize = 30,
 	search = '',
 	section,
 	siteKey,
 	sort = 'dateCreated:desc',
-	taxonomyCategoryId = '',
 }) => {
 	let filter = `(messageBoardSectionId eq ${section.id} `;
 
@@ -384,8 +367,8 @@ export const getThreads = ({
 
 	filter += ')';
 
-	if (taxonomyCategoryId) {
-		filter = `taxonomyCategoryIds/any(x:x eq ${taxonomyCategoryId})`;
+	if (keywords) {
+		filter = `keywords/any(x:x eq '${keywords}')`;
 	}
 	else if (creatorId) {
 		filter = `creator/id eq ${creatorId}`;
@@ -399,17 +382,17 @@ export const getThreads = ({
 						ratingAverage
 						ratingCount
 						ratingValue
-					} 
+					}
 					articleBody
 					creator {
 						id
 						image
 						name
-					} 
+					}
 					dateModified
 					friendlyUrlPath
 					headline
-					id 
+					id
 					messageBoardMessages {
 						items {
 							showAsAnswer
@@ -418,14 +401,11 @@ export const getThreads = ({
 					messageBoardSection {
 						title
 					}
-					taxonomyCategoryBriefs {
-						taxonomyCategoryId
-						taxonomyCategoryName
-					} 
+					keywords
 					viewCount
 				}
-				page 
-				pageSize 
+				page
+				pageSize
 				totalCount
 			}
         }`);
@@ -619,17 +599,14 @@ export const updateThread = (
 	articleBody,
 	headline,
 	messageBoardThreadId,
-	taxonomyCategoryIds
+	tags
 ) =>
 	request(gql`
         mutation {
-            patchMessageBoardThread(messageBoardThread: {articleBody: ${articleBody}, encodingFormat: "html", headline: ${headline}, taxonomyCategoryIds: ${taxonomyCategoryIds}}, messageBoardThreadId: ${messageBoardThreadId}){
+            patchMessageBoardThread(messageBoardThread: {articleBody: ${articleBody}, encodingFormat: "html", headline: ${headline}, keywords: ${tags}}, messageBoardThreadId: ${messageBoardThreadId}){
                 articleBody
                 headline
-				taxonomyCategoryBriefs {
-					taxonomyCategoryId
-					taxonomyCategoryName
-				} 
+				keywords
             }
         }`);
 

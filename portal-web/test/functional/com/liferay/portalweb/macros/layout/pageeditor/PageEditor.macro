@@ -693,7 +693,7 @@ definition {
 		}
 
 		if ("${spaceBetweenColumns}" == "false") {
-			Uncheck.uncheckToggleSwitch(
+			Uncheck.uncheckToggleSwitchAndPause(
 				checkboxName = "Columns Gutter",
 				locator1 = "Checkbox#ANY_CHECKBOX");
 		}
@@ -1020,7 +1020,7 @@ definition {
 	macro viewAutoSaveMessage {
 		AssertTextEquals.assertPartialText(
 			locator1 = "PageEditor#AUTOSAVE_MESSAGE",
-			value1 = "Draft saved at");
+			value1 = "Changes Saved");
 	}
 
 	macro viewCannotAddFragmentToOutsideOfDropZone {
@@ -1363,7 +1363,7 @@ definition {
 
 		AssertTextEquals.assertPartialText(
 			locator1 = "PageEditor#AUTOSAVE_MESSAGE",
-			value1 = "Draft saved at");
+			value1 = "Changes Saved");
 	}
 
 }

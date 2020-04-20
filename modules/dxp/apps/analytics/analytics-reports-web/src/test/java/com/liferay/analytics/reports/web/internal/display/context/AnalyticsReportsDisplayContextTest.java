@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.util.FastDateFormatFactoryImpl;
@@ -110,14 +111,14 @@ public class AnalyticsReportsDisplayContextTest {
 		Assert.assertEquals(
 			JSONUtil.putAll(
 				JSONUtil.put(
-					"helpMessage", _titles.get(_MESSAGE_KEY_HELP)
+					"helpMessage", _titles.get(_MESSAGE_KEY_HELP_PAID)
 				).put(
 					"name", _TITLE_KEY_PAID
 				).put(
 					"title", _titles.get(_TITLE_KEY_PAID)
 				),
 				JSONUtil.put(
-					"helpMessage", _titles.get(_MESSAGE_KEY_HELP)
+					"helpMessage", _titles.get(_MESSAGE_KEY_HELP_ORGANIC)
 				).put(
 					"name", _TITLE_KEY_ORGANIC
 				).put(
@@ -169,7 +170,7 @@ public class AnalyticsReportsDisplayContextTest {
 		Assert.assertEquals(
 			JSONUtil.putAll(
 				JSONUtil.put(
-					"helpMessage", _titles.get(_MESSAGE_KEY_HELP)
+					"helpMessage", _titles.get(_MESSAGE_KEY_HELP_PAID)
 				).put(
 					"name", _TITLE_KEY_PAID
 				).put(
@@ -180,7 +181,7 @@ public class AnalyticsReportsDisplayContextTest {
 					"value", paidTrafficAmount
 				),
 				JSONUtil.put(
-					"helpMessage", _titles.get(_MESSAGE_KEY_HELP)
+					"helpMessage", _titles.get(_MESSAGE_KEY_HELP_ORGANIC)
 				).put(
 					"name", _TITLE_KEY_ORGANIC
 				).put(
@@ -199,7 +200,7 @@ public class AnalyticsReportsDisplayContextTest {
 		int paidTrafficAmount, double paidTrafficShare,
 		boolean validAnalyticsConnection) {
 
-		return new AnalyticsReportsDataProvider() {
+		return new AnalyticsReportsDataProvider(Mockito.mock(Http.class)) {
 
 			@Override
 			public List<TrafficSource> getTrafficSources(
@@ -268,7 +269,7 @@ public class AnalyticsReportsDisplayContextTest {
 				return Collections.enumeration(
 					Arrays.asList(
 						_TITLE_KEY_ORGANIC, _TITLE_KEY_PAID,
-						_MESSAGE_KEY_HELP));
+						_MESSAGE_KEY_HELP_ORGANIC, _MESSAGE_KEY_HELP_PAID));
 			}
 
 			@Override
@@ -298,16 +299,22 @@ public class AnalyticsReportsDisplayContextTest {
 		return themeDisplay;
 	}
 
-	private static final String _MESSAGE_KEY_HELP =
+	private static final String _MESSAGE_KEY_HELP_ORGANIC =
 		"this-number-refers-to-the-volume-of-people-that-find-your-page-" +
 			"through-a-search-engine";
+
+	private static final String _MESSAGE_KEY_HELP_PAID =
+		"this-number-refers-to-the-volume-of-people-that-find-your-page-" +
+			"through-paid-keywords";
 
 	private static final String _TITLE_KEY_ORGANIC = "organic";
 
 	private static final String _TITLE_KEY_PAID = "paid";
 
 	private final Map<String, String> _titles = HashMapBuilder.put(
-		_MESSAGE_KEY_HELP, "helpMessage"
+		_MESSAGE_KEY_HELP_ORGANIC, "helpMessageOrganic"
+	).put(
+		_MESSAGE_KEY_HELP_PAID, "helpMessagePaid"
 	).put(
 		_TITLE_KEY_ORGANIC, "organic"
 	).put(

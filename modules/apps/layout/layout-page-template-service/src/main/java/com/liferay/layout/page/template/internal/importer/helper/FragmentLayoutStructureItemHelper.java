@@ -21,6 +21,7 @@ import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
+import com.liferay.fragment.renderer.FragmentRendererTracker;
 import com.liferay.fragment.service.FragmentCollectionServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLocalServiceUtil;
@@ -40,10 +41,12 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.segments.constants.SegmentsExperienceConstants;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,7 +67,8 @@ public class FragmentLayoutStructureItemHelper
 			FragmentCollectionContributorTracker
 				fragmentCollectionContributorTracker,
 			FragmentEntryProcessorRegistry fragmentEntryProcessorRegistry,
-			FragmentEntryValidator fragmentEntryValidator, Layout layout,
+			FragmentEntryValidator fragmentEntryValidator,
+			FragmentRendererTracker fragmentRendererTracker, Layout layout,
 			LayoutStructure layoutStructure, PageElement pageElement,
 			String parentItemId, int position)
 		throws Exception {
@@ -135,10 +139,20 @@ public class FragmentLayoutStructureItemHelper
 				"BackgroundImageFragmentEntryProcessor",
 			JSONFactoryUtil.createJSONObject());
 
+		boolean useSegmentsExperience = false;
+
+		Layout publishedLayout = LayoutLocalServiceUtil.fetchLayout(
+			layout.getClassPK());
+
+		if (publishedLayout != null) {
+			useSegmentsExperience = !publishedLayout.isSystem();
+		}
+
 		JSONObject editableFragmentEntryProcessorJSONObject =
 			_toEditableFragmentEntryProcessorJSONObject(
 				editableTypes,
-				(List<Object>)definitionMap.get("fragmentFields"));
+				(List<Object>)definitionMap.get("fragmentFields"),
+				useSegmentsExperience);
 
 		if (editableFragmentEntryProcessorJSONObject.length() > 0) {
 			fragmentEntryProcessorValuesJSONObject.put(
@@ -171,7 +185,7 @@ public class FragmentLayoutStructureItemHelper
 
 		try {
 			return FragmentEntryLinkLocalServiceUtil.addFragmentEntryLink(
-				layout.getUserId(), layout.getGroupId(), 0, fragmentEntryId,
+				layout.getUserId(), layout.getGroupId(), 0, fragmentEntryId, 0,
 				PortalUtil.getClassNameId(Layout.class.getName()),
 				layout.getPlid(), css, html, js, configuration,
 				jsonObject.toString(), StringUtil.randomId(), position,
@@ -209,7 +223,9 @@ public class FragmentLayoutStructureItemHelper
 		Map<String, Object> defaultValueMap = (Map<String, Object>)map.get(
 			"defaultValue");
 
-		jsonObject.put("defaultValue", defaultValueMap.get("value"));
+		if (defaultValueMap != null) {
+			jsonObject.put("defaultValue", defaultValueMap.get("value"));
+		}
 
 		_processMapping(jsonObject, (Map<String, String>)map.get("mapping"));
 
@@ -250,7 +266,9 @@ public class FragmentLayoutStructureItemHelper
 			return jsonObject;
 		}
 
-		value = defaultValueMap.get("value");
+		if (defaultValueMap != null) {
+			value = defaultValueMap.get("value");
+		}
 
 		if (value != null) {
 			jsonObject.put("href", value);
@@ -386,15 +404,21 @@ public class FragmentLayoutStructureItemHelper
 		if (map != null) {
 			String fieldKey = map.get("fieldKey");
 
-			String itemKey = map.get("itemKey");
-
-			String[] itemKeyParts = new String[0];
-
-			if (itemKey != null) {
-				itemKeyParts = itemKey.split(StringPool.POUND);
+			if (Validator.isNull(fieldKey)) {
+				return;
 			}
 
-			if ((fieldKey != null) && (itemKeyParts.length == 2)) {
+			String itemKey = map.get("itemKey");
+
+			if (Validator.isNull(itemKey)) {
+				jsonObject.put("mappedField", fieldKey);
+
+				return;
+			}
+
+			String[] itemKeyParts = itemKey.split(StringPool.POUND);
+
+			if (itemKeyParts.length == 2) {
 				jsonObject.put(
 					"classNameId", itemKeyParts[0]
 				).put(
@@ -438,7 +462,8 @@ public class FragmentLayoutStructureItemHelper
 	}
 
 	private JSONObject _toEditableFragmentEntryProcessorJSONObject(
-		Map<String, String> editableTypes, List<Object> fragmentFields) {
+		Map<String, String> editableTypes, List<Object> fragmentFields,
+		boolean useSegmentsExperience) {
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
@@ -511,6 +536,13 @@ public class FragmentLayoutStructureItemHelper
 			}
 
 			try {
+				if (useSegmentsExperience) {
+					baseFragmentFieldJSONObject = JSONUtil.put(
+						SegmentsExperienceConstants.ID_PREFIX +
+							SegmentsExperienceConstants.ID_DEFAULT,
+						baseFragmentFieldJSONObject);
+				}
+
 				jsonObject.put(
 					fragmentFieldId,
 					JSONUtil.merge(

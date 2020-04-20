@@ -165,6 +165,7 @@ public class RatingsTag extends IncludeTag {
 			boolean thumbUp = _isThumbUp(userScore);
 
 			int totalEntries = _getTotalEntries(ratingsStats);
+			String type = _getType(httpServletRequest);
 			String url = _getURL(themeDisplay);
 
 			httpServletRequest.setAttribute(
@@ -174,7 +175,7 @@ public class RatingsTag extends IncludeTag {
 				).put(
 					"classPK", _classPK
 				).put(
-					"enabled", _isEnabled(themeDisplay, isInTrash())
+					"enabled", _isEnabled(themeDisplay, inTrash)
 				).put(
 					"initialAverageScore", _getInitialAverageScore(ratingsStats)
 				).put(
@@ -198,6 +199,8 @@ public class RatingsTag extends IncludeTag {
 				).put(
 					"thumbUp", thumbUp
 				).put(
+					"type", type
+				).put(
 					"url", url
 				).put(
 					"userScore", userScore
@@ -210,7 +213,7 @@ public class RatingsTag extends IncludeTag {
 			httpServletRequest.setAttribute(
 				"liferay-ratings:ratings:ratingsStats", ratingsStats);
 			httpServletRequest.setAttribute(
-				"liferay-ratings:ratings:type", _getType(httpServletRequest));
+				"liferay-ratings:ratings:type", type);
 			httpServletRequest.setAttribute("liferay-ratings:ratings:url", url);
 		}
 		catch (Exception exception) {

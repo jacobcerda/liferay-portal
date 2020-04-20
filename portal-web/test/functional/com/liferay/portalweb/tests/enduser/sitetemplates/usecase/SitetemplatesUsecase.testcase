@@ -104,7 +104,7 @@ definition {
 	@description = "This is a use case for LPS-51432 and LPS-95113."
 	@priority = "4"
 	test AdminCanNotAddASubpageOfAChildPageLinkedToSiteTemplatePage {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 		property test.name.skip.portal.instance = "SitetemplatesUsecase#AdminCanNotAddASubpageOfAChildPageLinkedToSiteTemplatePage";
 
 		ProductMenu.gotoPortlet(
@@ -455,7 +455,11 @@ definition {
 			siteName = "${siteName}",
 			siteTemplateName = "Site Template Name");
 
-		Portlet.addPG(portletName = "Message Boards");
+		ContentPages.clickPencil();
+
+		PageEditor.addWidget(portletName = "Message Boards");
+
+		PageEditor.clickPublish();
 
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
@@ -508,12 +512,6 @@ definition {
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "User Groups");
-
-		UserGroup.viewPG(
-			pageName = "home",
-			portletName = "Message Boards",
-			siteName = "${siteName}",
-			userGroupName = "UG UserGroup Name");
 
 		User.firstLoginPG(
 			password = "test",

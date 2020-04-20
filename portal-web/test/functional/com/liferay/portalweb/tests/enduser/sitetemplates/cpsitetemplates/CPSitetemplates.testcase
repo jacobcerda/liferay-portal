@@ -87,7 +87,11 @@ definition {
 
 		ProductMenu.gotoSiteViaLink(site = "Site Template Name");
 
-		Portlet.addPG(portletName = "Hello World");
+		ContentPages.clickPencil();
+
+		PageEditor.addWidget(portletName = "Hello World");
+
+		PageEditor.clickPublish();
 
 		Navigator.openSiteURL(siteName = "Site Template Site Name");
 
@@ -248,7 +252,7 @@ definition {
 	@description = "This is a use case for LPS-87081."
 	@priority = "5"
 	test DeleteSiteTemplate {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		ProductMenu.gotoPortlet(
 			category = "Sites",
@@ -407,7 +411,7 @@ definition {
 
 	@priority = "5"
 	test EditSiteTemplateStatus {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
 
 		ProductMenu.gotoPortlet(
 			category = "Sites",
@@ -517,7 +521,7 @@ definition {
 
 		Navigator.openSiteURL(siteName = "Site Template Site Name");
 
-		AssertElementPresent(locator1 = "ControlMenu#ADD");
+		AssertElementPresent(locator1 = "Icon#EDIT_PENCIL");
 
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
@@ -554,7 +558,7 @@ definition {
 			pageName = "Home",
 			siteName = "Site Template Site Name");
 
-		AssertElementNotPresent(locator1 = "ControlMenu#ADD");
+		AssertElementNotPresent(locator1 = "Icon#EDIT_PENCIL");
 
 		User.logoutUserPG();
 

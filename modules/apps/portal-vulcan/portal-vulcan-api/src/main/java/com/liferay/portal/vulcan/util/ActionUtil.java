@@ -14,6 +14,8 @@
 
 package com.liferay.portal.vulcan.util;
 
+import static com.liferay.portal.vulcan.yaml.graphql.GraphQLNamingUtil.getGraphQLMutationName;
+
 import com.liferay.oauth2.provider.scope.ScopeChecker;
 import com.liferay.oauth2.provider.scope.liferay.OAuth2ProviderScopeLiferayAccessControlContext;
 import com.liferay.portal.kernel.model.GroupedModel;
@@ -21,14 +23,20 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.vulcan.yaml.graphql.GraphQLNamingUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+
+import java.net.URI;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MultivaluedMap;
@@ -158,24 +166,62 @@ public class ActionUtil {
 			}
 		}
 
-		List<String> matchedURIs = uriInfo.getMatchedURIs();
+		String httpMethodName = _getHttpMethodName(clazz, methodName);
 
-		String version = "";
+		URI baseURI = uriInfo.getBaseUri();
 
-		if (!matchedURIs.isEmpty()) {
-			version = matchedURIs.get(matchedURIs.size() - 1);
+		String baseURIString = baseURI.toString();
+
+		if (baseURIString.contains("/graphql")) {
+			String field = null;
+			String operation = null;
+
+			if (httpMethodName.equals("GET")) {
+				Stream<Method> stream = Arrays.stream(clazz.getMethods());
+
+				field = GraphQLNamingUtil.getGraphQLPropertyName(
+					methodName,
+					stream.filter(
+						method -> StringUtil.equals(
+							method.getName(), methodName)
+					).findFirst(
+					).map(
+						Method::getReturnType
+					).map(
+						Class::getName
+					).orElse(
+						"Object"
+					),
+					stream.map(
+						Method::getName
+					).collect(
+						Collectors.toList()
+					));
+
+				operation = "query";
+			}
+			else {
+				field = getGraphQLMutationName(methodName);
+				operation = "mutation";
+			}
+
+			return HashMapBuilder.put(
+				"field", field
+			).put(
+				"operation", operation
+			).build();
 		}
 
 		return HashMapBuilder.put(
 			"href",
 			uriInfo.getBaseUriBuilder(
 			).path(
-				version
+				_getVersion(uriInfo)
 			).path(
 				clazz.getSuperclass(), methodName
 			).toTemplate()
 		).put(
-			"method", _getHttpMethodName(clazz, methodName)
+			"method", httpMethodName
 		).build();
 	}
 
@@ -208,6 +254,18 @@ public class ActionUtil {
 		}
 
 		return null;
+	}
+
+	private static String _getVersion(UriInfo uriInfo) {
+		String version = "";
+
+		List<String> matchedURIs = uriInfo.getMatchedURIs();
+
+		if (!matchedURIs.isEmpty()) {
+			version = matchedURIs.get(matchedURIs.size() - 1);
+		}
+
+		return version;
 	}
 
 	private static boolean _hasPermission(

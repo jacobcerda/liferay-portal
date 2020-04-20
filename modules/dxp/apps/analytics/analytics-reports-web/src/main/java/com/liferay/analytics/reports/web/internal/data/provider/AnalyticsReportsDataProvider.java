@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.liferay.analytics.reports.web.internal.client.AsahFaroBackendClient;
+import com.liferay.analytics.reports.web.internal.model.HistoricalMetric;
 import com.liferay.analytics.reports.web.internal.model.TimeRange;
 import com.liferay.analytics.reports.web.internal.model.TrafficSource;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -28,11 +29,11 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.util.Http;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -41,33 +42,66 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class AnalyticsReportsDataProvider {
 
-	public AnalyticsReportsDataProvider() {
-		this(new AsahFaroBackendClient());
-	}
-
-	public AnalyticsReportsDataProvider(
-		AsahFaroBackendClient asahFaroBackendClient) {
-
-		if (asahFaroBackendClient == null) {
-			throw new IllegalArgumentException(
-				"Asah Faro backend client is null");
+	public AnalyticsReportsDataProvider(Http http) {
+		if (http == null) {
+			throw new IllegalArgumentException("Http is null");
 		}
 
-		_asahFaroBackendClient = asahFaroBackendClient;
+		_asahFaroBackendClient = new AsahFaroBackendClient(http);
 	}
 
 	public JSONObject getHistoricalReadsJSONObject(
 			long plid, TimeRange timeRange)
 		throws PortalException {
 
-		return _getHistoricalJSONObject(timeRange.getIntervalLocalDateTimes());
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+		int totalValue = 0;
+
+		for (LocalDateTime localDateTime :
+				timeRange.getIntervalLocalDateTimes()) {
+
+			int value = _getRandomInt();
+
+			jsonArray.put(
+				JSONUtil.put(
+					"key",
+					DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime)
+				).put(
+					"value", value
+				));
+
+			totalValue = totalValue + value;
+		}
+
+		return JSONUtil.put(
+			"histogram", jsonArray
+		).put(
+			"value", totalValue
+		);
 	}
 
-	public JSONObject getHistoricalViewsJSONObject(
-			long plid, TimeRange timeRange)
+	public HistoricalMetric getHistoricalViewsHistogram(
+			long companyId, TimeRange timeRange, String url)
 		throws PortalException {
 
-		return _getHistoricalJSONObject(timeRange.getIntervalLocalDateTimes());
+		try {
+			String response = _asahFaroBackendClient.doGet(
+				companyId,
+				String.format(
+					"api/1.0/pages/view-counts?endDate=%s&interval=D&" +
+						"startDate=%s&url=%s",
+					DateTimeFormatter.ISO_DATE.format(
+						timeRange.getEndLocalDate()),
+					DateTimeFormatter.ISO_DATE.format(
+						timeRange.getStartLocalDate()),
+					url));
+
+			return _objectMapper.readValue(response, HistoricalMetric.class);
+		}
+		catch (Exception exception) {
+			throw new PortalException(
+				"Unable to get historical views", exception);
+		}
 	}
 
 	public Long getTotalReads(long companyId, String url)
@@ -118,33 +152,6 @@ public class AnalyticsReportsDataProvider {
 
 	public boolean isValidAnalyticsConnection(long companyId) {
 		return _asahFaroBackendClient.isValidConnection(companyId);
-	}
-
-	private JSONObject _getHistoricalJSONObject(
-		Collection<LocalDateTime> intervals) {
-
-		JSONArray intervalsJSONArray = JSONFactoryUtil.createJSONArray();
-		int totalValue = 0;
-
-		for (LocalDateTime interval : intervals) {
-			int value = _getRandomInt();
-
-			intervalsJSONArray.put(
-				JSONUtil.put(
-					"key",
-					DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(interval)
-				).put(
-					"value", value
-				));
-
-			totalValue = totalValue + value;
-		}
-
-		return JSONUtil.put(
-			"histogram", intervalsJSONArray
-		).put(
-			"value", totalValue
-		);
 	}
 
 	private int _getRandomInt() {

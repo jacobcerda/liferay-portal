@@ -295,18 +295,22 @@ public class RESTBuilder {
 	}
 
 	private String _addClientVersionDescription(String yamlString) {
+		String clientMavenGroupId = _getClientMavenGroupId(
+			_configYAML.getApiPackagePath());
 		Optional<String> clientVersionOptional = _getClientVersionOptional();
 
-		if (!clientVersionOptional.isPresent()) {
+		if ((clientMavenGroupId == null) ||
+			!clientVersionOptional.isPresent()) {
+
 			return yamlString;
 		}
 
 		String clientVersion = clientVersionOptional.get();
 
 		String clientMessage = StringBundler.concat(
-			"A Java client JAR is available for use with the group ID ",
-			"'com.liferay', artifact ID '", _configYAML.getApiPackagePath(),
-			".client', and version '");
+			"A Java client JAR is available for use with the group ID '",
+			clientMavenGroupId, "', artifact ID '",
+			_configYAML.getApiPackagePath(), ".client', and version '");
 
 		OpenAPIYAML openAPIYAML = _loadOpenAPIYAML(yamlString);
 
@@ -363,9 +367,7 @@ public class RESTBuilder {
 			yamlString = _fixOpenAPIContentApplicationXML(yamlString);
 		}
 
-		if (_configYAML.isForceClientVersionDescription()) {
-			yamlString = _addClientVersionDescription(yamlString);
-		}
+		yamlString = _addClientVersionDescription(yamlString);
 
 		if (_configYAML.isWarningsEnabled()) {
 			_validate(yamlString);
@@ -1577,6 +1579,17 @@ public class RESTBuilder {
 		}
 
 		return yamlString;
+	}
+
+	private String _getClientMavenGroupId(String apiPackagePath) {
+		if (apiPackagePath.startsWith("com.liferay.commerce")) {
+			return "com.liferay.commerce";
+		}
+		else if (apiPackagePath.startsWith("com.liferay")) {
+			return "com.liferay";
+		}
+
+		return _configYAML.getClientMavenGroupId();
 	}
 
 	private Optional<String> _getClientVersionOptional() {

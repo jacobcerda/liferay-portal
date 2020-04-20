@@ -28,6 +28,7 @@ import {useSelectItem} from './Controls';
 import ExperimentsLabel from './ExperimentsLabel';
 import NetworkStatusBar from './NetworkStatusBar';
 import Translation from './Translation';
+import Undo from './Undo';
 import UnsafeHTML from './UnsafeHTML';
 
 const {Suspense, useCallback, useRef} = React;
@@ -135,7 +136,7 @@ function ToolbarBody() {
 
 	const deselectItem = event => {
 		if (event.target === event.currentTarget) {
-			selectItem(null, {multiSelect: event.shiftKey});
+			selectItem(null);
 		}
 	};
 
@@ -211,6 +212,7 @@ function ToolbarBody() {
 
 			<ul className="navbar-nav" onClick={deselectItem}>
 				<NetworkStatusBar {...network} />
+				{config.undoEnabled && <Undo />}
 				<li className="nav-item">
 					<form action={config.discardDraftURL} method="POST">
 						<input

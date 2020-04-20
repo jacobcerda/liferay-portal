@@ -17,6 +17,7 @@ package com.liferay.layout.page.template.internal.importer.helper;
 import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
+import com.liferay.fragment.renderer.FragmentRendererTracker;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
 import com.liferay.fragment.validator.FragmentEntryValidator;
 import com.liferay.headless.delivery.dto.v1_0.PageElement;
@@ -57,7 +58,8 @@ public class WidgetLayoutStructureItemHelper
 			FragmentCollectionContributorTracker
 				fragmentCollectionContributorTracker,
 			FragmentEntryProcessorRegistry fragmentEntryProcessorRegistry,
-			FragmentEntryValidator fragmentEntryValidator, Layout layout,
+			FragmentEntryValidator fragmentEntryValidator,
+			FragmentRendererTracker fragmentRendererTracker, Layout layout,
 			LayoutStructure layoutStructure, PageElement pageElement,
 			String parentItemId, int position)
 		throws Exception {
@@ -116,7 +118,7 @@ public class WidgetLayoutStructureItemHelper
 				widgetConfigDefinitionMap);
 
 			return FragmentEntryLinkLocalServiceUtil.addFragmentEntryLink(
-				layout.getUserId(), layout.getGroupId(), 0, 0,
+				layout.getUserId(), layout.getGroupId(), 0, 0, 0,
 				PortalUtil.getClassNameId(Layout.class), layout.getPlid(),
 				StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
 				StringPool.BLANK, editableValueJSONObject.toString(),
