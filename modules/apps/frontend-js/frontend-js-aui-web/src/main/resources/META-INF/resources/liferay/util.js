@@ -721,8 +721,11 @@
 			return window.name || Window._name || '';
 		},
 
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by `window.innerWidth`
+		 */
 		getWindowWidth() {
-			return window.innerWidth > 0 ? window.innerWidth : screen.width;
+			return window.innerWidth;
 		},
 
 		inBrowserView(node, win, nodeRegion) {
