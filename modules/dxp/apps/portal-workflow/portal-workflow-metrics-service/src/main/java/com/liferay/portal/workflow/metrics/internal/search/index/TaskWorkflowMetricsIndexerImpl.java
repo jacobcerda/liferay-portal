@@ -22,7 +22,6 @@ import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.document.DocumentBuilder;
 import com.liferay.portal.search.query.BooleanQuery;
 import com.liferay.portal.workflow.metrics.search.index.TaskWorkflowMetricsIndexer;
-import com.liferay.portal.workflow.metrics.search.index.name.WorkflowMetricsIndexNameBuilder;
 
 import java.time.Duration;
 
@@ -35,10 +34,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Inácio Nery
  */
-@Component(
-	immediate = true, property = "workflow.metrics.index.entity.name=task",
-	service = {TaskWorkflowMetricsIndexer.class, WorkflowMetricsIndex.class}
-)
+@Component(immediate = true, service = TaskWorkflowMetricsIndexer.class)
 public class TaskWorkflowMetricsIndexerImpl
 	extends BaseWorkflowMetricsIndexer implements TaskWorkflowMetricsIndexer {
 
@@ -69,14 +65,14 @@ public class TaskWorkflowMetricsIndexerImpl
 
 		if (completed) {
 			documentBuilder.setDate(
-				"completionDate", formatDate(completionDate)
+				"completionDate", getDate(completionDate)
 			).setLong(
 				"completionUserId", completionUserId
 			);
 		}
 
 		documentBuilder.setDate(
-			"createDate", formatDate(createDate)
+			"createDate", getDate(createDate)
 		).setValue(
 			Field.getSortableFieldName(
 				StringBundler.concat(
@@ -96,7 +92,7 @@ public class TaskWorkflowMetricsIndexerImpl
 		).setLong(
 			"instanceId", instanceId
 		).setDate(
-			"modifiedDate", formatDate(modifiedDate)
+			"modifiedDate", getDate(modifiedDate)
 		).setString(
 			"name", name
 		).setLong(
@@ -132,13 +128,13 @@ public class TaskWorkflowMetricsIndexerImpl
 		).setValue(
 			"completed", true
 		).setDate(
-			"completionDate", formatDate(completionDate)
+			"completionDate", getDate(completionDate)
 		).setLong(
 			"completionUserId", completionUserId
 		).setLong(
 			"duration", duration
 		).setDate(
-			"modifiedDate", formatDate(modifiedDate)
+			"modifiedDate", getDate(modifiedDate)
 		).setLong(
 			"taskId", taskId
 		).setString(
@@ -190,12 +186,12 @@ public class TaskWorkflowMetricsIndexerImpl
 
 	@Override
 	public String getIndexName(long companyId) {
-		return _taskWorkflowMetricsIndexNameBuilder.getIndexName(companyId);
+		return _taskWorkflowMetricsIndex.getIndexName(companyId);
 	}
 
 	@Override
 	public String getIndexType() {
-		return "WorkflowMetricsTaskType";
+		return _taskWorkflowMetricsIndex.getIndexType();
 	}
 
 	@Override
@@ -213,7 +209,7 @@ public class TaskWorkflowMetricsIndexerImpl
 		documentBuilder.setLong(
 			"companyId", companyId
 		).setDate(
-			"modifiedDate", formatDate(modifiedDate)
+			"modifiedDate", getDate(modifiedDate)
 		).setLong(
 			"taskId", taskId
 		).setString(
@@ -263,7 +259,6 @@ public class TaskWorkflowMetricsIndexerImpl
 		_slaTaskResultWorkflowMetricsIndexer;
 
 	@Reference(target = "(workflow.metrics.index.entity.name=task)")
-	private WorkflowMetricsIndexNameBuilder
-		_taskWorkflowMetricsIndexNameBuilder;
+	private WorkflowMetricsIndex _taskWorkflowMetricsIndex;
 
 }

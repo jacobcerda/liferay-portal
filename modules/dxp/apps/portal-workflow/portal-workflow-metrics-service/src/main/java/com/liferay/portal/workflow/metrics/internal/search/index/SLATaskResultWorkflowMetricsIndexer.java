@@ -17,7 +17,6 @@ package com.liferay.portal.workflow.metrics.internal.search.index;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.document.DocumentBuilder;
 import com.liferay.portal.workflow.metrics.internal.sla.processor.WorkflowMetricsSLATaskResult;
-import com.liferay.portal.workflow.metrics.search.index.name.WorkflowMetricsIndexNameBuilder;
 import com.liferay.portal.workflow.metrics.sla.processor.WorkflowMetricsSLAStatus;
 
 import org.osgi.service.component.annotations.Component;
@@ -27,11 +26,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Inácio Nery
  */
 @Component(
-	immediate = true,
-	property = "workflow.metrics.index.entity.name=sla-task-result",
-	service = {
-		SLATaskResultWorkflowMetricsIndexer.class, WorkflowMetricsIndex.class
-	}
+	immediate = true, service = SLATaskResultWorkflowMetricsIndexer.class
 )
 public class SLATaskResultWorkflowMetricsIndexer
 	extends BaseSLAWorkflowMetricsIndexer {
@@ -135,17 +130,15 @@ public class SLATaskResultWorkflowMetricsIndexer
 
 	@Override
 	public String getIndexName(long companyId) {
-		return _slaTaskResultWorkflowMetricsIndexNameBuilder.getIndexName(
-			companyId);
+		return _slaTaskResultWorkflowMetricsIndex.getIndexName(companyId);
 	}
 
 	@Override
 	public String getIndexType() {
-		return "WorkflowMetricsSLATaskResultType";
+		return _slaTaskResultWorkflowMetricsIndex.getIndexType();
 	}
 
 	@Reference(target = "(workflow.metrics.index.entity.name=sla-task-result)")
-	private WorkflowMetricsIndexNameBuilder
-		_slaTaskResultWorkflowMetricsIndexNameBuilder;
+	private WorkflowMetricsIndex _slaTaskResultWorkflowMetricsIndex;
 
 }

@@ -22,7 +22,7 @@ import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.document.DocumentBuilder;
 import com.liferay.portal.search.query.BooleanQuery;
 import com.liferay.portal.workflow.metrics.search.index.InstanceWorkflowMetricsIndexer;
-import com.liferay.portal.workflow.metrics.search.index.name.WorkflowMetricsIndexNameBuilder;
+import com.liferay.portal.workflow.metrics.search.index.TaskWorkflowMetricsIndexer;
 
 import java.time.Duration;
 
@@ -36,10 +36,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Inácio Nery
  */
-@Component(
-	immediate = true, property = "workflow.metrics.index.entity.name=instance",
-	service = {InstanceWorkflowMetricsIndexer.class, WorkflowMetricsIndex.class}
-)
+@Component(immediate = true, service = InstanceWorkflowMetricsIndexer.class)
 public class InstanceWorkflowMetricsIndexerImpl
 	extends BaseWorkflowMetricsIndexer
 	implements InstanceWorkflowMetricsIndexer {
@@ -65,7 +62,7 @@ public class InstanceWorkflowMetricsIndexerImpl
 
 		if (completionDate != null) {
 			documentBuilder.setDate(
-				"completionDate", formatDate(completionDate)
+				"completionDate", getDate(completionDate)
 			).setValue(
 				Field.getSortableFieldName(
 					StringBundler.concat(
@@ -75,7 +72,7 @@ public class InstanceWorkflowMetricsIndexerImpl
 		}
 
 		documentBuilder.setDate(
-			"createDate", formatDate(createDate)
+			"createDate", getDate(createDate)
 		).setValue(
 			Field.getSortableFieldName(
 				StringBundler.concat(
@@ -93,7 +90,7 @@ public class InstanceWorkflowMetricsIndexerImpl
 		documentBuilder.setLong(
 			"instanceId", instanceId
 		).setDate(
-			"modifiedDate", formatDate(modifiedDate)
+			"modifiedDate", getDate(modifiedDate)
 		).setLong(
 			"processId", processId
 		).setString(
@@ -128,7 +125,7 @@ public class InstanceWorkflowMetricsIndexerImpl
 		).setValue(
 			"completed", completionDate != null
 		).setDate(
-			"completionDate", formatDate(completionDate)
+			"completionDate", getDate(completionDate)
 		).setValue(
 			Field.getSortableFieldName(
 				StringBundler.concat(
@@ -139,7 +136,7 @@ public class InstanceWorkflowMetricsIndexerImpl
 		).setLong(
 			"instanceId", instanceId
 		).setDate(
-			"modifiedDate", formatDate(modifiedDate)
+			"modifiedDate", getDate(modifiedDate)
 		).setString(
 			"uid", digest(companyId, instanceId)
 		);
@@ -173,7 +170,7 @@ public class InstanceWorkflowMetricsIndexerImpl
 					booleanQuery);
 
 				BaseWorkflowMetricsIndexer baseWorkflowMetricsIndexer =
-					(BaseWorkflowMetricsIndexer)_taskWorkflowMetricsIndex;
+					(BaseWorkflowMetricsIndexer)_taskWorkflowMetricsIndexer;
 
 				baseWorkflowMetricsIndexer.updateDocuments(
 					companyId,
@@ -184,17 +181,6 @@ public class InstanceWorkflowMetricsIndexerImpl
 			});
 
 		return document;
-	}
-
-	@Override
-	public void deleteDocument(Document document) {
-		super.deleteDocument(document);
-
-		_slaInstanceResultWorkflowMetricsIndexer.deleteDocuments(
-			document.getLong("companyId"), document.getLong("instanceId"));
-
-		_slaTaskResultWorkflowMetricsIndexer.deleteDocuments(
-			document.getLong("companyId"), document.getLong("instanceId"));
 	}
 
 	@Override
@@ -210,17 +196,25 @@ public class InstanceWorkflowMetricsIndexerImpl
 		);
 
 		workflowMetricsPortalExecutor.execute(
-			() -> deleteDocument(documentBuilder));
+			() -> {
+				deleteDocument(documentBuilder);
+
+				_slaInstanceResultWorkflowMetricsIndexer.deleteDocuments(
+					companyId, instanceId);
+
+				_slaTaskResultWorkflowMetricsIndexer.deleteDocuments(
+					companyId, instanceId);
+			});
 	}
 
 	@Override
 	public String getIndexName(long companyId) {
-		return _instanceWorkflowMetricsIndexNameBuilder.getIndexName(companyId);
+		return _instanceWorkflowMetricsIndex.getIndexName(companyId);
 	}
 
 	@Override
 	public String getIndexType() {
-		return "WorkflowMetricsInstanceType";
+		return _instanceWorkflowMetricsIndex.getIndexType();
 	}
 
 	@Override
@@ -233,7 +227,7 @@ public class InstanceWorkflowMetricsIndexerImpl
 		documentBuilder.setLong(
 			"companyId", companyId
 		).setDate(
-			"modifiedDate", formatDate(modifiedDate)
+			"modifiedDate", getDate(modifiedDate)
 		).setString(
 			"uid", digest(companyId, instanceId)
 		);
@@ -256,8 +250,7 @@ public class InstanceWorkflowMetricsIndexerImpl
 	}
 
 	@Reference(target = "(workflow.metrics.index.entity.name=instance)")
-	private WorkflowMetricsIndexNameBuilder
-		_instanceWorkflowMetricsIndexNameBuilder;
+	private WorkflowMetricsIndex _instanceWorkflowMetricsIndex;
 
 	@Reference
 	private SLAInstanceResultWorkflowMetricsIndexer
@@ -267,7 +260,7 @@ public class InstanceWorkflowMetricsIndexerImpl
 	private SLATaskResultWorkflowMetricsIndexer
 		_slaTaskResultWorkflowMetricsIndexer;
 
-	@Reference(target = "(workflow.metrics.index.entity.name=task)")
-	private WorkflowMetricsIndex _taskWorkflowMetricsIndex;
+	@Reference
+	private TaskWorkflowMetricsIndexer _taskWorkflowMetricsIndexer;
 
 }

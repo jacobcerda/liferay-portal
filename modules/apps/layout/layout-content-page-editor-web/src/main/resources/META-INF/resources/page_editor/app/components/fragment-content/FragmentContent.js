@@ -22,11 +22,11 @@ import {updateFragmentEntryLinkContent} from '../../actions/index';
 import {DROP_ZONE_FRAGMENT_ENTRY_PROCESSOR} from '../../config/constants/dropZoneFragmentEntryProcessor';
 import {EDITABLE_FLOATING_TOOLBAR_BUTTONS} from '../../config/constants/editableFloatingToolbarButtons';
 import selectCanUpdateLayoutContent from '../../selectors/selectCanUpdateLayoutContent';
-import selectPrefixedSegmentsExperienceId from '../../selectors/selectPrefixedSegmentsExperienceId';
 import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
 import FragmentService from '../../services/FragmentService';
 import {useDispatch, useSelector} from '../../store/index';
 import {useGetFieldValue} from '../CollectionItemContext';
+import {useFrameContext} from '../Frame';
 import Layout from '../Layout';
 import UnsafeHTML from '../UnsafeHTML';
 import {
@@ -45,6 +45,7 @@ const FragmentContent = React.forwardRef(
 		const dispatch = useDispatch();
 		const isMounted = useIsMounted();
 		const editableProcessorUniqueId = useEditableProcessorUniqueId();
+		const frameContext = useFrameContext();
 		const setEditableProcessorUniqueId = useSetEditableProcessorUniqueId();
 		const canUpdateLayoutContent = useSelector(
 			selectCanUpdateLayoutContent
@@ -76,9 +77,6 @@ const FragmentContent = React.forwardRef(
 
 		const languageId = useSelector(state => state.languageId);
 
-		const prefixedSegmentsExperienceId = useSelector(
-			selectPrefixedSegmentsExperienceId
-		);
 		const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
 
 		const defaultContent = useSelector(state =>
@@ -135,7 +133,6 @@ const FragmentContent = React.forwardRef(
 						editable.editableId,
 						editable.editableValueNamespace,
 						languageId,
-						prefixedSegmentsExperienceId,
 						getFieldValue
 					).then(([value, editableConfig]) => {
 						editable.processor.render(
@@ -163,7 +160,6 @@ const FragmentContent = React.forwardRef(
 			getFieldValue,
 			isMounted,
 			languageId,
-			prefixedSegmentsExperienceId,
 			updateEditables,
 		]);
 
@@ -232,6 +228,7 @@ const FragmentContent = React.forwardRef(
 						})}
 						contentRef={ref}
 						getPortals={getPortals}
+						globalContext={frameContext || window}
 						markup={content}
 						onRender={updateEditables}
 					/>

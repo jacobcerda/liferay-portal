@@ -24,7 +24,7 @@ import * as time from '../../../../src/main/resources/META-INF/resources/js/util
 import * as toast from '../../../../src/main/resources/META-INF/resources/js/utils/toast.es';
 import {RESPONSES} from '../../constants.es';
 
-describe('ListCustomObject', () => {
+describe('ListCustomObjects', () => {
 	const ListCustomObjectsWithRouter = ({history = createMemoryHistory()}) => (
 		<AppContextProvider value={{}}>
 			<div className="tools-control-group">
@@ -313,7 +313,7 @@ describe('ListCustomObject', () => {
 		expect(spySuccessToast.mock.calls.length).toBe(1);
 	});
 
-	it('renders with data and hit actions', async () => {
+	it('renders with data and click on actions', async () => {
 		fetch.mockResponseOnce(JSON.stringify(RESPONSES.ONE_ITEM));
 
 		const history = createMemoryHistory();

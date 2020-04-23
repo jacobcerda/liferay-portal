@@ -22,12 +22,11 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.search.aggregation.AggregationResult;
 import com.liferay.portal.search.aggregation.Aggregations;
@@ -71,8 +70,6 @@ import com.liferay.portal.workflow.metrics.search.index.InstanceWorkflowMetricsI
 import com.liferay.portal.workflow.metrics.search.index.name.WorkflowMetricsIndexNameBuilder;
 import com.liferay.portal.workflow.metrics.service.WorkflowMetricsSLADefinitionLocalService;
 import com.liferay.portal.workflow.metrics.sla.processor.WorkflowMetricsSLAStatus;
-
-import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -492,9 +489,9 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 					_getLocalizedName("assetTitle"));
 				assetType = document.getString(_getLocalizedName("assetType"));
 				creator = _toCreator(document.getLong("userId"));
-				dateCompletion = _toDate(document.getDate("completionDate"));
-				dateCreated = _toDate(document.getDate("createDate"));
-				dateModified = _toDate(document.getDate("modifiedDate"));
+				dateCompletion = _parseDate(document.getDate("completionDate"));
+				dateCreated = _parseDate(document.getDate("createDate"));
+				dateModified = _parseDate(document.getDate("modifiedDate"));
 				id = document.getLong("instanceId");
 				processId = document.getLong("processId");
 				status = _getStatus(
@@ -512,11 +509,11 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 					sourcesMap.get(_getLocalizedName("assetType")));
 				creator = _toCreator(
 					GetterUtil.getLong(sourcesMap.get("userId")));
-				dateCompletion = _toDate(
+				dateCompletion = _parseDate(
 					GetterUtil.getString(sourcesMap.get("completionDate")));
-				dateCreated = _toDate(
+				dateCreated = _parseDate(
 					GetterUtil.getString(sourcesMap.get("createDate")));
-				dateModified = _toDate(
+				dateModified = _parseDate(
 					GetterUtil.getString(sourcesMap.get("modifiedDate")));
 				id = GetterUtil.getLong(sourcesMap.get("instanceId"));
 				processId = GetterUtil.getLong(sourcesMap.get("processId"));
@@ -560,7 +557,7 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 	private SLAResult _createSLAResult(Map<String, Object> sourcesMap) {
 		return new SLAResult() {
 			{
-				dateOverdue = _toDate(
+				dateOverdue = _parseDate(
 					GetterUtil.getString(sourcesMap.get("overdueDate")));
 
 				id = GetterUtil.getLong(sourcesMap.get("slaDefinitionId"));
@@ -1022,6 +1019,20 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 		return false;
 	}
 
+	private Date _parseDate(String dateString) {
+		try {
+			return DateUtil.parseDate(
+				"yyyyMMddHHmmss", dateString, LocaleUtil.getDefault());
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(exception, exception);
+			}
+
+			return null;
+		}
+	}
+
 	private void _setAssignees(Bucket bucket, Instance instance) {
 		List<Assignee> assignees = _getAssignees(bucket);
 
@@ -1125,22 +1136,6 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 		};
 	}
 
-	private Date _toDate(String dateString) {
-		DateFormat dateFormat = DateFormatFactoryUtil.getSimpleDateFormat(
-			_INDEX_DATE_FORMAT_PATTERN);
-
-		try {
-			return dateFormat.parse(dateString);
-		}
-		catch (Exception exception) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(exception, exception);
-			}
-
-			return null;
-		}
-	}
-
 	private Transition _toTransition(String name) {
 		Transition transition = new Transition();
 
@@ -1160,9 +1155,6 @@ public class InstanceResourceImpl extends BaseInstanceResourceImpl {
 			_getNextTransitionNames(instance.getProcessId(), instance.getId()),
 			this::_toTransition, Transition.class);
 	}
-
-	private static final String _INDEX_DATE_FORMAT_PATTERN = PropsUtil.get(
-		PropsKeys.INDEX_DATE_FORMAT_PATTERN);
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		InstanceResourceImpl.class);

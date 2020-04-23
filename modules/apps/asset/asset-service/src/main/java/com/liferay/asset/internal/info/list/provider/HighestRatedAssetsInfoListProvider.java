@@ -17,7 +17,6 @@ package com.liferay.asset.internal.info.list.provider;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryService;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
-import com.liferay.asset.util.AssetHelper;
 import com.liferay.info.list.provider.InfoListProvider;
 import com.liferay.info.list.provider.InfoListProviderContext;
 import com.liferay.info.pagination.Pagination;
@@ -97,9 +96,6 @@ public class HighestRatedAssetsInfoListProvider
 
 	@Reference
 	private AssetEntryService _assetEntryService;
-
-	@Reference
-	private AssetHelper _assetHelper;
 
 	@Reference(target = "(bundle.symbolic.name=com.liferay.asset.service)")
 	private ResourceBundleLoader _resourceBundleLoader;

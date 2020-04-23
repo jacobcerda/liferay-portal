@@ -361,7 +361,7 @@ definition {
 
 		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-		Type.typeCKEditorWaitForCKEditor(
+		Type(
 			locator1 = "CKEditor#BODY",
 			value1 = "MB Thread Message Body");
 

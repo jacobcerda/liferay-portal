@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.petra.function.UnsafeTriConsumer;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONDeserializer;
@@ -52,6 +53,7 @@ import com.liferay.portal.vulcan.resource.EntityModelResource;
 
 import java.io.File;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -1222,7 +1224,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 						graphQLField = new GraphQLField(
 							"query",
 							new GraphQLField(
-								"${schemaVarName}",
+								"${schemaName?uncap_first}",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -1307,7 +1309,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 					Assert.assertEquals(2, ${schemaVarNames}JSONObject.get("totalCount"));
 
-					assertEqualsJSONArray(Arrays.asList(${schemaVarName}1, ${schemaVarName}2), ${schemaVarNames}JSONObject.getJSONArray("items"));
+					assertEqualsIgnoringOrder(Arrays.asList(${schemaVarName}1, ${schemaVarName}2), Arrays.asList((${schemaName}SerDes.toDTOs(${schemaVarNames}JSONObject.getString("items")))));
 				</#if>
 			}
 		<#elseif freeMarkerTool.hasHTTPMethod(javaMethodSignature, "get") && javaMethodSignature.returnType?ends_with(schemaName)>
@@ -1351,7 +1353,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 					JSONObject dataJSONObject = jsonObject.getJSONObject("data");
 
-					Assert.assertTrue(equalsJSONObject(${schemaVarName}, dataJSONObject.getJSONObject("${freeMarkerTool.getGraphQLPropertyName(javaMethodSignature, javaMethodSignatures)}")));
+					Assert.assertTrue(equals(${schemaVarName}, ${schemaName}SerDes.toDTO(dataJSONObject.getString("${freeMarkerTool.getGraphQLPropertyName(javaMethodSignature, javaMethodSignatures)}"))));
 				<#else>
 					Assert.assertTrue(true);
 				</#if>
@@ -1363,7 +1365,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 				${schemaName} ${schemaVarName} = testGraphQL${schemaName}_add${schemaName}(random${schemaName});
 
-				Assert.assertTrue(equalsJSONObject(random${schemaName}, JSONFactoryUtil.createJSONObject(JSONFactoryUtil.serialize(${schemaVarName}))));
+				Assert.assertTrue(equals(random${schemaName}, ${schemaVarName}));
 			}
 		</#if>
 	</#list>
@@ -1435,6 +1437,47 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 	<#if properties?keys?seq_contains("id")>
 		<#if freeMarkerTool.hasJavaMethodSignature(javaMethodSignatures, "postSite" + schemaName)>
+			protected void appendGraphQLFieldValue(StringBuilder sb, Object value) throws Exception {
+				if (value instanceof Object[]) {
+					StringBuilder arraySB = new StringBuilder("[");
+
+					for (Object object : (Object[])value) {
+						if (arraySB.length() > 1) {
+							arraySB.append(",");
+						}
+
+						arraySB.append("{");
+
+						Class<?> clazz = object.getClass();
+
+						for (Field field : ReflectionUtil.getDeclaredFields(clazz.getSuperclass())) {
+							arraySB.append(field.getName());
+							arraySB.append(": ");
+
+							appendGraphQLFieldValue(arraySB, field.get(object));
+
+							arraySB.append(",");
+						}
+
+						arraySB.setLength(arraySB.length() - 1);
+
+						arraySB.append("}");
+					}
+
+					arraySB.append("]");
+
+					sb.append(arraySB.toString());
+				}
+				else if (value instanceof String) {
+					sb.append("\"");
+					sb.append(value);
+					sb.append("\"");
+				}
+				else {
+					sb.append(value);
+				}
+			}
+
 			protected ${schemaName} testGraphQL${schemaName}_add${schemaName}() throws Exception {
 				return testGraphQL${schemaName}_add${schemaName}(random${schemaName}());
 			}
@@ -1442,28 +1485,19 @@ public abstract class Base${schemaName}ResourceTestCase {
 			protected ${schemaName} testGraphQL${schemaName}_add${schemaName}(${schemaName} ${schemaVarName}) throws Exception {
 				StringBuilder sb = new StringBuilder("{");
 
-				for (String additionalAssertFieldName : getAdditionalAssertFieldNames()) {
-					<#list properties?keys as propertyName>
-						<#if randomDataTypes?seq_contains(properties[propertyName])>
-							if (Objects.equals("${propertyName}", additionalAssertFieldName)) {
-								sb.append(additionalAssertFieldName);
-								sb.append(": ");
+				for (Field field : ReflectionUtil.getDeclaredFields(${schemaName}.class)) {
+					if (!ArrayUtil.contains(getAdditionalAssertFieldNames(), field.getName())) {
+						continue;
+					}
 
-								Object value = ${schemaVarName}.get${propertyName?cap_first}();
+					if (sb.length() > 1) {
+						sb.append(", ");
+					}
 
-								if (value instanceof String) {
-									sb.append("\"");
-									sb.append(value);
-									sb.append("\"");
-								}
-								else {
-									sb.append(value);
-								}
+					sb.append(field.getName());
+					sb.append(": ");
 
-								sb.append(", ");
-							}
-						</#if>
-					</#list>
+					appendGraphQLFieldValue(sb, field.get(${schemaVarName}));
 				}
 
 				sb.append("}");
@@ -1550,22 +1584,6 @@ public abstract class Base${schemaName}ResourceTestCase {
 			}
 
 			Assert.assertTrue(${schemaVarNames}2 + " does not contain " + ${schemaVarName}1, contains);
-		}
-	}
-
-	protected void assertEqualsJSONArray(List<${schemaName}> ${schemaVarNames}, JSONArray jsonArray) {
-		for (${schemaName} ${schemaVarName} : ${schemaVarNames}) {
-			boolean contains = false;
-
-			for (Object object : jsonArray) {
-				if (equalsJSONObject(${schemaVarName}, (JSONObject)object)) {
-					contains = true;
-
-					break;
-				}
-			}
-
-			Assert.assertTrue(jsonArray + " does not contain " + ${schemaVarName}, contains);
 		}
 	}
 
@@ -1722,11 +1740,41 @@ public abstract class Base${schemaName}ResourceTestCase {
 		}
 	</#list>
 
-	protected List<GraphQLField> getGraphQLFields() {
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
-		for (String additionalAssertFieldName : getAdditionalAssertFieldNames()) {
-			graphQLFields.add(new GraphQLField(additionalAssertFieldName));
+		<#if properties?keys?seq_contains("siteId")>
+			graphQLFields.add(new GraphQLField("siteId"));
+		</#if>
+
+		for (Field field : ReflectionUtil.getDeclaredFields(${configYAML.apiPackagePath}.dto.${escapedVersion}.${schemaName}.class)) {
+			if (!ArrayUtil.contains(getAdditionalAssertFieldNames(), field.getName())){
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields) throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField vulcanGraphQLField = field.getAnnotation(com.liferay.portal.vulcan.graphql.annotation.GraphQLField.class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(new GraphQLField(field.getName(), childrenGraphQLFields.toArray(new GraphQLField[0])));
+			}
 		}
 
 		return graphQLFields;
@@ -1831,37 +1879,6 @@ public abstract class Base${schemaName}ResourceTestCase {
 			return true;
 		}
 	</#list>
-
-	protected boolean equalsJSONObject(${schemaName} ${schemaVarName}, JSONObject jsonObject) {
-		for (String fieldName : getAdditionalAssertFieldNames()) {
-			<#list properties?keys as propertyName>
-				<#if stringUtil.equals(propertyName, "siteId")>
-					 <#continue>
-				</#if>
-
-				<#if randomDataTypes?seq_contains(properties[propertyName])>
-					if (Objects.equals("${propertyName}", fieldName)) {
-						<#assign capitalizedPropertyName = propertyName?cap_first />
-
-						<#if stringUtil.equals(properties[propertyName], "Integer")>
-							if (!Objects.deepEquals(${schemaVarName}.get${capitalizedPropertyName}(), jsonObject.getInt("${propertyName}"))) {
-						<#else>
-							if (!Objects.deepEquals(${schemaVarName}.get${capitalizedPropertyName}(), jsonObject.get${properties[propertyName]}("${propertyName}"))) {
-						</#if>
-
-							return false;
-						}
-
-						continue;
-					}
-				</#if>
-			</#list>
-
-			throw new IllegalArgumentException("Invalid field name " + fieldName);
-		}
-
-		return true;
-	}
 
 	protected java.util.Collection<EntityField> getEntityFields() throws Exception {
 		if (!(_${schemaVarName}Resource instanceof EntityModelResource)) {

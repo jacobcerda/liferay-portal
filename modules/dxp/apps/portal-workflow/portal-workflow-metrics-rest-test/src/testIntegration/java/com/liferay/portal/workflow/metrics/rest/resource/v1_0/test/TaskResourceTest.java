@@ -23,8 +23,6 @@ import com.liferay.portal.workflow.metrics.rest.resource.v1_0.test.helper.Workfl
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -61,12 +59,6 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 		}
 	}
 
-	@Ignore
-	@Override
-	@Test
-	public void testGraphQLGetProcessTask() throws Exception {
-	}
-
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[] {"name"};
@@ -97,6 +89,11 @@ public class TaskResourceTest extends BaseTaskResourceTestCase {
 	@Override
 	protected Long testGetProcessTasksPage_getProcessId() throws Exception {
 		return _process.getId();
+	}
+
+	@Override
+	protected Task testGraphQLTask_addTask() throws Exception {
+		return testGetProcessTask_addTask();
 	}
 
 	@Override

@@ -17,7 +17,9 @@ package com.liferay.portal.tools.rest.builder;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -333,8 +335,12 @@ public class RESTBuilder {
 				description, clientMessage, clientVersion, "'.");
 		}
 
-		String descriptionBlock = String.format(
-			"    description:\n        \"%s\"\n", description);
+		String formattedDescription = _formatDescrition(
+			StringPool.FOUR_SPACES + StringPool.FOUR_SPACES,
+			"\"" + description + "\"");
+
+		String descriptionBlock =
+			"    description:\n" + formattedDescription + "\n";
 
 		return StringUtil.replace(
 			yamlString,
@@ -1581,6 +1587,39 @@ public class RESTBuilder {
 		return yamlString;
 	}
 
+	private String _formatDescrition(String indent, String descriton) {
+		if (Validator.isNull(descriton)) {
+			return StringPool.BLANK;
+		}
+
+		if ((indent.length() + descriton.length()) <=
+				_DESCRIPTION_MAX_LINE_LENGTH) {
+
+			return indent + descriton;
+		}
+
+		descriton = indent + descriton;
+
+		int x = descriton.indexOf(CharPool.SPACE, indent.length());
+
+		if (x == -1) {
+			return descriton;
+		}
+
+		if (x > _DESCRIPTION_MAX_LINE_LENGTH) {
+			String s = descriton.substring(x + 1);
+
+			return descriton.substring(0, x) + "\n" +
+				_formatDescrition(indent, s);
+		}
+
+		x = descriton.lastIndexOf(CharPool.SPACE, _DESCRIPTION_MAX_LINE_LENGTH);
+
+		String s = descriton.substring(x + 1);
+
+		return descriton.substring(0, x) + "\n" + _formatDescrition(indent, s);
+	}
+
 	private String _getClientMavenGroupId(String apiPackagePath) {
 		if (apiPackagePath.startsWith("com.liferay.commerce")) {
 			return "com.liferay.commerce";
@@ -1821,6 +1860,8 @@ public class RESTBuilder {
 			}
 		}
 	}
+
+	private static final int _DESCRIPTION_MAX_LINE_LENGTH = 120;
 
 	private final File _configDir;
 	private final ConfigYAML _configYAML;
