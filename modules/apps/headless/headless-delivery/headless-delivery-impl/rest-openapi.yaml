@@ -2005,6 +2005,17 @@ components:
                     additionalProperties:
                         type: object
                     type: object
+                widgetPermissions:
+                    items:
+                        properties:
+                            actionKeys:
+                                items:
+                                    type: string
+                                type: array
+                            roleKey:
+                                type: string
+                        type: object
+                    type: array
             type: object
         Rating:
             description:

@@ -49,8 +49,7 @@ export default withRouter(
 									key={tag.id}
 								>
 									<Link
-										className="questions-disabled-link"
-										to={`/questions/${sectionTitle}/tag/${tag.taxonomyCategoryId}`}
+										to={`/questions/${sectionTitle}/tag/${tag.name}`}
 									>
 										<ClayCardWithNavigation>
 											<ClayCard.Body>
@@ -62,9 +61,7 @@ export default withRouter(
 														Liferay.Language.get(
 															'used-x-times'
 														),
-														[
-															tag.taxonomyCategoryUsageCount,
-														]
+														[tag.keywordUsageCount]
 													)}
 												</ClayCard.Description>
 												<ClayCard.Description displayType="text">

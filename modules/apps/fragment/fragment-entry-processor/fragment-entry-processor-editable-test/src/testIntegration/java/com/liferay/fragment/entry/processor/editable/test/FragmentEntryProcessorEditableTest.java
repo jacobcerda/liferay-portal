@@ -293,6 +293,33 @@ public class FragmentEntryProcessorEditableTest {
 			"fragment_entry_with_invalid_editable_type_attribute.html");
 	}
 
+	@Test(expected = FragmentEntryContentException.class)
+	public void testFragmentEntryProcessorEditableWithInvalidTypeAttributeInImageTag()
+		throws Exception {
+
+		_addFragmentEntry(
+			"fragment_entry_with_invalid_editable_type_attribute_in_image_" +
+				"tag.html");
+	}
+
+	@Test(expected = FragmentEntryContentException.class)
+	public void testFragmentEntryProcessorEditableWithInvalidTypeAttributeInLinkTag()
+		throws Exception {
+
+		_addFragmentEntry(
+			"fragment_entry_with_invalid_editable_type_attribute_in_link_tag." +
+				"html");
+	}
+
+	@Test(expected = FragmentEntryContentException.class)
+	public void testFragmentEntryProcessorEditableWithInvalidTypeAttributeInTextTag()
+		throws Exception {
+
+		_addFragmentEntry(
+			"fragment_entry_with_invalid_editable_type_attribute_in_text_tag." +
+				"html");
+	}
+
 	@Test
 	public void testFragmentEntryProcessorEditableWithMatchedLanguage()
 		throws Exception {

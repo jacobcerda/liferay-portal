@@ -32,6 +32,8 @@ export {default as objectToFormData} from './liferay/util/form/object_to_form_da
 
 // Liferay API
 
+export {default as BREAKPOINTS} from './liferay/breakpoints';
+
 export {default as CompatibilityEventProxy} from './liferay/CompatibilityEventProxy.es';
 
 export {default as DefaultEventHandler} from './liferay/DefaultEventHandler.es';
@@ -69,4 +71,6 @@ export {default as throttle} from './liferay/throttle.es';
 // Util API
 
 export {default as fetch} from './liferay/util/fetch.es';
+export {default as isPhone} from './liferay/util/is_phone';
+export {default as isTablet} from './liferay/util/is_tablet';
 export {default as navigate} from './liferay/util/navigate.es';

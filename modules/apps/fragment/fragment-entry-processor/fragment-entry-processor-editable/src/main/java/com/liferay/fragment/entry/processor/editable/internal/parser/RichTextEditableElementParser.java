@@ -26,4 +26,9 @@ import org.osgi.service.component.annotations.Component;
 	service = EditableElementParser.class
 )
 public class RichTextEditableElementParser extends TextEditableElementParser {
+
+	protected String getEditableElementType() {
+		return "rich-text";
+	}
+
 }

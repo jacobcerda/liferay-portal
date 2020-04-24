@@ -89,12 +89,42 @@ public class AddFragmentEntryLinkMVCActionCommandTest {
 	}
 
 	@Test
+	public void testAddFragmentEntryLinkFromGlobalFragmentEntry()
+		throws Exception {
+
+		FragmentEntry fragmentEntry = _getFragmentEntry(_company.getGroupId());
+
+		MockLiferayPortletActionRequest actionRequest = _getMockActionRequest(
+			_company.getGroupId());
+
+		actionRequest.addParameter(
+			"fragmentEntryKey", fragmentEntry.getFragmentEntryKey());
+
+		FragmentEntryLink fragmentEntryLink = ReflectionTestUtil.invoke(
+			_mvcActionCommand, "addFragmentEntryLink",
+			new Class<?>[] {ActionRequest.class}, actionRequest);
+
+		Assert.assertNotNull(fragmentEntryLink);
+
+		FragmentEntryLink persistedFragmentEntryLink =
+			_fragmentEntryLinkLocalService.fetchFragmentEntryLink(
+				fragmentEntryLink.getFragmentEntryLinkId());
+
+		Assert.assertNotNull(persistedFragmentEntryLink);
+
+		Assert.assertEquals(
+			fragmentEntry.getFragmentEntryId(),
+			persistedFragmentEntryLink.getFragmentEntryId());
+	}
+
+	@Test
 	public void testAddFragmentEntryLinkFromPersistedFragmentEntry()
 		throws Exception {
 
-		FragmentEntry fragmentEntry = _getFragmentEntry();
+		FragmentEntry fragmentEntry = _getFragmentEntry(_group.getGroupId());
 
-		MockLiferayPortletActionRequest actionRequest = _getMockActionRequest();
+		MockLiferayPortletActionRequest actionRequest = _getMockActionRequest(
+			_group.getGroupId());
 
 		actionRequest.addParameter(
 			"fragmentEntryKey", fragmentEntry.getFragmentEntryKey());
@@ -134,7 +164,7 @@ public class AddFragmentEntryLinkMVCActionCommandTest {
 
 	@Test
 	public void testAddFragmentEntryLinkToLayout() throws Exception {
-		FragmentEntry fragmentEntry = _getFragmentEntry();
+		FragmentEntry fragmentEntry = _getFragmentEntry(_group.getGroupId());
 
 		List<FragmentEntryLink> originalFragmentEntryLinks =
 			_fragmentEntryLinkLocalService.getFragmentEntryLinks(
@@ -142,7 +172,8 @@ public class AddFragmentEntryLinkMVCActionCommandTest {
 				PortalUtil.getClassNameId(Layout.class.getName()),
 				_layout.getPlid());
 
-		MockLiferayPortletActionRequest actionRequest = _getMockActionRequest();
+		MockLiferayPortletActionRequest actionRequest = _getMockActionRequest(
+			_group.getGroupId());
 
 		actionRequest.addParameter(
 			"fragmentEntryKey", fragmentEntry.getFragmentEntryKey());
@@ -165,7 +196,8 @@ public class AddFragmentEntryLinkMVCActionCommandTest {
 
 	@Test(expected = NoSuchEntryException.class)
 	public void testAddInvalidFragmentEntryToLayout() throws Exception {
-		MockLiferayPortletActionRequest actionRequest = _getMockActionRequest();
+		MockLiferayPortletActionRequest actionRequest = _getMockActionRequest(
+			_group.getGroupId());
 
 		actionRequest.addParameter(
 			"fragmentEntryKey", RandomTestUtil.randomString());
@@ -175,17 +207,19 @@ public class AddFragmentEntryLinkMVCActionCommandTest {
 			new Class<?>[] {ActionRequest.class}, actionRequest);
 	}
 
-	private FragmentEntry _getFragmentEntry() throws PortalException {
+	private FragmentEntry _getFragmentEntry(long groupId)
+		throws PortalException {
+
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext();
 
 		FragmentCollection fragmentCollection =
 			_fragmentCollectionLocalService.addFragmentCollection(
-				TestPropsValues.getUserId(), _group.getGroupId(),
-				StringUtil.randomString(), StringPool.BLANK, serviceContext);
+				TestPropsValues.getUserId(), groupId, StringUtil.randomString(),
+				StringPool.BLANK, serviceContext);
 
 		return _fragmentEntryLocalService.addFragmentEntry(
-			TestPropsValues.getUserId(), _group.getGroupId(),
+			TestPropsValues.getUserId(), groupId,
 			fragmentCollection.getFragmentCollectionId(),
 			StringUtil.randomString(), StringUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
@@ -194,14 +228,15 @@ public class AddFragmentEntryLinkMVCActionCommandTest {
 			serviceContext);
 	}
 
-	private MockActionRequest _getMockActionRequest() throws PortalException {
+	private MockActionRequest _getMockActionRequest(long groupId)
+		throws PortalException {
+
 		MockActionRequest mockActionRequest = new MockActionRequest();
 
 		mockActionRequest.setAttribute(
 			WebKeys.THEME_DISPLAY, _getThemeDisplay());
 
-		mockActionRequest.addParameter(
-			"groupId", String.valueOf(_group.getGroupId()));
+		mockActionRequest.addParameter("groupId", String.valueOf(groupId));
 
 		return mockActionRequest;
 	}

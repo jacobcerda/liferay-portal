@@ -11,7 +11,7 @@
 
 import {useContext, useReducer} from 'react';
 
-import ConnectionContext from '../state/context';
+import ConnectionContext from '../context/ConnectionContext';
 
 const ADD_DATA_SET_ITEM = 'add-data-key';
 const NEXT_TIME_SPAN = 'next-time-span';
@@ -175,13 +175,12 @@ function mergeDataSets({
 	timeSpanComparator,
 	validAnalyticsConnection,
 }) {
-	const resultDataSet = {};
-
-	resultDataSet.keyList = [...previousDataSet.keyList, key];
-
-	resultDataSet.totals = {
-		...previousDataSet.totals,
-		[key]: newData.value,
+	const resultDataSet = {
+		keyList: [...previousDataSet.keyList, key],
+		totals: {
+			...previousDataSet.totals,
+			[key]: newData.value,
+		},
 	};
 
 	const publishDateObject = new Date(publishDate);
@@ -205,6 +204,13 @@ function mergeDataSets({
 			label: h.key,
 		};
 	});
+
+	if (newFormattedHistogram.length === 0) {
+		return {
+			...resultDataSet,
+			histogram: previousDataSet.histogram,
+		};
+	}
 
 	let start = 0;
 	const mergeHistogram = [];

@@ -14,7 +14,11 @@
 
 import {
 	ADD_FRAGMENT_ENTRY_LINKS,
+	ADD_ITEM,
+	DUPLICATE_ITEM,
+	MOVE_ITEM,
 	UPDATE_COL_SIZE,
+	UPDATE_ITEM_CONFIG,
 	UPDATE_LAYOUT_DATA,
 } from '../actions/types';
 
@@ -61,6 +65,10 @@ export default function layoutDataReducer(layoutData = INITIAL_STATE, action) {
 
 		case UPDATE_LAYOUT_DATA:
 		case ADD_FRAGMENT_ENTRY_LINKS:
+		case ADD_ITEM:
+		case DUPLICATE_ITEM:
+		case MOVE_ITEM:
+		case UPDATE_ITEM_CONFIG:
 			return action.layoutData;
 
 		default:

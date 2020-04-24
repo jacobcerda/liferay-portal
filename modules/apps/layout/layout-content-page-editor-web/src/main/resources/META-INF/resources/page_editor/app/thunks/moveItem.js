@@ -12,7 +12,7 @@
  * details.
  */
 
-import updateLayoutData from '../actions/updateLayoutData';
+import moveItemAction from '../actions/moveItem';
 import LayoutService from '../services/LayoutService';
 
 export default function moveItem({itemId, parentItemId, position, store}) {
@@ -26,7 +26,7 @@ export default function moveItem({itemId, parentItemId, position, store}) {
 			position,
 			segmentsExperienceId,
 		}).then(layoutData => {
-			dispatch(updateLayoutData({layoutData}));
+			dispatch(moveItemAction({layoutData}));
 		});
 	};
 }

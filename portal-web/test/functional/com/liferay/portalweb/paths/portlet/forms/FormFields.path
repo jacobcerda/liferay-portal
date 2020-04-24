@@ -213,7 +213,7 @@
 </tr>
 <tr>
 	<td>TEXT_FIELD</td>
-	<td>//input[@type='text' and contains(@id,'${key_fieldName}')] | //input[@type='text' and contains(@name,'${key_fieldName}')] | //div[contains(@class,'form-group')]//p[text()='${key_fieldLabel}']</td>
+	<td>//input[@type='text' and contains(@id,'${key_fieldName}')] | //input[@type='text' and contains(@name,'${key_fieldName}')] | //div[contains(@class,'form-group')]//p[text()='${key_fieldLabel}'] | //div[contains(@data-field-name,'${key_fieldName}')]//div[contains(@class,'form-group')]//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -276,7 +276,7 @@
 <!--SELECT-->
 <tr>
 	<td>SELECT_FIELD</td>
-	<td>//p[contains(text(),'${key_fieldName}') or contains(@for,'${key_fieldName}')]/following-sibling::div[contains(@class,'ddm-select-dropdown') or contains(@class,'input-group-container')]//button | //div[contains(@data-field-name,'${key_fieldName}') or contains(@for,'${key_fieldName}')]//following-sibling::div[contains(@class,'ddm-select-dropdown') or contains(@class,'input-group-container')]//button</td>
+	<td>//p[contains(text(),'${key_fieldName}') or contains(@for,'${key_fieldName}')]/following-sibling::div[contains(@class,'ddm-select-dropdown') or contains(@class,'input-group-container')]//button | //div[contains(@data-field-name,'${key_fieldName}') or contains(@for,'${key_fieldName}') or contains(.//p, '${key_fieldName}')]//following-sibling::div[contains(@class,'ddm-select-dropdown') or contains(@class,'input-group-container')]//button</td>
 	<td></td>
 </tr>
 <tr>

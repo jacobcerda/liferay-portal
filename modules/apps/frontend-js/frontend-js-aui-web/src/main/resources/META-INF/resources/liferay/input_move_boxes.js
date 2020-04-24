@@ -444,7 +444,20 @@ AUI.add(
 						];
 					}
 
-					newBox.sort(Util.sortByAscending);
+					newBox.sort((a, b) => {
+						a = a[1].toLowerCase();
+						b = b[1].toLowerCase();
+
+						if (a > b) {
+							return 1;
+						}
+
+						if (a < b) {
+							return -1;
+						}
+
+						return 0;
+					});
 
 					var boxObj = A.one(box);
 

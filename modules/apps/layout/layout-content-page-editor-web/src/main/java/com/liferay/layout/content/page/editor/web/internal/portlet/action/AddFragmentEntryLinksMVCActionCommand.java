@@ -28,6 +28,7 @@ import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLin
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.layout.page.template.importer.LayoutPageTemplatesImporter;
 import com.liferay.layout.util.structure.LayoutStructure;
+import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -98,36 +99,43 @@ public class AddFragmentEntryLinksMVCActionCommand
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		long groupId = ParamUtil.getLong(actionRequest, "groupId");
 		String fragmentEntryKey = ParamUtil.getString(
 			actionRequest, "fragmentEntryKey");
 
-		String parentItemId = ParamUtil.getString(
-			actionRequest, "parentItemId");
-		int position = ParamUtil.getInteger(actionRequest, "position");
-		long segmentsExperienceId = ParamUtil.getLong(
-			actionRequest, "segmentsExperienceId",
-			SegmentsExperienceConstants.ID_DEFAULT);
-
 		FragmentComposition fragmentComposition =
 			_fragmentCompositionService.fetchFragmentComposition(
 				groupId, fragmentEntryKey);
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		long segmentsExperienceId = ParamUtil.getLong(
+			actionRequest, "segmentsExperienceId",
+			SegmentsExperienceConstants.ID_DEFAULT);
 
 		LayoutStructure layoutStructure =
 			LayoutStructureUtil.getLayoutStructure(
 				themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
 				segmentsExperienceId);
 
+		String parentItemId = ParamUtil.getString(
+			actionRequest, "parentItemId");
+
+		LayoutStructureItem layoutStructureItem =
+			layoutStructure.getLayoutStructureItem(parentItemId);
+
+		List<String> childrenItemIds = layoutStructureItem.getChildrenItemIds();
+
+		JSONObject fragmentEntryLinksJSONObject =
+			JSONFactoryUtil.createJSONObject();
+
+		int position = ParamUtil.getInteger(actionRequest, "position");
+
 		List<FragmentEntryLink> fragmentEntryLinks =
 			_layoutPageTemplatesImporter.importPageElement(
 				themeDisplay.getLayout(), layoutStructure, parentItemId,
 				fragmentComposition.getData(), position);
-
-		JSONObject fragmentEntryLinksJSONObject =
-			JSONFactoryUtil.createJSONObject();
 
 		for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
 			fragmentEntryLinksJSONObject.put(
@@ -141,6 +149,8 @@ public class AddFragmentEntryLinksMVCActionCommand
 		}
 
 		return JSONUtil.put(
+			"addedItemId", childrenItemIds.get(position)
+		).put(
 			"fragmentEntryLinks", fragmentEntryLinksJSONObject
 		).put(
 			"layoutData", layoutStructure.toJSONObject()

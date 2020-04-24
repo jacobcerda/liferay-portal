@@ -10,10 +10,12 @@
  */
 
 import ClayButton from '@clayui/button';
+import className from 'classnames';
 import PropTypes from 'prop-types';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Cell, Pie, PieChart, Tooltip} from 'recharts';
 
+import {useWarning} from '../context/store';
 import {numberFormat} from '../utils/numberFormat';
 import EmptyPieChart from './EmptyPieChart';
 import Hint from './Hint';
@@ -45,11 +47,19 @@ export default function TrafficSources({
 }) {
 	const [highlighted, setHighlighted] = useState(null);
 
+	const [, addWarning] = useWarning();
+
 	const fullPieChart = trafficSources.some(source => !!source.value);
 
-	const missingTrafficSourceValue = trafficSources.some(trafficSource => {
-		return trafficSource.value === undefined;
-	});
+	const missingTrafficSourceValue = trafficSources.some(
+		trafficSource => trafficSource.value === undefined
+	);
+
+	useEffect(() => {
+		if (missingTrafficSourceValue) {
+			addWarning();
+		}
+	}, [addWarning, missingTrafficSourceValue]);
 
 	function handleLegendMouseEnter(name) {
 		setHighlighted(name);
@@ -166,13 +176,15 @@ export default function TrafficSources({
 										entry.name
 									);
 
+									const cellClasses = className({
+										dim:
+											highlighted &&
+											entry.name !== highlighted,
+									});
+
 									return (
 										<Cell
-											className={{
-												dim:
-													highlighted &&
-													entry.name !== highlighted,
-											}}
+											className={cellClasses}
 											fill={fillColor}
 											key={i}
 											onMouseOut={handleLegendMouseLeave}

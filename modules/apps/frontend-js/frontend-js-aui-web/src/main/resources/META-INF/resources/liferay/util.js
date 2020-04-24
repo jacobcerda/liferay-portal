@@ -392,6 +392,9 @@
 			Util.toggleDisabled(inputs, false);
 		},
 
+		/**
+		 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+		 */
 		escapeCDATA(str) {
 			return str.replace(/<!\[CDATA\[|\]\]>/gi, match => {
 				var str = '';
@@ -806,18 +809,6 @@
 			return typeof val === 'function';
 		},
 
-		isPhone() {
-			var instance = this;
-
-			return instance.getWindowWidth() < Liferay.BREAKPOINTS.PHONE;
-		},
-
-		isTablet() {
-			var instance = this;
-
-			return instance.getWindowWidth() < Liferay.BREAKPOINTS.TABLET;
-		},
-
 		listCheckboxesExcept(form, except, name, checked) {
 			form = Util.getDOM(form);
 
@@ -1126,6 +1117,9 @@
 			}
 		},
 
+		/**
+		 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+		 */
 		sortByAscending(a, b) {
 			a = a[1].toLowerCase();
 			b = b[1].toLowerCase();
@@ -1930,11 +1924,6 @@
 	Util.Window = Window;
 
 	Liferay.Util = Util;
-
-	Liferay.BREAKPOINTS = {
-		PHONE: 768,
-		TABLET: 980,
-	};
 
 	Liferay.STATUS_CODE = {
 		BAD_REQUEST: 400,

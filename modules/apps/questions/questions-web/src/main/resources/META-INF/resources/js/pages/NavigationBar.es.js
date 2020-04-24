@@ -46,9 +46,15 @@ export default withRouter(
 					<div className="row">
 						{location.pathname !== '/' && (
 							<div className="align-items-center col d-flex justify-content-between">
-								<ClayNavigationBar triggerLabel="Questions">
+								<ClayNavigationBar
+									className="navigation-bar"
+									triggerLabel="Questions"
+								>
 									<ClayNavigationBar.Item
-										active={!isActive('activity')}
+										active={
+											!isActive('activity') &&
+											!isActive('tags')
+										}
 										onClick={() =>
 											historyPushParser(
 												`/questions/${context.section}`
@@ -64,7 +70,24 @@ export default withRouter(
 									</ClayNavigationBar.Item>
 
 									<ClayNavigationBar.Item
+										active={isActive('tags')}
+										onClick={() =>
+											historyPushParser(
+												`/questions/${context.section}/tags`
+											)
+										}
+									>
+										<ClayLink
+											className="nav-link"
+											displayType="unstyled"
+										>
+											{Liferay.Language.get('tags')}
+										</ClayLink>
+									</ClayNavigationBar.Item>
+
+									<ClayNavigationBar.Item
 										active={isActive('activity')}
+										className="ml-md-auto"
 										onClick={() =>
 											historyPushParser(
 												`/activity/${context.userId}`

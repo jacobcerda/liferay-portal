@@ -25,8 +25,10 @@ import {
 	YAxis,
 } from 'recharts';
 
-import ConnectionContext from '../state/context';
-import {useChartState} from '../utils/chartState';
+import ConnectionContext from '../context/ConnectionContext';
+import {useWarning} from '../context/store';
+import {useChartState} from '../state/chartState';
+import {generateDateFormatters as dateFormat} from '../utils/dateFormat';
 import {numberFormat} from '../utils/numberFormat';
 import {ActiveDot as CustomActiveDot, Dot as CustomDot} from './CustomDots';
 import CustomTooltip from './CustomTooltip';
@@ -49,7 +51,6 @@ const CHART_SIZES = {
 };
 
 const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
-
 const HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 
 const LAST_24_HOURS = 'last-24-hours';
@@ -101,91 +102,6 @@ function thousandsToKilosFormater(value) {
 	return value;
 }
 
-/*
- * It generates a set of functions used to produce
- * internationalized date related content.
- */
-const generateDateFormatters = key => {
-	/*
-	 * Given 2 date objects it produces a user friendly date interval
-	 *
-	 * For 'en-US'
-	 * [Date, Date] => '16 - Jun 21, 2020'
-	 */
-	function formatChartTitle([initialDate, finalDate]) {
-		const singleDayDateRange =
-			finalDate - initialDate <= 1000 * 60 * 60 * 24;
-
-		const dateFormatter = (
-			date,
-			options = {
-				day: 'numeric',
-				month: 'short',
-				year: 'numeric',
-			}
-		) => Intl.DateTimeFormat([key], options).format(date);
-
-		const equalMonth = initialDate.getMonth() === finalDate.getMonth();
-		const equalYear = initialDate.getYear() === finalDate.getYear();
-
-		const initialDateOptions = {
-			day: 'numeric',
-			month: equalMonth && equalYear ? undefined : 'short',
-			year: equalYear ? undefined : 'numeric',
-		};
-
-		if (singleDayDateRange) {
-			return dateFormatter(finalDate);
-		}
-
-		return `${dateFormatter(
-			initialDate,
-			initialDateOptions
-		)} - ${dateFormatter(finalDate)}`;
-	}
-
-	/*
-	 * Given a date like string it produces a internationalized long date
-	 *
-	 * For 'en-US'
-	 * String => '06/17/2020'
-	 */
-	function formatLongDate(value) {
-		return Intl.DateTimeFormat([key]).format(new Date(value));
-	}
-
-	/*
-	 * Given a date like string produces the day of the month
-	 *
-	 * For 'en-US'
-	 * String => '16'
-	 */
-	function formatNumericDay(value) {
-		return Intl.DateTimeFormat([key], {
-			day: 'numeric',
-		}).format(new Date(value));
-	}
-
-	/*
-	 * Given a date like string produces the hour of the day
-	 *
-	 * For 'en-US'
-	 * String => '04 AM'
-	 */
-	function formatNumericHour(value) {
-		return Intl.DateTimeFormat([key], {
-			hour: 'numeric',
-		}).format(new Date(value));
-	}
-
-	return {
-		formatChartTitle,
-		formatLongDate,
-		formatNumericDay,
-		formatNumericHour,
-	};
-};
-
 function legendFormatterGenerator(
 	totals,
 	languageTag,
@@ -205,13 +121,11 @@ function legendFormatterGenerator(
 				<span className="mr-2 text-secondary">
 					{keyToTranslatedLabelValue(value)}
 				</span>
-				{preformattedNumber !== null && (
-					<span className="font-weight-bold">
-						{validAnalyticsConnection
-							? numberFormat(languageTag, preformattedNumber)
-							: '-'}
-					</span>
-				)}
+				<span className="font-weight-bold">
+					{validAnalyticsConnection && preformattedNumber !== null
+						? numberFormat(languageTag, preformattedNumber)
+						: '-'}
+				</span>
 			</span>
 		);
 	};
@@ -226,39 +140,67 @@ export default function Chart({
 }) {
 	const {validAnalyticsConnection} = useContext(ConnectionContext);
 
+	const [hasWarning, addWarning] = useWarning();
+
 	const {actions, state: chartState} = useChartState({
 		defaultTimeSpanOption,
 		publishDate,
 	});
+
 	const isMounted = useIsMounted();
+
+	const publishedToday =
+		new Date().toDateString() ===
+		new Date(chartState.publishDate).toDateString();
 
 	useEffect(() => {
 		let gone = false;
 
 		actions.setLoading();
 
+		const timeSpanComparator =
+			chartState.timeSpanOption === LAST_24_HOURS
+				? HOUR_IN_MILLISECONDS
+				: DAY_IN_MILLISECONDS;
+
 		dataProviders.map(getter => {
 			getter({
 				timeSpanKey: chartState.timeSpanOption,
 				timeSpanOffset: chartState.timeSpanOffset,
-			}).then(data => {
-				if (!gone) {
-					if (isMounted()) {
-						const timeSpanComparator =
-							chartState.timeSpanOption === LAST_24_HOURS
-								? HOUR_IN_MILLISECONDS
-								: DAY_IN_MILLISECONDS;
-
-						Object.keys(data).map(key => {
-							actions.addDataSetItem({
-								dataSetItem: data[key],
-								key,
-								timeSpanComparator,
+			})
+				.then(data => {
+					if (!gone) {
+						if (isMounted()) {
+							Object.keys(data).map(key => {
+								actions.addDataSetItem({
+									dataSetItem: data[key],
+									key,
+									timeSpanComparator,
+								});
 							});
-						});
+						}
 					}
-				}
-			});
+				})
+				.catch(_error => {
+					let key = '';
+
+					if (getter.name === 'getHistoricalReads') {
+						key = 'analyticsReportsHistoricalReads';
+					}
+					else if (getter.name === 'getHistoricalViews') {
+						key = 'analyticsReportsHistoricalViews';
+					}
+
+					if (!hasWarning) {
+						addWarning();
+					}
+
+					actions.addDataSetItem({
+						dataSetItem: {histogram: [], value: null},
+						key,
+						timeSpanComparator,
+					});
+				});
 		});
 
 		return () => {
@@ -267,7 +209,7 @@ export default function Chart({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [chartState.timeSpanOption, chartState.timeSpanOffset]);
 
-	const dateFormatters = useMemo(() => generateDateFormatters(languageTag), [
+	const dateFormatters = useMemo(() => dateFormat(languageTag), [
 		languageTag,
 	]);
 
@@ -338,6 +280,10 @@ export default function Chart({
 		'line-chart-wrapper--loading': chartState.loading,
 	});
 
+	const publishedTodayClasses = className({
+		'line-chart-wrapper--published-today text-secondary': publishedToday,
+	});
+
 	return (
 		<>
 			{timeSpanOptions.length && (
@@ -362,6 +308,12 @@ export default function Chart({
 						/>
 					)}
 
+					{validAnalyticsConnection && publishedToday && (
+						<div className={publishedTodayClasses}>
+							{Liferay.Language.get('no-data-is-available-yet')}
+						</div>
+					)}
+
 					{title && <h5>{title}</h5>}
 
 					<div className="line-chart mt-3">
@@ -371,6 +323,11 @@ export default function Chart({
 							width={CHART_SIZES.width}
 						>
 							<CartesianGrid
+								horizontalPoints={
+									validAnalyticsConnection && publishedToday
+										? [CHART_SIZES.dotRadius]
+										: []
+								}
 								stroke={CHART_COLORS.cartesianGrid}
 								strokeDasharray="0 0"
 								vertical={true}
@@ -393,19 +350,29 @@ export default function Chart({
 								tickLine={false}
 							/>
 
-							<YAxis
-								allowDecimals={false}
-								axisLine={{
-									stroke: CHART_COLORS.cartesianGrid,
-								}}
-								minTickGap={3}
-								tickFormatter={thousandsToKilosFormater}
-								tickLine={false}
-								ticks={
-									!validAnalyticsConnection && [0, 50, 100]
-								}
-								width={CHART_SIZES.yAxisWidth}
-							/>
+							{!validAnalyticsConnection ||
+							publishedToday ||
+							histogram.length === 0 ? (
+								<YAxis
+									axisLine={{
+										stroke: CHART_COLORS.cartesianGrid,
+									}}
+									tickLine={false}
+									ticks={[0, 50, 100]}
+									width={CHART_SIZES.yAxisWidth}
+								/>
+							) : (
+								<YAxis
+									allowDecimals={false}
+									axisLine={{
+										stroke: CHART_COLORS.cartesianGrid,
+									}}
+									minTickGap={3}
+									tickFormatter={thousandsToKilosFormater}
+									tickLine={false}
+									width={CHART_SIZES.yAxisWidth}
+								/>
+							)}
 
 							<Tooltip
 								content={
@@ -418,6 +385,12 @@ export default function Chart({
 										}
 									/>
 								}
+								cursor={
+									!(
+										validAnalyticsConnection &&
+										publishedToday
+									)
+								}
 								formatter={(value, name) => {
 									return [
 										numberFormat(languageTag, value),
@@ -429,14 +402,16 @@ export default function Chart({
 								separator={': '}
 							/>
 
-							<ReferenceDot
-								fill={CHART_SIZES.referenceDotFill}
-								r={3}
-								stroke={CHART_COLORS.publishDate}
-								strokeWidth={CHART_SIZES.lineWidth}
-								x={referenceDotPosition}
-								y={0}
-							/>
+							{validAnalyticsConnection && !publishedToday && (
+								<ReferenceDot
+									fill={CHART_SIZES.referenceDotFill}
+									r={3}
+									stroke={CHART_COLORS.publishDate}
+									strokeWidth={CHART_SIZES.lineWidth}
+									x={referenceDotPosition}
+									y={0}
+								/>
+							)}
 
 							<Legend
 								formatter={legendFormatter}
