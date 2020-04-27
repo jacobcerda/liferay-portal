@@ -70,7 +70,9 @@ export {default as throttle} from './liferay/throttle.es';
 
 // Util API
 
+export {default as addParams} from './liferay/util/add_params';
 export {default as fetch} from './liferay/util/fetch.es';
+export {default as getPortletId} from './liferay/util/get_portlet_id';
 export {default as isPhone} from './liferay/util/is_phone';
 export {default as isTablet} from './liferay/util/is_tablet';
 export {default as navigate} from './liferay/util/navigate.es';

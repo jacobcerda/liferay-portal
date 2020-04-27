@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.servlet.PipingServletResponse;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -192,15 +193,70 @@ public class RenderFragmentLayoutDisplayContext {
 			defaultLayoutListRetrieverContext);
 	}
 
-	public String getPortletPaths() {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
+	public String getPortletFooterPaths() {
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
 		PipingServletResponse pipingServletResponse = new PipingServletResponse(
 			_httpServletResponse, unsyncStringWriter);
+
+		for (Portlet portlet : _getPortlets()) {
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+			try {
+				PortletJSONUtil.populatePortletJSONObject(
+					_httpServletRequest, StringPool.BLANK, portlet, jsonObject);
+
+				PortletJSONUtil.writeHeaderPaths(
+					pipingServletResponse, jsonObject);
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to write portlet footer paths " +
+						portlet.getPortletId(),
+					exception);
+			}
+		}
+
+		return unsyncStringWriter.toString();
+	}
+
+	public String getPortletHeaderPaths() {
+		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
+
+		PipingServletResponse pipingServletResponse = new PipingServletResponse(
+			_httpServletResponse, unsyncStringWriter);
+
+		for (Portlet portlet : _getPortlets()) {
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+			try {
+				PortletJSONUtil.populatePortletJSONObject(
+					_httpServletRequest, StringPool.BLANK, portlet, jsonObject);
+
+				PortletJSONUtil.writeFooterPaths(
+					pipingServletResponse, jsonObject);
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to write portlet header paths " +
+						portlet.getPortletId(),
+					exception);
+			}
+		}
+
+		return unsyncStringWriter.toString();
+	}
+
+	private List<Portlet> _getPortlets() {
+		if (_portlets != null) {
+			return _portlets;
+		}
+
+		_portlets = new ArrayList<>();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)_httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		List<PortletPreferences> portletPreferencesList =
 			PortletPreferencesLocalServiceUtil.getPortletPreferences(
@@ -211,26 +267,10 @@ public class RenderFragmentLayoutDisplayContext {
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(
 				themeDisplay.getCompanyId(), portletPreferences.getPortletId());
 
-			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
-			try {
-				PortletJSONUtil.populatePortletJSONObject(
-					_httpServletRequest, StringPool.BLANK, portlet, jsonObject);
-
-				PortletJSONUtil.writeHeaderPaths(
-					pipingServletResponse, jsonObject);
-
-				PortletJSONUtil.writeFooterPaths(
-					pipingServletResponse, jsonObject);
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to write portlet paths " + portlet.getPortletId(),
-					exception);
-			}
+			_portlets.add(portlet);
 		}
 
-		return unsyncStringWriter.toString();
+		return _portlets;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -242,5 +282,6 @@ public class RenderFragmentLayoutDisplayContext {
 	private final LayoutListRetrieverTracker _layoutListRetrieverTracker;
 	private final ListObjectReferenceFactoryTracker
 		_listObjectReferenceFactoryTracker;
+	private List<Portlet> _portlets;
 
 }

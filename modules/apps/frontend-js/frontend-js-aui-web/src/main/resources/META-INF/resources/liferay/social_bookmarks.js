@@ -15,13 +15,13 @@
 /**
  * The Social Bookmarks Component.
  *
- * @deprecated
+ * @deprecated As of Mueller (7.2.x)
  * @module liferay-social-bookmarks
  */
 
 AUI.add(
 	'liferay-social-bookmarks',
-	A => {
+	(A) => {
 		var NAME = 'social-bookmarks';
 
 		var SHARE_WINDOW_HEIGHT = 436;
@@ -106,7 +106,7 @@ AUI.add(
 					if (!SocialBookmarks.registered[id]) {
 						dropdownMenu.delegate(
 							'click',
-							event => {
+							(event) => {
 								event.preventDefault();
 
 								var shareWindowFeatures = [

@@ -15,22 +15,24 @@
 package com.liferay.dynamic.data.mapping.form.field.type.internal.fieldset;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
-import com.liferay.dynamic.data.mapping.form.field.type.internal.util.DDMFormFieldTypeUtil;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.dynamic.data.mapping.model.DDMStructureLayout;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalService;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,78 +61,57 @@ public class FieldSetDDMFormFieldTemplateContextContributor
 		DDMFormField ddmFormField,
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
 
-		Map<String, List<Object>> nestedFieldsMap =
-			(Map<String, List<Object>>)ddmFormFieldRenderingContext.getProperty(
+		Map<String, Object> nestedFields =
+			(Map<String, Object>)ddmFormFieldRenderingContext.getProperty(
 				"nestedFields");
 
-		if (nestedFieldsMap == null) {
-			nestedFieldsMap = new HashMap<>();
+		if (nestedFields == null) {
+			nestedFields = new HashMap<>();
 		}
 
-		List<Object> nestedFields = getNestedFields(
-			nestedFieldsMap,
-			getNestedFieldNames(
-				GetterUtil.getString(
-					ddmFormField.getProperty("nestedFieldNames")),
-				nestedFieldsMap.keySet()));
+		JSONArray rowsJSONArray = getJSONArray(
+			GetterUtil.getString(ddmFormField.getProperty("rows")));
+
+		if (_needsLoadLayout(ddmFormField)) {
+			rowsJSONArray = getRowsJSONArray(
+				getDDMStructureLayoutDefinition(
+					GetterUtil.getLong(
+						ddmFormField.getProperty("ddmStructureLayoutId"))));
+		}
 
 		return HashMapBuilder.<String, Object>put(
-			"dataDefinitionId",
-			DDMFormFieldTypeUtil.getPropertyValue(
-				ddmFormFieldRenderingContext, "dataDefinitionId")
+			"ddmStructureId", ddmFormField.getProperty("ddmStructureId")
 		).put(
-			"nestedFields", nestedFields
+			"ddmStructureLayoutId",
+			ddmFormField.getProperty("ddmStructureLayoutId")
 		).put(
-			"predefinedValue",
-			DDMFormFieldTypeUtil.getPropertyValue(
-				ddmFormField, ddmFormFieldRenderingContext.getLocale(),
-				"predefinedValue")
+			"nestedFields",
+			getNestedFields(
+				nestedFields,
+				getNestedFieldNames(
+					GetterUtil.getString(
+						ddmFormField.getProperty("nestedFieldNames")),
+					nestedFields.keySet()))
 		).put(
-			"rows", getRowsJSONArray(ddmFormField, nestedFields)
-		).put(
-			"value",
-			DDMFormFieldTypeUtil.getPropertyValue(
-				ddmFormFieldRenderingContext, "value")
+			"rows", rowsJSONArray
 		).build();
 	}
 
-	protected int countVisibleNestedFields(List<Object> nestedFields) {
-		Stream<Object> stream = nestedFields.stream();
+	protected String getDDMStructureLayoutDefinition(long structureLayoutId) {
+		try {
+			DDMStructureLayout ddmStructureLayout =
+				ddmStructureLayoutLocalService.getStructureLayout(
+					structureLayoutId);
 
-		return GetterUtil.getInteger(
-			stream.filter(
-				this::_isNestedFieldVisible
-			).count());
-	}
-
-	protected JSONObject createRowJSONObject(List<Object> nestedFields) {
-		int columnSize = 12 / nestedFields.size();
-
-		JSONArray columnsJSONArray = jsonFactory.createJSONArray();
-
-		for (Object nestedFieldContext : nestedFields) {
-			JSONArray fieldsJSONArray = jsonFactory.createJSONArray();
-
-			fieldsJSONArray.put(
-				MapUtil.getString(
-					(Map<String, ?>)nestedFieldContext, "fieldName"));
-
-			JSONObject columnJSONObject = jsonFactory.createJSONObject();
-
-			columnJSONObject.put(
-				"fields", fieldsJSONArray
-			).put(
-				"size", columnSize
-			);
-
-			columnsJSONArray.put(columnJSONObject);
+			return ddmStructureLayout.getDefinition();
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
 		}
 
-		JSONObject rowJSONObject = jsonFactory.createJSONObject();
-
-		rowJSONObject.put("columns", columnsJSONArray);
-
-		return rowJSONObject;
+		return StringPool.BLANK;
 	}
 
 	protected JSONArray getJSONArray(String rows) {
@@ -157,61 +138,52 @@ public class FieldSetDDMFormFieldTemplateContextContributor
 	}
 
 	protected List<Object> getNestedFields(
-		Map<String, List<Object>> nestedFieldsMap, String[] nestedFieldNames) {
+		Map<String, Object> nestedFields, String[] nestedFieldNames) {
 
-		List<Object> nestedFields = new ArrayList<>();
-
-		for (String nestedFieldName : nestedFieldNames) {
-			nestedFields.addAll(nestedFieldsMap.get(nestedFieldName));
-		}
-
-		return nestedFields;
-	}
-
-	protected JSONArray getRowsJSONArray(
-		DDMFormField ddmFormField, List<Object> nestedFields) {
-
-		String rows = GetterUtil.getString(ddmFormField.getProperty("rows"));
-
-		if (Validator.isNotNull(rows) || nestedFields.isEmpty()) {
-			return getJSONArray(rows);
-		}
-
-		JSONArray rowsJSONArray = jsonFactory.createJSONArray();
-
-		Stream<Object> visibleFieldsStream = nestedFields.stream();
-
-		List<Object> visibleNestedFields = visibleFieldsStream.filter(
-			this::_isNestedFieldVisible
+		return Stream.of(
+			nestedFieldNames
+		).map(
+			nestedFields::get
 		).collect(
 			Collectors.toList()
 		);
-
-		if (!visibleNestedFields.isEmpty()) {
-			rowsJSONArray.put(createRowJSONObject(visibleNestedFields));
-		}
-
-		Stream<Object> invisibleFieldsStream = nestedFields.stream();
-
-		List<Object> invisibleNestedFields = invisibleFieldsStream.filter(
-			nestedFieldContext -> !_isNestedFieldVisible(nestedFieldContext)
-		).collect(
-			Collectors.toList()
-		);
-
-		if (!invisibleNestedFields.isEmpty()) {
-			rowsJSONArray.put(createRowJSONObject(invisibleNestedFields));
-		}
-
-		return rowsJSONArray;
 	}
+
+	protected JSONArray getRowsJSONArray(String definition) {
+		try {
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+				StringUtil.replace(definition, "fieldNames", "fields"));
+
+			JSONArray pagesJSONArray = jsonObject.getJSONArray("pages");
+
+			JSONObject pageJSONObject = pagesJSONArray.getJSONObject(0);
+
+			return pageJSONObject.getJSONArray("rows");
+		}
+		catch (JSONException jsonException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(jsonException, jsonException);
+			}
+		}
+
+		return jsonFactory.createJSONArray();
+	}
+
+	@Reference
+	protected DDMStructureLayoutLocalService ddmStructureLayoutLocalService;
 
 	@Reference
 	protected JSONFactory jsonFactory;
 
-	private boolean _isNestedFieldVisible(Object nestedFieldContext) {
-		return MapUtil.getBoolean(
-			(Map<String, ?>)nestedFieldContext, "visible", true);
+	private boolean _needsLoadLayout(DDMFormField ddmFormField) {
+		if (Validator.isNotNull(ddmFormField.getProperty("ddmStructureId")) &&
+			Validator.isNotNull(
+				ddmFormField.getProperty("ddmStructureLayoutId"))) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

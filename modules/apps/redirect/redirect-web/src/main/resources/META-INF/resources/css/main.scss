@@ -3,3 +3,27 @@
 		font-weight: 400;
 	}
 }
+
+.redirect-entries {
+	.sidebar-dd {
+		margin-bottom: 1.5rem;
+	}
+
+	.sidebar-dt {
+		font-size: 0.875rem;
+		margin-bottom: 0.5rem;
+		text-transform: capitalize;
+	}
+
+	.sidebar-title {
+		text-transform: uppercase;
+	}
+
+	.table-cell-content {
+		direction: rtl;
+		overflow: hidden;
+		text-align: left;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}

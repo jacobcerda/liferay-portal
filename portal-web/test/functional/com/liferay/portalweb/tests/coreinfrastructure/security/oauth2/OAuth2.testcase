@@ -469,15 +469,14 @@ definition {
 			panel = "Control Panel",
 			portlet = "OAuth 2 Administration");
 
+		var clientId = "abc123";
+		var clientSecret = "abc123";
 		var portalURL = PropsUtil.get("portal.url");
 
 		OAuth2.addApplication(
 			applicationName = "Third-party Application",
 			callbackURI = '''http://martamedio.com/oauth2-tester/?url=${portalURL}&client_id=${clientId}''',
 			clientProfile = "Web Application");
-
-		var clientId = "abc123";
-		var clientSecret = "abc123";
 
 		OAuth2.inputApplicationValues(
 			clientId = "${clientId}",

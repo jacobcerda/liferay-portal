@@ -17,8 +17,6 @@
 <%@ include file="/admin/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect");
-
 DDMFormViewFormInstanceRecordsDisplayContext ddmFormViewFormInstanceRecordsDisplayContext = ddmFormAdminDisplayContext.getFormViewRecordsDisplayContext();
 
 int totalItems = ddmFormViewFormInstanceRecordsDisplayContext.getTotalItems();
@@ -37,7 +35,7 @@ int totalItems = ddmFormViewFormInstanceRecordsDisplayContext.getTotalItems();
 				<span class="ddm-form-report-header-subtitle text-truncate">
 					<c:choose>
 						<c:when test="<%= totalItems > 0 %>">
-							<liferay-ui:message arguments="<%= ddmFormViewFormInstanceRecordsDisplayContext.getLastModifiedDate() %>" key="last-entry-submitted-x" />
+							<%= ddmFormViewFormInstanceRecordsDisplayContext.getReportLastModifiedDate() %>
 						</c:when>
 						<c:otherwise>
 							<liferay-ui:message key="there-are-no-entries" />
@@ -48,15 +46,54 @@ int totalItems = ddmFormViewFormInstanceRecordsDisplayContext.getTotalItems();
 		</div>
 	</div>
 
-	<liferay-ui:tabs
-		cssClass="navbar-no-collapse navigation-bar-light"
-		names="entries"
-		refresh="<%= false %>"
-	>
-		<liferay-ui:section>
-			<liferay-util:include page="/admin/form_instance_records_search_container.jsp" servletContext="<%= application %>">
-				<liferay-util:param name="redirect" value="<%= redirect %>" />
-			</liferay-util:include>
-		</liferay-ui:section>
-	</liferay-ui:tabs>
+	<clay:navigation-bar
+		elementClasses="ddm-form-report-tabs"
+		navigationItems='<%=
+			new JSPNavigationItemList(pageContext) {
+				{
+					add(
+						navigationItem -> {
+							navigationItem.setActive(true);
+							navigationItem.setHref(StringPool.BLANK);
+							navigationItem.setLabel(LanguageUtil.get(request, "entries"));
+						});
+				}
+			}
+		%>'
+	/>
+
+	<hr class="m-0" />
+
+	<div id="<portlet:namespace />entriesTabContent">
+		<liferay-util:include page="/admin/form_instance_records_search_container.jsp" servletContext="<%= application %>" />
+	</div>
 </div>
+
+<aui:script require="metal-dom/src/dom as dom">
+	dom.delegate(
+		document.querySelector('.ddm-form-report-tabs'),
+		'click',
+		'li',
+		function (event) {
+			var navItem = dom.closest(event.delegateTarget, '.nav-item');
+			var navItemIndex = Number(navItem.dataset.navItemIndex);
+			var navLink = navItem.querySelector('.nav-link');
+
+			document
+				.querySelector('.ddm-form-report-tabs li > a.active')
+				.classList.remove('active');
+			navLink.classList.add('active');
+
+			var entriesTabContent = document.querySelector(
+				'#<portlet:namespace />entriesTabContent'
+			);
+
+			if (navItemIndex === 0) {
+				entriesTabContent.classList.remove('hide');
+			}
+			else {
+				entriesTabContent.classList.add('hide');
+			}
+		}
+	);
+</aui:script>

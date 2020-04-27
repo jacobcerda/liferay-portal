@@ -18,13 +18,18 @@ import com.liferay.fragment.processor.PortletRegistry;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkUtil;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
+import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.segments.constants.SegmentsExperienceConstants;
 
@@ -56,31 +61,39 @@ public class DeleteItemMVCActionCommand
 			long segmentsExperienceId)
 		throws PortalException {
 
+		List<LayoutStructureItem> deletedLayoutStructureItems =
+			new ArrayList<>();
+
+		LayoutStructureUtil.updateLayoutPageTemplateData(
+			groupId, segmentsExperienceId, plid,
+			layoutStructure -> deletedLayoutStructureItems.addAll(
+				layoutStructure.deleteLayoutStructureItem(itemId)));
+
 		List<Long> deletedFragmentEntryLinkIds = new ArrayList<>();
 
-		JSONObject layoutDataJSONObject =
-			LayoutStructureUtil.updateLayoutPageTemplateData(
-				groupId, segmentsExperienceId, plid,
-				layoutStructure -> {
-					List<LayoutStructureItem> deletedLayoutStructureItems =
-						layoutStructure.deleteLayoutStructureItem(itemId);
+		for (long fragmentEntryLinkId :
+				LayoutStructureUtil.getFragmentEntryLinkIds(
+					deletedLayoutStructureItems)) {
 
-					for (long fragmentEntryLinkId :
-							LayoutStructureUtil.getFragmentEntryLinkIds(
-								deletedLayoutStructureItems)) {
+			FragmentEntryLinkUtil.deleteFragmentEntryLink(
+				companyId, fragmentEntryLinkId, plid, _portletRegistry);
 
-						FragmentEntryLinkUtil.deleteFragmentEntryLink(
-							companyId, fragmentEntryLinkId, plid,
-							_portletRegistry);
+			deletedFragmentEntryLinkIds.add(fragmentEntryLinkId);
+		}
 
-						deletedFragmentEntryLinkIds.add(fragmentEntryLinkId);
-					}
-				});
+		LayoutPageTemplateStructure layoutPageTemplateStructure =
+			_layoutPageTemplateStructureLocalService.
+				fetchLayoutPageTemplateStructure(
+					groupId, _portal.getClassNameId(Layout.class.getName()),
+					plid, true);
+
+		LayoutStructure layoutStructure = LayoutStructure.of(
+			layoutPageTemplateStructure.getData(segmentsExperienceId));
 
 		return JSONUtil.put(
 			"deletedFragmentEntryLinkIds", deletedFragmentEntryLinkIds.toArray()
 		).put(
-			"layoutData", layoutDataJSONObject
+			"layoutData", layoutStructure.toJSONObject()
 		);
 	}
 
@@ -101,6 +114,13 @@ public class DeleteItemMVCActionCommand
 			themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId(), itemId,
 			themeDisplay.getPlid(), segmentsExperienceId);
 	}
+
+	@Reference
+	private LayoutPageTemplateStructureLocalService
+		_layoutPageTemplateStructureLocalService;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference
 	private PortletRegistry _portletRegistry;

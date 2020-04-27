@@ -32,6 +32,11 @@ import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.util.FastDateFormatFactoryImpl;
+import com.liferay.portal.util.PortalImpl;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +46,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+
+import javax.portlet.RenderResponse;
+import javax.portlet.ResourceURL;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -70,6 +78,39 @@ public class AnalyticsReportsDisplayContextTest {
 	}
 
 	@Test
+	public void testGetContextWithInvalidAnalyticsConnection() {
+		LocalDate localDate = LocalDate.now();
+
+		localDate.atStartOfDay();
+
+		AnalyticsReportsDisplayContext analyticsReportsDisplayContext =
+			new AnalyticsReportsDisplayContext(
+				_getAnalyticsReportsDataProvider(
+					RandomTestUtil.randomInt(), RandomTestUtil.randomDouble(),
+					RandomTestUtil.randomInt(), RandomTestUtil.randomDouble(),
+					false),
+				_getAnalyticsReportsItem(), null, null, new PortalImpl(),
+				_getRenderResponse(), _getResourceBundle(),
+				_getThemeDisplay(_getLayout()));
+
+		Map<String, Object> data = analyticsReportsDisplayContext.getData();
+
+		Map<String, Object> context = (Map<String, Object>)data.get("context");
+
+		Map<String, Object> defaultTimeRange = (Map<String, Object>)context.get(
+			"defaultTimeRange");
+
+		Assert.assertEquals(
+			DateTimeFormatter.ISO_DATE.format(
+				localDate.minus(1, ChronoUnit.DAYS)),
+			defaultTimeRange.get("endDate"));
+		Assert.assertEquals(
+			DateTimeFormatter.ISO_DATE.format(
+				localDate.minus(7, ChronoUnit.DAYS)),
+			defaultTimeRange.get("startDate"));
+	}
+
+	@Test
 	public void testGetPropsWithInvalidAnalyticsConnection() {
 		int organicTrafficAmount = RandomTestUtil.randomInt();
 		double organicTrafficShare = RandomTestUtil.randomDouble();
@@ -90,10 +131,12 @@ public class AnalyticsReportsDisplayContextTest {
 		AnalyticsReportsDisplayContext analyticsReportsDisplayContext =
 			new AnalyticsReportsDisplayContext(
 				analyticsReportsDataProvider, analyticsReportsInfoItem, null,
-				null, null, null, _getResourceBundle(),
-				_getThemeDisplay(layout));
+				null, new PortalImpl(), _getRenderResponse(),
+				_getResourceBundle(), _getThemeDisplay(layout));
 
-		Map<String, Object> props = analyticsReportsDisplayContext.getProps();
+		Map<String, Object> data = analyticsReportsDisplayContext.getData();
+
+		Map<String, Object> props = (Map<String, Object>)data.get("props");
 
 		Assert.assertEquals(
 			analyticsReportsInfoItem.getAuthorName(null),
@@ -149,10 +192,12 @@ public class AnalyticsReportsDisplayContextTest {
 		AnalyticsReportsDisplayContext analyticsReportsDisplayContext =
 			new AnalyticsReportsDisplayContext(
 				analyticsReportsDataProvider, analyticsReportsInfoItem, null,
-				null, null, null, _getResourceBundle(),
-				_getThemeDisplay(layout));
+				null, new PortalImpl(), _getRenderResponse(),
+				_getResourceBundle(), _getThemeDisplay(layout));
 
-		Map<String, Object> props = analyticsReportsDisplayContext.getProps();
+		Map<String, Object> data = analyticsReportsDisplayContext.getData();
+
+		Map<String, Object> props = (Map<String, Object>)data.get("props");
 
 		Assert.assertEquals(
 			analyticsReportsInfoItem.getAuthorName(null),
@@ -259,6 +304,18 @@ public class AnalyticsReportsDisplayContextTest {
 		).getPublishDate();
 
 		return layout;
+	}
+
+	private RenderResponse _getRenderResponse() {
+		RenderResponse renderResponse = Mockito.mock(RenderResponse.class);
+
+		Mockito.when(
+			renderResponse.createResourceURL()
+		).thenReturn(
+			Mockito.mock(ResourceURL.class)
+		);
+
+		return renderResponse;
 	}
 
 	private ResourceBundle _getResourceBundle() {

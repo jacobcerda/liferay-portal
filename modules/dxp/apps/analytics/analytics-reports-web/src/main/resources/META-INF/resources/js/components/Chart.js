@@ -54,7 +54,6 @@ const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
 const HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 
 const LAST_24_HOURS = 'last-24-hours';
-const LAST_7_DAYS = 'last-7-days';
 
 const METRICS_STATIC_VALUES = {
 	analyticsReportsHistoricalReads: {
@@ -107,7 +106,7 @@ function legendFormatterGenerator(
 	languageTag,
 	validAnalyticsConnection
 ) {
-	return value => {
+	return (value) => {
 		const preformattedNumber = totals[value];
 
 		return (
@@ -133,6 +132,7 @@ function legendFormatterGenerator(
 
 export default function Chart({
 	dataProviders = [],
+	defaultTimeRange,
 	defaultTimeSpanOption,
 	languageTag,
 	publishDate,
@@ -163,45 +163,60 @@ export default function Chart({
 				? HOUR_IN_MILLISECONDS
 				: DAY_IN_MILLISECONDS;
 
-		dataProviders.map(getter => {
-			getter({
-				timeSpanKey: chartState.timeSpanOption,
-				timeSpanOffset: chartState.timeSpanOffset,
-			})
-				.then(data => {
-					if (!gone) {
-						if (isMounted()) {
-							Object.keys(data).map(key => {
-								actions.addDataSetItem({
-									dataSetItem: data[key],
-									key,
-									timeSpanComparator,
-								});
-							});
-						}
-					}
+		if (validAnalyticsConnection) {
+			dataProviders.map((getter) => {
+				getter({
+					timeSpanKey: chartState.timeSpanOption,
+					timeSpanOffset: chartState.timeSpanOffset,
 				})
-				.catch(_error => {
-					let key = '';
+					.then((data) => {
+						if (!gone) {
+							if (isMounted()) {
+								Object.keys(data).map((key) => {
+									actions.addDataSetItem({
+										dataSetItem: data[key],
+										key,
+										timeSpanComparator,
+									});
+								});
+							}
+						}
+					})
+					.catch((_error) => {
+						let key = '';
 
-					if (getter.name === 'getHistoricalReads') {
-						key = 'analyticsReportsHistoricalReads';
-					}
-					else if (getter.name === 'getHistoricalViews') {
-						key = 'analyticsReportsHistoricalViews';
-					}
+						if (getter.name === 'getHistoricalReads') {
+							key = 'analyticsReportsHistoricalReads';
+						}
+						else if (getter.name === 'getHistoricalViews') {
+							key = 'analyticsReportsHistoricalViews';
+						}
 
-					if (!hasWarning) {
-						addWarning();
-					}
+						if (!hasWarning) {
+							addWarning();
+						}
 
-					actions.addDataSetItem({
-						dataSetItem: {histogram: [], value: null},
-						key,
-						timeSpanComparator,
+						actions.addDataSetItem({
+							dataSetItem: {histogram: [], value: null},
+							key,
+							timeSpanComparator,
+						});
 					});
-				});
-		});
+			});
+		}
+		else {
+			actions.addDataSetItem({
+				dataSetItem: {histogram: [], value: null},
+				key: 'analyticsReportsHistoricalViews',
+				timeSpanComparator,
+			});
+
+			actions.addDataSetItem({
+				dataSetItem: {histogram: [], value: null},
+				key: 'analyticsReportsHistoricalReads',
+				timeSpanComparator,
+			});
+		}
 
 		return () => {
 			gone = true;
@@ -247,9 +262,15 @@ export default function Chart({
 				new Date(lastDateLabel),
 			]);
 		}
-	}, [histogram, dateFormatters]);
+		else {
+			return dateFormatters.formatChartTitle([
+				new Date(defaultTimeRange.startDate),
+				new Date(defaultTimeRange.endDate),
+			]);
+		}
+	}, [dateFormatters, defaultTimeRange, histogram]);
 
-	const handleTimeSpanChange = event => {
+	const handleTimeSpanChange = (event) => {
 		const {value} = event.target;
 
 		actions.changeTimeSpanOption({key: value});
@@ -341,13 +362,31 @@ export default function Chart({
 									stroke: CHART_COLORS.cartesianGrid,
 								}}
 								dataKey="label"
-								interval={
-									chartState.timeSpanOption === LAST_7_DAYS
-										? 'preserveStartEnd'
-										: 4
+								domain={
+									!validAnalyticsConnection
+										? [
+												new Date(
+													defaultTimeRange.startDate
+												).getDate(),
+												new Date(
+													defaultTimeRange.endDate
+												).getDate(),
+										  ]
+										: []
 								}
-								tickFormatter={xAxisFormatter}
+								interval="preserveStartEnd"
+								tickCount={7}
+								tickFormatter={(value) => {
+									return validAnalyticsConnection
+										? xAxisFormatter(value)
+										: value;
+								}}
 								tickLine={false}
+								type={
+									validAnalyticsConnection
+										? 'category'
+										: 'number'
+								}
 							/>
 
 							{!validAnalyticsConnection ||
@@ -387,8 +426,9 @@ export default function Chart({
 								}
 								cursor={
 									!(
-										validAnalyticsConnection &&
-										publishedToday
+										!validAnalyticsConnection ||
+										(validAnalyticsConnection &&
+											publishedToday)
 									)
 								}
 								formatter={(value, name) => {
@@ -402,17 +442,6 @@ export default function Chart({
 								separator={': '}
 							/>
 
-							{validAnalyticsConnection && !publishedToday && (
-								<ReferenceDot
-									fill={CHART_SIZES.referenceDotFill}
-									r={3}
-									stroke={CHART_COLORS.publishDate}
-									strokeWidth={CHART_SIZES.lineWidth}
-									x={referenceDotPosition}
-									y={0}
-								/>
-							)}
-
 							<Legend
 								formatter={legendFormatter}
 								iconSize={0}
@@ -424,7 +453,7 @@ export default function Chart({
 								}}
 							/>
 
-							{keyList.map(keyName => {
+							{keyList.map((keyName) => {
 								const color = keyToHexColor(keyName);
 								const shape = keyToIconType(keyName);
 
@@ -443,6 +472,17 @@ export default function Chart({
 									/>
 								);
 							})}
+
+							{validAnalyticsConnection && !publishedToday && (
+								<ReferenceDot
+									isFront={true}
+									r={4}
+									stroke={CHART_COLORS.publishDate}
+									strokeWidth={CHART_SIZES.lineWidth}
+									x={referenceDotPosition}
+									y={0}
+								/>
+							)}
 						</LineChart>
 					</div>
 				</div>
@@ -453,6 +493,7 @@ export default function Chart({
 
 Chart.propTypes = {
 	dataProviders: PropTypes.arrayOf(PropTypes.func).isRequired,
+	defaultTimeRange: PropTypes.object.isRequired,
 	defaultTimeSpanOption: PropTypes.string.isRequired,
 	languageTag: PropTypes.string.isRequired,
 	publishDate: PropTypes.number.isRequired,

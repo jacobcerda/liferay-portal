@@ -12,24 +12,23 @@
  * details.
  */
 
-import {updateFragmentEntryLinkContent} from '../../actions/index';
+import updateFragmentEntryLinkConfiguration from '../../actions/updateFragmentEntryLinkConfiguration';
 import FragmentService from '../../services/FragmentService';
 
 function undoAction({action}) {
 	const {editableValues, fragmentEntryLinkId} = action;
 
-	return dispatch => {
+	return (dispatch) => {
 		return FragmentService.updateConfigurationValues({
 			configurationValues: editableValues,
 			fragmentEntryLinkId,
 			onNetworkStatus: dispatch,
-		}).then(({content, editableValues}) => {
+		}).then(({fragmentEntryLink, layoutData}) => {
 			dispatch(
-				updateFragmentEntryLinkContent({
-					content,
-					editableValues,
-					fragmentEntryLinkId,
+				updateFragmentEntryLinkConfiguration({
+					fragmentEntryLink,
 					isUndo: true,
+					layoutData,
 				})
 			);
 		});

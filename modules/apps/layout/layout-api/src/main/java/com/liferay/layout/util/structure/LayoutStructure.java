@@ -39,6 +39,10 @@ import java.util.UUID;
 public class LayoutStructure {
 
 	public static LayoutStructure of(String layoutStructure) {
+		if (Validator.isNull(layoutStructure)) {
+			return new LayoutStructure();
+		}
+
 		try {
 			JSONObject layoutStructureJSONObject =
 				JSONFactoryUtil.createJSONObject(layoutStructure);
@@ -216,10 +220,15 @@ public class LayoutStructure {
 
 		deletedLayoutStructureItems.add(layoutStructureItem);
 
-		LayoutStructureItem parentLayoutStructureItem =
-			_layoutStructureItems.get(layoutStructureItem.getParentItemId());
+		if (Validator.isNotNull(layoutStructureItem.getParentItemId())) {
+			LayoutStructureItem parentLayoutStructureItem =
+				_layoutStructureItems.get(
+					layoutStructureItem.getParentItemId());
 
-		parentLayoutStructureItem.deleteChildrenItem(itemId);
+			if (parentLayoutStructureItem != null) {
+				parentLayoutStructureItem.deleteChildrenItem(itemId);
+			}
+		}
 
 		_layoutStructureItems.remove(itemId);
 

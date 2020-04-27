@@ -20,8 +20,15 @@ import com.liferay.data.engine.rest.client.pagination.Page;
 import com.liferay.data.engine.rest.client.pagination.Pagination;
 import com.liferay.data.engine.rest.resource.v2_0.test.util.DataDefinitionTestUtil;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.MapUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,6 +47,7 @@ public class DataRecordCollectionResourceTest
 	extends BaseDataRecordCollectionResourceTestCase {
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 
@@ -62,37 +70,133 @@ public class DataRecordCollectionResourceTest
 			"abcdefghijklmnopqrstuvwxyz0123456789");
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testGetDataRecordCollectionPermissionByCurrentUser()
 		throws Exception {
 
-		Assert.assertTrue(false);
+		DataRecordCollection dataRecordCollection =
+			dataRecordCollectionResource.postDataDefinitionDataRecordCollection(
+				_ddmStructure.getStructureId(), randomDataRecordCollection());
+
+		assertHttpResponseStatusCode(
+			200,
+			dataRecordCollectionResource.
+				getDataRecordCollectionPermissionByCurrentUserHttpResponse(
+					dataRecordCollection.getId()));
 	}
 
-	@Ignore
 	@Override
 	@Test
-	public void testGraphQLDeleteDataRecordCollection() {
+	public void testGraphQLGetDataDefinitionDataRecordCollection()
+		throws Exception {
+
+		DataRecordCollection dataRecordCollection =
+			dataRecordCollectionResource.postDataDefinitionDataRecordCollection(
+				_ddmStructure.getStructureId(),
+				_randomDataRecordCollection(_ddmStructure.getStructureKey()));
+
+		List<GraphQLField> graphQLFields = getGraphQLFields();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"query",
+			new GraphQLField(
+				"dataDefinitionDataRecordCollection",
+				HashMapBuilder.<String, Object>put(
+					"dataDefinitionId",
+					dataRecordCollection.getDataDefinitionId()
+				).build(),
+				graphQLFields.toArray(new GraphQLField[0])));
+
+		Assert.assertEquals(
+			MapUtil.getString(dataRecordCollection.getName(), "en_US"),
+			JSONUtil.getValue(
+				JSONFactoryUtil.createJSONObject(
+					invoke(graphQLField.toString())),
+				"JSONObject/data",
+				"JSONObject/dataDefinitionDataRecordCollection",
+				"JSONObject/name", "Object/en_US"));
 	}
 
-	@Ignore
 	@Override
 	@Test
-	public void testGraphQLGetDataDefinitionDataRecordCollection() {
+	public void testGraphQLGetDataRecordCollection() throws Exception {
+		DataRecordCollection dataRecordCollection =
+			testGraphQLDataRecordCollection_addDataRecordCollection();
+
+		List<GraphQLField> graphQLFields = getGraphQLFields();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"query",
+			new GraphQLField(
+				"dataRecordCollection",
+				HashMapBuilder.<String, Object>put(
+					"dataRecordCollectionId", dataRecordCollection.getId()
+				).build(),
+				graphQLFields.toArray(new GraphQLField[0])));
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		Assert.assertEquals(
+			GetterUtil.getLong(dataRecordCollection.getDataDefinitionId()),
+			GetterUtil.getLong(
+				JSONUtil.getValue(
+					jsonObject, "JSONObject/data",
+					"JSONObject/dataRecordCollection",
+					"Object/dataDefinitionId")));
+		Assert.assertEquals(
+			MapUtil.getString(dataRecordCollection.getName(), "en_US"),
+			JSONUtil.getValue(
+				jsonObject, "JSONObject/data",
+				"JSONObject/dataRecordCollection", "JSONObject/name",
+				"Object/en_US"));
 	}
 
-	@Ignore
 	@Override
 	@Test
-	public void testGraphQLGetDataRecordCollection() {
-	}
+	public void testGraphQLGetSiteDataRecordCollectionByDataRecordCollectionKey()
+		throws Exception {
 
-	@Ignore
-	@Override
-	@Test
-	public void testGraphQLGetSiteDataRecordCollectionByDataRecordCollectionKey() {
+		DataRecordCollection dataRecordCollection =
+			testGraphQLDataRecordCollection_addDataRecordCollection();
+
+		List<GraphQLField> graphQLFields = getGraphQLFields();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"query",
+			new GraphQLField(
+				"dataRecordCollectionByDataRecordCollectionKey",
+				HashMapBuilder.<String, Object>put(
+					"dataRecordCollectionKey",
+					StringBundler.concat(
+						StringPool.QUOTE,
+						dataRecordCollection.getDataRecordCollectionKey(),
+						StringPool.QUOTE)
+				).put(
+					"siteKey",
+					StringBundler.concat(
+						StringPool.QUOTE, dataRecordCollection.getSiteId(),
+						StringPool.QUOTE)
+				).build(),
+				graphQLFields.toArray(new GraphQLField[0])));
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		Assert.assertEquals(
+			GetterUtil.getLong(dataRecordCollection.getDataDefinitionId()),
+			GetterUtil.getLong(
+				JSONUtil.getValue(
+					jsonObject, "JSONObject/data",
+					"JSONObject/dataRecordCollectionByDataRecordCollectionKey",
+					"Object/dataDefinitionId")));
+		Assert.assertEquals(
+			MapUtil.getString(dataRecordCollection.getName(), "en_US"),
+			JSONUtil.getValue(
+				jsonObject, "JSONObject/data",
+				"JSONObject/dataRecordCollectionByDataRecordCollectionKey",
+				"JSONObject/name", "Object/en_US"));
 	}
 
 	@Override
@@ -179,6 +283,16 @@ public class DataRecordCollectionResourceTest
 	@Override
 	protected DataRecordCollection
 			testGetSiteDataRecordCollectionByDataRecordCollectionKey_addDataRecordCollection()
+		throws Exception {
+
+		return dataRecordCollectionResource.
+			postDataDefinitionDataRecordCollection(
+				_ddmStructure.getStructureId(), randomDataRecordCollection());
+	}
+
+	@Override
+	protected DataRecordCollection
+			testGraphQLDataRecordCollection_addDataRecordCollection()
 		throws Exception {
 
 		return dataRecordCollectionResource.

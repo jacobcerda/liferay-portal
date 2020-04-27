@@ -208,19 +208,37 @@ public class MessageBoardThreadResourceImpl
 		Pagination pagination, Sort[] sorts) {
 
 		DynamicQuery dynamicQuery = _getDynamicQuery(
-			dateCreated, dateModified, messageBoardSectionId, pagination,
-			sorts);
+			dateCreated, dateModified, messageBoardSectionId);
+
+		if (sorts == null) {
+			dynamicQuery.addOrder(OrderFactoryUtil.desc("totalScore"));
+		}
+		else {
+			for (Sort sort : sorts) {
+				String fieldName = sort.getFieldName();
+
+				fieldName = StringUtil.replace(fieldName, "_sortable", "Date");
+
+				if (sort.isReverse()) {
+					dynamicQuery.addOrder(OrderFactoryUtil.desc(fieldName));
+				}
+				else {
+					dynamicQuery.addOrder(OrderFactoryUtil.asc(fieldName));
+				}
+			}
+		}
 
 		return Page.of(
 			transform(
-				_ratingsStatsLocalService.dynamicQuery(dynamicQuery),
+				_ratingsStatsLocalService.dynamicQuery(
+					dynamicQuery, pagination.getStartPosition(),
+					pagination.getEndPosition()),
 				(RatingsStats ratingsStats) -> _toMessageBoardThread(
 					_mbMessageService.getMessage(ratingsStats.getClassPK()))),
 			pagination,
 			_ratingsStatsLocalService.dynamicQueryCount(
 				_getDynamicQuery(
-					dateCreated, dateModified, messageBoardSectionId,
-					Pagination.of(1, Integer.MAX_VALUE), sorts)));
+					dateCreated, dateModified, messageBoardSectionId)));
 	}
 
 	@Override
@@ -415,17 +433,13 @@ public class MessageBoardThreadResourceImpl
 	}
 
 	private DynamicQuery _getDynamicQuery(
-		Date dateCreated, Date dateModified, Long messageBoardSectionId,
-		Pagination pagination, Sort[] sorts) {
+		Date dateCreated, Date dateModified, Long messageBoardSectionId) {
 
 		DynamicQuery dynamicQuery = _ratingsStatsLocalService.dynamicQuery();
 
-		ClassName className = _classNameLocalService.getClassName(
-			MBMessage.class.getName());
-
 		dynamicQuery.add(
 			RestrictionsFactoryUtil.eq(
-				"classNameId", className.getClassNameId()));
+				"companyId", contextCompany.getCompanyId()));
 
 		if (dateCreated != null) {
 			dynamicQuery.add(
@@ -437,6 +451,13 @@ public class MessageBoardThreadResourceImpl
 				RestrictionsFactoryUtil.gt("modifiedDate", dateModified));
 		}
 
+		ClassName className = _classNameLocalService.getClassName(
+			MBMessage.class.getName());
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"classNameId", className.getClassNameId()));
+
 		String sql =
 			"EXISTS (select 1 from MBMessage where this_.classPK = messageId";
 
@@ -447,27 +468,6 @@ public class MessageBoardThreadResourceImpl
 		sql += " AND parentMessageId = 0 AND status = 0)";
 
 		dynamicQuery.add(RestrictionsFactoryUtil.sqlRestriction(sql));
-
-		dynamicQuery.setLimit(
-			pagination.getStartPosition(), pagination.getEndPosition());
-
-		if (sorts == null) {
-			dynamicQuery.addOrder(OrderFactoryUtil.desc("totalScore"));
-		}
-		else {
-			for (Sort sort : sorts) {
-				String fieldName = sort.getFieldName();
-
-				fieldName = StringUtil.replace(fieldName, "_sortable", "Date");
-
-				if (sort.isReverse()) {
-					dynamicQuery.addOrder(OrderFactoryUtil.desc(fieldName));
-				}
-				else {
-					dynamicQuery.addOrder(OrderFactoryUtil.asc(fieldName));
-				}
-			}
-		}
 
 		return dynamicQuery;
 	}

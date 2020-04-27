@@ -19,6 +19,7 @@ import {
 	DUPLICATE_ITEM,
 	EDIT_FRAGMENT_ENTRY_LINK_COMMENT,
 	UPDATE_EDITABLE_VALUES,
+	UPDATE_FRAGMENT_ENTRY_LINK_CONFIGURATION,
 	UPDATE_FRAGMENT_ENTRY_LINK_CONTENT,
 	UPDATE_LAYOUT_DATA,
 } from '../actions/types';
@@ -33,7 +34,7 @@ export default function fragmentEntryLinksReducer(
 		case ADD_FRAGMENT_ENTRY_LINKS: {
 			const newFragmentEntryLinks = {};
 
-			action.fragmentEntryLinks.forEach(fragmentEntryLink => {
+			action.fragmentEntryLinks.forEach((fragmentEntryLink) => {
 				newFragmentEntryLinks[
 					fragmentEntryLink.fragmentEntryLinkId
 				] = fragmentEntryLink;
@@ -54,7 +55,7 @@ export default function fragmentEntryLinksReducer(
 			let nextComments;
 
 			if (action.parentCommentId) {
-				nextComments = comments.map(comment =>
+				nextComments = comments.map((comment) =>
 					comment.commentId === action.parentCommentId
 						? {
 								...comment,
@@ -88,12 +89,12 @@ export default function fragmentEntryLinksReducer(
 			let nextComments;
 
 			if (action.parentCommentId) {
-				nextComments = comments.map(comment =>
+				nextComments = comments.map((comment) =>
 					comment.commentId === action.parentCommentId
 						? {
 								...comment,
 								children: comment.children.filter(
-									childComment =>
+									(childComment) =>
 										childComment.commentId !==
 										action.commentId
 								),
@@ -103,7 +104,7 @@ export default function fragmentEntryLinksReducer(
 			}
 			else {
 				nextComments = comments.filter(
-					comment => comment.commentId !== action.commentId
+					(comment) => comment.commentId !== action.commentId
 				);
 			}
 
@@ -119,7 +120,7 @@ export default function fragmentEntryLinksReducer(
 		case DUPLICATE_ITEM: {
 			const nextFragmentEntryLinks = {...fragmentEntryLinks};
 
-			action.addedFragmentEntryLinks.forEach(fragmentEntryLink => {
+			action.addedFragmentEntryLinks.forEach((fragmentEntryLink) => {
 				nextFragmentEntryLinks[
 					fragmentEntryLink.fragmentEntryLinkId
 				] = fragmentEntryLink;
@@ -137,11 +138,11 @@ export default function fragmentEntryLinksReducer(
 			let nextComments;
 
 			if (action.parentCommentId) {
-				nextComments = comments.map(comment =>
+				nextComments = comments.map((comment) =>
 					comment.commentId === action.parentCommentId
 						? {
 								...comment,
-								children: comment.children.map(childComment =>
+								children: comment.children.map((childComment) =>
 									childComment.commentId ===
 									action.fragmentEntryLinkComment.commentId
 										? action.fragmentEntryLinkComment
@@ -152,7 +153,7 @@ export default function fragmentEntryLinksReducer(
 				);
 			}
 			else {
-				nextComments = comments.map(comment =>
+				nextComments = comments.map((comment) =>
 					comment.commentId ===
 					action.fragmentEntryLinkComment.commentId
 						? {...comment, ...action.fragmentEntryLinkComment}
@@ -178,6 +179,13 @@ export default function fragmentEntryLinksReducer(
 				},
 			};
 
+		case UPDATE_FRAGMENT_ENTRY_LINK_CONFIGURATION:
+			return {
+				...fragmentEntryLinks,
+				[action.fragmentEntryLink.fragmentEntryLinkId]:
+					action.fragmentEntryLink,
+			};
+
 		case UPDATE_FRAGMENT_ENTRY_LINK_CONTENT:
 			return {
 				...fragmentEntryLinks,
@@ -194,9 +202,11 @@ export default function fragmentEntryLinksReducer(
 		case UPDATE_LAYOUT_DATA: {
 			const nextFragmentEntryLinks = {...fragmentEntryLinks};
 
-			action.deletedFragmentEntryLinkIds.forEach(fragmentEntryLinkId => {
-				delete nextFragmentEntryLinks[fragmentEntryLinkId];
-			});
+			action.deletedFragmentEntryLinkIds.forEach(
+				(fragmentEntryLinkId) => {
+					delete nextFragmentEntryLinks[fragmentEntryLinkId];
+				}
+			);
 
 			return nextFragmentEntryLinks;
 		}

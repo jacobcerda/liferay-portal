@@ -115,21 +115,26 @@ public class TaxonomyCategoryResourceImpl
 
 		DynamicQuery dynamicQuery = _assetCategoryLocalService.dynamicQuery();
 
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"companyId", contextCompany.getCompanyId()));
+
 		if (siteId != null) {
 			dynamicQuery.add(RestrictionsFactoryUtil.eq("groupId", siteId));
 		}
 
-		dynamicQuery.addOrder(OrderFactoryUtil.desc("count"));
-		dynamicQuery.setLimit(
-			pagination.getStartPosition(), pagination.getEndPosition());
+		dynamicQuery.addOrder(OrderFactoryUtil.desc("assetCount"));
 		dynamicQuery.setProjection(_getProjectionList(), true);
 
 		return Page.of(
 			transform(
 				transform(
-					_assetCategoryLocalService.dynamicQuery(dynamicQuery),
+					_assetCategoryLocalService.dynamicQuery(
+						dynamicQuery, pagination.getStartPosition(),
+						pagination.getEndPosition()),
 					this::_toAssetCategory),
-				this::_toTaxonomyCategory));
+				this::_toTaxonomyCategory),
+			pagination, _getTotalCount(siteId));
 	}
 
 	@Override
@@ -397,14 +402,17 @@ public class TaxonomyCategoryResourceImpl
 		projectionList.add(
 			ProjectionFactoryUtil.alias(
 				ProjectionFactoryUtil.sqlProjection(
-					"(select count(entryId) AS count from " +
-						"AssetEntries_AssetCategories where categoryId = " +
-							"this_.categoryId group by categoryId) AS count",
-					new String[] {"count"}, new Type[] {Type.INTEGER}),
-				"count"));
+					StringBundler.concat(
+						"(select count(assetEntryId) assetCount from ",
+						"AssetEntryAssetCategoryRel where assetCategoryId = ",
+						"this_.categoryId group by assetCategoryId) AS ",
+						"assetCount"),
+					new String[] {"assetCount"}, new Type[] {Type.INTEGER}),
+				"assetCount"));
 		projectionList.add(ProjectionFactoryUtil.property("categoryId"));
 		projectionList.add(ProjectionFactoryUtil.property("companyId"));
 		projectionList.add(ProjectionFactoryUtil.property("createDate"));
+		projectionList.add(ProjectionFactoryUtil.property("description"));
 		projectionList.add(ProjectionFactoryUtil.property("groupId"));
 		projectionList.add(ProjectionFactoryUtil.property("modifiedDate"));
 		projectionList.add(ProjectionFactoryUtil.property("name"));
@@ -413,16 +421,36 @@ public class TaxonomyCategoryResourceImpl
 		return projectionList;
 	}
 
+	private long _getTotalCount(Long siteId) {
+		DynamicQuery dynamicQuery = _assetCategoryLocalService.dynamicQuery();
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"companyId", contextCompany.getCompanyId()));
+
+		if (siteId != null) {
+			dynamicQuery.add(RestrictionsFactoryUtil.eq("groupId", siteId));
+		}
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.sqlRestriction(
+				"exists (select 1 from AssetEntryAssetCategoryRel where " +
+					"assetCategoryId = this_.categoryId)"));
+
+		return _assetCategoryLocalService.dynamicQueryCount(dynamicQuery);
+	}
+
 	private AssetCategory _toAssetCategory(Object[] assetCategory) {
 		return new AssetCategoryImpl() {
 			{
 				setCategoryId((long)assetCategory[1]);
 				setCompanyId((long)assetCategory[2]);
 				setCreateDate(_toDate((Timestamp)assetCategory[3]));
-				setGroupId((long)assetCategory[4]);
-				setModifiedDate(_toDate((Timestamp)assetCategory[5]));
-				setName((String)assetCategory[6]);
-				setUserId((long)assetCategory[7]);
+				setDescription((String)assetCategory[4]);
+				setGroupId((long)assetCategory[5]);
+				setModifiedDate(_toDate((Timestamp)assetCategory[6]));
+				setName((String)assetCategory[7]);
+				setUserId((long)assetCategory[8]);
 			}
 		};
 	}

@@ -49,11 +49,13 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchContextFactory;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -62,7 +64,11 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.TimeZone;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -214,32 +220,6 @@ public class DDMFormViewFormInstanceRecordsDisplayContext {
 		).build();
 	}
 
-	public String getLastModifiedDate() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)_renderRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		User user = themeDisplay.getUser();
-
-		List<DDMFormInstanceRecord> ddmFormInstanceRecords =
-			_ddmFormInstanceRecordLocalService.getFormInstanceRecords(
-				_ddmFormInstance.getFormInstanceId(),
-				WorkflowConstants.STATUS_ANY, 0, 1,
-				new DDMFormInstanceRecordModifiedDateComparator(false));
-
-		Stream<DDMFormInstanceRecord> stream = ddmFormInstanceRecords.stream();
-
-		return stream.findFirst(
-		).map(
-			DDMFormInstanceRecord::getModifiedDate
-		).map(
-			modifiedDate -> Time.getRelativeTimeDescription(
-				modifiedDate, user.getLocale(), user.getTimeZone()
-			).toLowerCase()
-		).orElse(
-			StringPool.BLANK
-		);
-	}
-
 	public List<NavigationItem> getNavigationItems() {
 		return NavigationItemListBuilder.add(
 			navigationItem -> {
@@ -340,6 +320,58 @@ public class DDMFormViewFormInstanceRecordsDisplayContext {
 		}
 
 		return portletURL;
+	}
+
+	public String getReportLastModifiedDate() {
+		ThemeDisplay themeDisplay = (ThemeDisplay)_renderRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		User user = themeDisplay.getUser();
+
+		List<DDMFormInstanceRecord> ddmFormInstanceRecords =
+			_ddmFormInstanceRecordLocalService.getFormInstanceRecords(
+				_ddmFormInstance.getFormInstanceId(),
+				WorkflowConstants.STATUS_ANY, 0, 1,
+				new DDMFormInstanceRecordModifiedDateComparator(false));
+
+		Stream<DDMFormInstanceRecord> stream = ddmFormInstanceRecords.stream();
+
+		return stream.findFirst(
+		).map(
+			DDMFormInstanceRecord::getModifiedDate
+		).map(
+			modifiedDate -> {
+				Locale locale = user.getLocale();
+
+				TimeZone timeZone = user.getTimeZone();
+
+				int daysBetween = DateUtil.getDaysBetween(
+					new Date(modifiedDate.getTime()), new Date(), timeZone);
+
+				String relativeTimeDescription = StringUtil.removeSubstring(
+					Time.getRelativeTimeDescription(
+						modifiedDate, locale, timeZone),
+					StringPool.PERIOD);
+
+				String languageKey = "report-was-last-modified-on-x";
+
+				if (daysBetween < 2) {
+					languageKey = "report-was-last-modified-x";
+
+					relativeTimeDescription = StringUtil.toLowerCase(
+						relativeTimeDescription);
+				}
+
+				ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+					locale, DDMFormViewFormInstanceRecordsDisplayContext.class);
+
+				return LanguageUtil.format(
+					resourceBundle, languageKey, relativeTimeDescription,
+					false);
+			}
+		).orElse(
+			StringPool.BLANK
+		);
 	}
 
 	public SearchContainer<?> getSearch() {

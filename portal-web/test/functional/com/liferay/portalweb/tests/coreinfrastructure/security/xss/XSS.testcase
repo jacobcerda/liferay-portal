@@ -324,7 +324,9 @@ definition {
 
 		Navigator.openURL();
 
-		Portlet.addPG(portletName = "Sign In");
+		Click(locator1 = "Icon#EDIT_PENCIL");
+
+		PageEditor.addWidget(portletName = "Sign In");
 
 		PermissionsInline.gotoConfigurationPG(portletName = "Sign In");
 

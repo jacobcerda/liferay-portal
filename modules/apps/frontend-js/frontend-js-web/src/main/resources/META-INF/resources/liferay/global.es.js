@@ -39,6 +39,7 @@ import {showTab} from './portal/tabs.es';
 import {showTooltip} from './portal/tooltip.es';
 import portlet, {minimizePortlet} from './portlet/portlet.es';
 import SideNavigation from './side_navigation.es';
+import addParams from './util/add_params';
 import getCountries from './util/address/get_countries.es';
 import getRegions from './util/address/get_regions.es';
 import fetch from './util/fetch.es';
@@ -49,6 +50,7 @@ import setFormValues from './util/form/set_form_values.es';
 import formatStorage from './util/format_storage.es';
 import formatXML from './util/format_xml.es';
 import getCropRegion from './util/get_crop_region.es';
+import getPortletId from './util/get_portlet_id';
 import getPortletNamespace from './util/get_portlet_namespace.es';
 import isPhone from './util/is_phone';
 import isTablet from './util/is_tablet';
@@ -108,12 +110,23 @@ Liferay.SideNavigation = SideNavigation;
 
 Liferay.Util = Liferay.Util || {};
 
+/**
+ * @deprecated As of Athanasius (7.3.x), replaced by `import {addParams} from 'frontend-js-web'`
+ */
+Liferay.Util.addParams = addParams;
+
 Liferay.Util.escape = escape;
 Liferay.Util.fetch = fetch;
 Liferay.Util.formatStorage = formatStorage;
 Liferay.Util.formatXML = formatXML;
 Liferay.Util.getCropRegion = getCropRegion;
 Liferay.Util.getFormElement = getFormElement;
+
+/**
+ * @deprecated As of Athanasius (7.3.x), replaced by `import {getPortletId} from 'frontend-js-web'`
+ */
+Liferay.Util.getPortletId = getPortletId;
+
 Liferay.Util.getPortletNamespace = getPortletNamespace;
 Liferay.Util.groupBy = groupBy;
 Liferay.Util.isEqual = isEqual;
@@ -145,15 +158,18 @@ Liferay.Util.setFormValues = setFormValues;
 Liferay.Util.toCharCode = toCharCode;
 
 Liferay.Util.openModal = (...args) => {
-	Liferay.Loader.require('frontend-js-web/liferay/modal/Modal', commands => {
-		commands.openModal(...args);
-	});
+	Liferay.Loader.require(
+		'frontend-js-web/liferay/modal/Modal',
+		(commands) => {
+			commands.openModal(...args);
+		}
+	);
 };
 
 Liferay.Util.openToast = (...args) => {
 	Liferay.Loader.require(
 		'frontend-js-web/liferay/toast/commands/OpenToast.es',
-		commands => {
+		(commands) => {
 			commands.openToast(...args);
 		}
 	);
