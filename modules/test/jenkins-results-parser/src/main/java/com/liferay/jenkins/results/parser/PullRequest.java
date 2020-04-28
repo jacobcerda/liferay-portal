@@ -617,7 +617,7 @@ public class PullRequest {
 
 		static {
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
-				"yyyy-MM-dd'T'HH:mm'Z'");
+				"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
 			simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 

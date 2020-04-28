@@ -14,7 +14,7 @@
 
 package com.liferay.data.engine.rest.internal.jaxrs.exception.mapper;
 
-import com.liferay.data.engine.rest.exception.DataLayoutValidationException;
+import com.liferay.data.engine.rest.resource.exception.DataLayoutValidationException;
 import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
 import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
 

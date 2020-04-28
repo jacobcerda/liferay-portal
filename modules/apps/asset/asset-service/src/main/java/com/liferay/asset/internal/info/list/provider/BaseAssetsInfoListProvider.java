@@ -16,18 +16,21 @@ package com.liferay.asset.internal.info.list.provider;
 
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
+import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.info.display.contributor.InfoDisplayContributor;
 import com.liferay.info.display.contributor.InfoDisplayContributorTracker;
 import com.liferay.info.list.provider.InfoListProviderContext;
 import com.liferay.info.pagination.Pagination;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Portal;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.osgi.service.component.annotations.Reference;
@@ -58,6 +61,10 @@ public abstract class BaseAssetsInfoListProvider {
 
 				if (indexer == null) {
 					return false;
+				}
+
+				if (Objects.equals(className, DLFileEntry.class.getName())) {
+					className = FileEntry.class.getName();
 				}
 
 				InfoDisplayContributor infoDisplayContributor =

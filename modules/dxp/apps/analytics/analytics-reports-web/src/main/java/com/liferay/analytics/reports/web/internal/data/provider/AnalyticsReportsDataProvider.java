@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 
 import java.time.LocalDateTime;
@@ -81,7 +82,7 @@ public class AnalyticsReportsDataProvider {
 		);
 	}
 
-	public HistoricalMetric getHistoricalViewsHistogram(
+	public HistoricalMetric getHistoricalViewsHistoricalMetric(
 			long companyId, TimeRange timeRange, String url)
 		throws PortalException {
 
@@ -122,7 +123,7 @@ public class AnalyticsReportsDataProvider {
 		throws PortalException {
 
 		try {
-			long totalViews = Long.parseLong(
+			long totalViews = GetterUtil.getLong(
 				_asahFaroBackendClient.doGet(
 					companyId, "api/1.0/pages/view-count?url=" + url));
 
@@ -166,7 +167,7 @@ public class AnalyticsReportsDataProvider {
 	private long _getTodayViews(long companyId, String url)
 		throws PortalException {
 
-		HistoricalMetric historicalMetric = getHistoricalViewsHistogram(
+		HistoricalMetric historicalMetric = getHistoricalViewsHistoricalMetric(
 			companyId, TimeRange.of(TimeSpan.TODAY, 0), url);
 
 		Double value = historicalMetric.getValue();

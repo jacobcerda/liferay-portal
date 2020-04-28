@@ -17,8 +17,9 @@ import {
 	ADD_ITEM,
 	DUPLICATE_ITEM,
 	MOVE_ITEM,
+	UPDATE_COL_SIZE_START,
 	UPDATE_EDITABLE_VALUES,
-	UPDATE_FRAGMENT_ENTRY_LINK_CONTENT,
+	UPDATE_FRAGMENT_ENTRY_LINK_CONFIGURATION,
 	UPDATE_ITEM_CONFIG,
 } from '../../actions/types';
 import * as undoDuplicateItem from './undoDuplicateItem';
@@ -32,8 +33,9 @@ const UNDO_ACTIONS = {
 	[ADD_ITEM]: undoLayoutDataAction,
 	[DUPLICATE_ITEM]: undoDuplicateItem,
 	[MOVE_ITEM]: undoLayoutDataAction,
+	[UPDATE_COL_SIZE_START]: undoLayoutDataAction,
 	[UPDATE_EDITABLE_VALUES]: undoEditableValuesAction,
-	[UPDATE_FRAGMENT_ENTRY_LINK_CONTENT]: undoFragmentConfiguration,
+	[UPDATE_FRAGMENT_ENTRY_LINK_CONFIGURATION]: undoFragmentConfiguration,
 	[UPDATE_ITEM_CONFIG]: undoLayoutDataAction,
 };
 

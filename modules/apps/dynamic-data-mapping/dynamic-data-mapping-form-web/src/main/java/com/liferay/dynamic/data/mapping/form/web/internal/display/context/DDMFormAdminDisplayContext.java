@@ -510,8 +510,16 @@ public class DDMFormAdminDisplayContext {
 			navigationItem -> {
 				navigationItem.putData("action", "showReport");
 				navigationItem.setHref(StringPool.BLANK);
-				navigationItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "entries"));
+
+				StringBundler sb = new StringBundler(5);
+
+				sb.append(LanguageUtil.get(httpServletRequest, "entries"));
+				sb.append(StringPool.SPACE);
+				sb.append(StringPool.OPEN_PARENTHESIS);
+				sb.append(getFormViewRecordsDisplayContext().getTotalItems());
+				sb.append(StringPool.CLOSE_PARENTHESIS);
+
+				navigationItem.setLabel(sb.toString());
 			}
 		).build();
 	}
@@ -969,15 +977,6 @@ public class DDMFormAdminDisplayContext {
 	}
 
 	public boolean isShowReport() {
-		try {
-			if (getDDMFormInstance() == null) {
-				return false;
-			}
-		}
-		catch (PortalException portalException) {
-			_log.error(portalException, portalException);
-		}
-
 		return FFDDMFormWebConfigurationUtil.reportEnabled();
 	}
 

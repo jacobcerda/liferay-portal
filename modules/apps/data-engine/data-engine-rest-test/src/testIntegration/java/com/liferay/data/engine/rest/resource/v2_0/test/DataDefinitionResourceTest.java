@@ -20,6 +20,7 @@ import com.liferay.data.engine.rest.client.dto.v2_0.DataDefinitionField;
 import com.liferay.data.engine.rest.client.dto.v2_0.DataLayout;
 import com.liferay.data.engine.rest.client.pagination.Page;
 import com.liferay.data.engine.rest.client.pagination.Pagination;
+import com.liferay.data.engine.rest.client.problem.Problem;
 import com.liferay.data.engine.rest.resource.v2_0.test.util.DataLayoutTestUtil;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.petra.string.StringPool;
@@ -236,6 +237,73 @@ public class DataDefinitionResourceTest
 				"JSONObject/data",
 				"JSONObject/dataDefinitionByContentTypeByDataDefinitionKey",
 				"JSONObject/name", "Object/en_US"));
+	}
+
+	@Override
+	@Test
+	public void testPostDataDefinitionByContentType() throws Exception {
+		super.testPostDataDefinitionByContentType();
+
+		// MustNotDuplicateFieldName
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				_CONTENT_TYPE,
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[] {"en_US", "pt_BR"};
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									fieldType = "text";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "text1";
+								}
+							},
+							new DataDefinitionField() {
+								{
+									fieldType = "text";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "text2";
+								}
+							},
+							new DataDefinitionField() {
+								{
+									fieldType = "text";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "text2";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "en_US";
+						name = HashMapBuilder.<String, Object>put(
+							"en_US", RandomTestUtil.randomString()
+						).build();
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("text2", problem.getDetail());
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals("MustNotDuplicateFieldName", problem.getType());
+		}
 	}
 
 	@Override

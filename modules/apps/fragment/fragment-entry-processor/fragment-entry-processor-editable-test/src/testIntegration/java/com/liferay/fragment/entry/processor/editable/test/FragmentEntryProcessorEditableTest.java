@@ -138,10 +138,24 @@ public class FragmentEntryProcessorEditableTest {
 			_originalThemeDisplayDefaultLocale);
 	}
 
+	@Test(expected = FragmentEntryContentException.class)
+	public void testCanAddOneNoninstanceableWidget() throws Exception {
+		_addFragmentEntry(
+			"fragment_entry_with_noninstanceable_widget_tag.html");
+	}
+
+	@Test(expected = FragmentEntryContentException.class)
+	public void testCannotAddMoreThanOneNoninstanceableWidget()
+		throws Exception {
+
+		_addFragmentEntry(
+			"fragment_entry_with_duplicate_noninstanceable_widget_tag.html");
+	}
+
 	@Test
 	public void testFragmentEntryLinkPortletPreferences() throws Exception {
 		FragmentEntry fragmentEntry = _addFragmentEntry(
-			"fragment_entry_with_widget_tag.html");
+			"fragment_entry_with_instanceable_widget_tag.html");
 
 		ServiceContext serviceContext = new MockServiceContext(
 			_layout, _getThemeDisplay());
@@ -168,7 +182,7 @@ public class FragmentEntryProcessorEditableTest {
 
 					return portletId.startsWith(
 						FragmentEntryLinkPortletKeys.
-							FRAGMENT_ENTRY_LINK_TEST_PORTLET);
+							FRAGMENT_ENTRY_LINK_INSTANCEABLE_TEST_PORTLET);
 				});
 
 		Assert.assertEquals(
@@ -503,6 +517,11 @@ public class FragmentEntryProcessorEditableTest {
 	@DeleteAfterTestRun
 	private Group _group;
 
+	@Inject(
+		filter = "javax.portlet.name=" + FragmentEntryLinkPortletKeys.FRAGMENT_ENTRY_LINK_INSTANCEABLE_TEST_PORTLET
+	)
+	private final Portlet _instanceablePortlet = null;
+
 	private Layout _layout;
 
 	@Inject
@@ -515,16 +534,16 @@ public class FragmentEntryProcessorEditableTest {
 	@Inject
 	private LayoutSetLocalService _layoutSetLocalService;
 
+	@Inject(
+		filter = "javax.portlet.name=" + FragmentEntryLinkPortletKeys.FRAGMENT_ENTRY_LINK_NONINSTANCEABLE_TEST_PORTLET
+	)
+	private final Portlet _noninstanceablePortlet = null;
+
 	private Locale _originalSiteDefaultLocale;
 	private Locale _originalThemeDisplayDefaultLocale;
 
 	@Inject
 	private Portal _portal;
-
-	@Inject(
-		filter = "javax.portlet.name=" + FragmentEntryLinkPortletKeys.FRAGMENT_ENTRY_LINK_TEST_PORTLET
-	)
-	private final Portlet _portlet = null;
 
 	@Inject
 	private PortletPreferencesLocalService _portletPreferencesLocalService;

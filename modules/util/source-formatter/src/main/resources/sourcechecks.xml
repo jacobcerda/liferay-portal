@@ -453,13 +453,8 @@
 		<check name="CompatClassImportsCheck" />
 	</source-processor>
 	<source-processor name="JSONSourceProcessor">
-		<check name="JSONIndentationCheck" />
-		<check name="JSONLineBreakCheck" />
-		<check name="JSONPropertyOrderCheck" />
+		<check name="JSONStylingCheck" />
 		<check name="JSONValidationCheck" />
-		<check name="JSONWhitespaceCheck">
-			<property name="allowLeadingSpaces" value="true" />
-		</check>
 
 		<!-- Liferay Source Checks -->
 
@@ -623,6 +618,9 @@
 		<check name="PropertiesReleaseBuildCheck" />
 		<check name="PropertiesServiceKeysCheck" />
 		<check name="PropertiesVerifyPropertiesCheck" />
+	</source-processor>
+	<source-processor name="SHSourceProcessor">
+		<check name="WhitespaceCheck" />
 	</source-processor>
 	<source-processor name="SoySourceProcessor">
 		<check name="SoyEmptyLinesCheck" />

@@ -276,10 +276,12 @@ public class DDMFormViewFormInstanceRecordsDisplayContext {
 	}
 
 	public PortletURL getPortletURL() {
-		DDMFormInstance ddmFormInstance = getDDMFormInstance();
-
 		PortletURL portletURL = PortletURLUtil.getCurrent(
 			_renderRequest, _renderResponse);
+
+		if (_ddmFormInstance == null) {
+			return portletURL;
+		}
 
 		portletURL.setParameter(
 			"mvcPath", "/admin/view_form_instance_records.jsp");
@@ -287,7 +289,7 @@ public class DDMFormViewFormInstanceRecordsDisplayContext {
 			"redirect", ParamUtil.getString(_renderRequest, "redirect"));
 		portletURL.setParameter(
 			"formInstanceId",
-			String.valueOf(ddmFormInstance.getFormInstanceId()));
+			String.valueOf(_ddmFormInstance.getFormInstanceId()));
 
 		String delta = ParamUtil.getString(_renderRequest, "delta");
 
@@ -414,7 +416,9 @@ public class DDMFormViewFormInstanceRecordsDisplayContext {
 	public String getSearchActionURL() {
 		PortletURL portletURL = _renderResponse.createRenderURL();
 
-		DDMFormInstance ddmFormInstance = getDDMFormInstance();
+		if (_ddmFormInstance == null) {
+			return portletURL.toString();
+		}
 
 		portletURL.setParameter(
 			"mvcPath", "/admin/view_form_instance_records.jsp");
@@ -422,7 +426,7 @@ public class DDMFormViewFormInstanceRecordsDisplayContext {
 			"redirect", ParamUtil.getString(_renderRequest, "redirect"));
 		portletURL.setParameter(
 			"formInstanceId",
-			String.valueOf(ddmFormInstance.getFormInstanceId()));
+			String.valueOf(_ddmFormInstance.getFormInstanceId()));
 
 		return portletURL.toString();
 	}
@@ -571,6 +575,10 @@ public class DDMFormViewFormInstanceRecordsDisplayContext {
 	}
 
 	protected void setDDMFormFields() throws PortalException {
+		if (_ddmFormInstance == null) {
+			return;
+		}
+
 		DDMStructure structure = _ddmFormInstance.getStructure();
 
 		List<DDMFormField> formFields = getNontransientFormFields(
@@ -588,7 +596,10 @@ public class DDMFormViewFormInstanceRecordsDisplayContext {
 
 		int status = WorkflowConstants.STATUS_ANY;
 
-		if (Validator.isNull(getKeywords())) {
+		if (_ddmFormInstance == null) {
+			results = new ArrayList<>();
+		}
+		else if (Validator.isNull(getKeywords())) {
 			results = _ddmFormInstanceRecordLocalService.getFormInstanceRecords(
 				_ddmFormInstance.getFormInstanceId(), status,
 				formInstanceRecordSearch.getStart(),
@@ -613,7 +624,10 @@ public class DDMFormViewFormInstanceRecordsDisplayContext {
 
 		int status = WorkflowConstants.STATUS_ANY;
 
-		if (Validator.isNull(getKeywords())) {
+		if (_ddmFormInstance == null) {
+			total = 0;
+		}
+		else if (Validator.isNull(getKeywords())) {
 			total =
 				_ddmFormInstanceRecordLocalService.getFormInstanceRecordsCount(
 					_ddmFormInstance.getFormInstanceId(), status);

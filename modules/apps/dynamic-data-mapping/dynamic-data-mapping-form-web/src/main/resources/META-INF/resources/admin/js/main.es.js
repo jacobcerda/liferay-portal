@@ -741,24 +741,18 @@ class Form extends Component {
 
 	_handleFormNavClicked(event) {
 		const {delegateTarget} = event;
-		const {published, saved} = this.props;
 		const navItem = dom.closest(delegateTarget, '.nav-item');
 		const navItemIndex = Number(navItem.dataset.navItemIndex);
 		const navLink = navItem.querySelector('.nav-link');
 
-		if (
-			(navItemIndex === 2 && (published || saved)) ||
-			navItemIndex !== 2
-		) {
-			document
-				.querySelector('.forms-management-bar li > a.active')
-				.classList.remove('active');
-			navLink.classList.add('active');
+		document
+			.querySelector('.forms-management-bar li > a.active')
+			.classList.remove('active');
+		navLink.classList.add('active');
 
-			this.setState({
-				activeNavItem: navItemIndex,
-			});
-		}
+		this.setState({
+			activeNavItem: navItemIndex,
+		});
 
 		this.syncActiveNavItem(this.state.activeNavItem);
 	}
