@@ -49,6 +49,15 @@ public class DDMFormInstanceReportLocalServiceWrapper
 			ddmFormInstanceReport);
 	}
 
+	@Override
+	public com.liferay.dynamic.data.mapping.model.DDMFormInstanceReport
+			addFormInstanceReport(long formInstanceId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _ddmFormInstanceReportLocalService.addFormInstanceReport(
+			formInstanceId);
+	}
+
 	/**
 	 * Creates a new ddm form instance report with the primary key. Does not add the ddm form instance report to the database.
 	 *
@@ -317,6 +326,18 @@ public class DDMFormInstanceReportLocalServiceWrapper
 
 		return _ddmFormInstanceReportLocalService.updateDDMFormInstanceReport(
 			ddmFormInstanceReport);
+	}
+
+	@Override
+	public com.liferay.dynamic.data.mapping.model.DDMFormInstanceReport
+			updateFormInstanceReport(
+				long formInstanceReportId, long formInstanceRecordVersionId,
+				String formInstanceReportEvent)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _ddmFormInstanceReportLocalService.updateFormInstanceReport(
+			formInstanceReportId, formInstanceRecordVersionId,
+			formInstanceReportEvent);
 	}
 
 	@Override

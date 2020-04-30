@@ -211,6 +211,23 @@ public class DataDefinitionValidationException extends RuntimeException {
 
 	}
 
+	public static class MustSetValidContentType
+		extends DataDefinitionValidationException {
+
+		public MustSetValidContentType(String contentType) {
+			super(String.format("Invalid content type %s", contentType));
+
+			_contentType = contentType;
+		}
+
+		public String getContentType() {
+			return _contentType;
+		}
+
+		private final String _contentType;
+
+	}
+
 	public static class MustSetValidDefaultLocaleForProperty
 		extends DataDefinitionValidationException {
 

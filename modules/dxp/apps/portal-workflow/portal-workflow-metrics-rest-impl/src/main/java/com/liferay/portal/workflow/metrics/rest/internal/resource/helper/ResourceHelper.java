@@ -17,6 +17,7 @@ package com.liferay.portal.workflow.metrics.rest.internal.resource.helper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -223,9 +224,8 @@ public class ResourceHelper {
 
 	public ScriptedMetricAggregation
 		creatInstanceCountScriptedMetricAggregation(
-			List<Long> assigneeIds, Date dateEnd, Date dateStart,
-			List<String> slaStatuses, List<String> statuses,
-			List<String> taskNames) {
+			List<Long> assigneeIds, Boolean completed, Date dateEnd,
+			Date dateStart, List<String> slaStatuses, List<String> taskNames) {
 
 		ScriptedMetricAggregation scriptedMetricAggregation =
 			_aggregations.scriptedMetric("instanceCount");
@@ -255,6 +255,10 @@ public class ResourceHelper {
 					() -> null
 				)
 			).put(
+				"assigneeType", Role.class.getName()
+			).put(
+				"completed", () -> completed
+			).put(
 				"endDate",
 				() -> Optional.ofNullable(
 					dateEnd
@@ -278,15 +282,6 @@ public class ResourceHelper {
 					dateStart
 				).map(
 					Date::getTime
-				).orElseGet(
-					() -> null
-				)
-			).put(
-				"statuses",
-				() -> Optional.ofNullable(
-					statuses
-				).filter(
-					ListUtil::isNotEmpty
 				).orElseGet(
 					() -> null
 				)

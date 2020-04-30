@@ -71,6 +71,9 @@ public interface DDMFormInstanceReportLocalService
 	public DDMFormInstanceReport addDDMFormInstanceReport(
 		DDMFormInstanceReport ddmFormInstanceReport);
 
+	public DDMFormInstanceReport addFormInstanceReport(long formInstanceId)
+		throws PortalException;
+
 	/**
 	 * Creates a new ddm form instance report with the primary key. Does not add the ddm form instance report to the database.
 	 *
@@ -251,5 +254,10 @@ public interface DDMFormInstanceReportLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public DDMFormInstanceReport updateDDMFormInstanceReport(
 		DDMFormInstanceReport ddmFormInstanceReport);
+
+	public DDMFormInstanceReport updateFormInstanceReport(
+			long formInstanceReportId, long formInstanceRecordVersionId,
+			String formInstanceReportEvent)
+		throws PortalException;
 
 }

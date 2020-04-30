@@ -304,6 +304,45 @@ public class DataDefinitionResourceTest
 			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
 			Assert.assertEquals("MustNotDuplicateFieldName", problem.getType());
 		}
+
+		// MustSetValidContentType
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				"INVALID",
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[] {"en_US", "pt_BR"};
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									fieldType = "text";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "text1";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "en_US";
+						name = HashMapBuilder.<String, Object>put(
+							"en_US", RandomTestUtil.randomString()
+						).build();
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("INVALID", problem.getDetail());
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals("MustSetValidContentType", problem.getType());
+		}
 	}
 
 	@Override

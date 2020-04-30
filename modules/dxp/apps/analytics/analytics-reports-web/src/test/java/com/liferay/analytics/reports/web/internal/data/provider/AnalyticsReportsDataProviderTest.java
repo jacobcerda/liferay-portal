@@ -14,6 +14,10 @@
 
 package com.liferay.analytics.reports.web.internal.data.provider;
 
+import com.liferay.analytics.reports.web.internal.model.HistogramMetric;
+import com.liferay.analytics.reports.web.internal.model.HistoricalMetric;
+import com.liferay.analytics.reports.web.internal.model.TimeRange;
+import com.liferay.analytics.reports.web.internal.model.TimeSpan;
 import com.liferay.analytics.reports.web.internal.model.TrafficSource;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -28,10 +32,14 @@ import com.liferay.portal.kernel.util.PrefsPropsUtil;
 
 import java.io.IOException;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -58,15 +66,85 @@ public class AnalyticsReportsDataProviderTest {
 	}
 
 	@Test
-	public void testGetTotalReads() throws Exception {
+	public void testGetHistoricalReadsHistoricalMetric() throws Exception {
+		LocalDate localDate = LocalDate.now();
+
 		AnalyticsReportsDataProvider analyticsReportsDataProvider =
 			new AnalyticsReportsDataProvider(
-				_getHttp(Collections.singletonMap("/read-count", "12345")));
+				_getHttp(
+					Collections.singletonMap(
+						"/read-counts",
+						JSONUtil.put(
+							"histogram",
+							JSONUtil.put(
+								JSONUtil.put(
+									"key",
+									localDate.format(
+										DateTimeFormatter.ISO_LOCAL_DATE)
+								).put(
+									"value", 5
+								))
+						).put(
+							"value", 5
+						).toJSONString())));
+
+		HistoricalMetric historicalMetric =
+			analyticsReportsDataProvider.getHistoricalReadsHistoricalMetric(
+				RandomTestUtil.randomLong(),
+				TimeRange.of(TimeSpan.LAST_7_DAYS, 0),
+				RandomTestUtil.randomString());
+
+		Assert.assertEquals(5.0, historicalMetric.getValue(), 0.0);
+
+		List<HistogramMetric> histogramMetrics =
+			historicalMetric.getHistogramMetrics();
+
+		Assert.assertEquals(
+			histogramMetrics.toString(), 1, histogramMetrics.size());
+
+		HistogramMetric histogramMetric = histogramMetrics.get(0);
+
+		Assert.assertEquals(5.0, histogramMetric.getValue(), 0.0);
+
+		Date date = histogramMetric.getKey();
+
+		Instant instant = date.toInstant();
+
+		ZonedDateTime zonedDateTime = instant.atZone(ZoneId.systemDefault());
+
+		Assert.assertEquals(localDate, zonedDateTime.toLocalDate());
+	}
+
+	@Test
+	public void testGetTotalReads() throws Exception {
+		LocalDate localDate = LocalDate.now();
+
+		AnalyticsReportsDataProvider analyticsReportsDataProvider =
+			new AnalyticsReportsDataProvider(
+				_getHttp(
+					HashMapBuilder.put(
+						"/read-count", "12345"
+					).put(
+						"/read-counts",
+						JSONUtil.put(
+							"histogram",
+							JSONUtil.put(
+								JSONUtil.put(
+									"key",
+									localDate.format(
+										DateTimeFormatter.ISO_LOCAL_DATE)
+								).put(
+									"value", 5
+								))
+						).put(
+							"value", 5
+						).toJSONString()
+					).build()));
 
 		Long totalReads = analyticsReportsDataProvider.getTotalReads(
 			RandomTestUtil.randomLong(), RandomTestUtil.randomString());
 
-		Assert.assertEquals(Long.valueOf(12345), totalReads);
+		Assert.assertEquals(Long.valueOf(12340), totalReads);
 	}
 
 	@Test(expected = PortalException.class)
