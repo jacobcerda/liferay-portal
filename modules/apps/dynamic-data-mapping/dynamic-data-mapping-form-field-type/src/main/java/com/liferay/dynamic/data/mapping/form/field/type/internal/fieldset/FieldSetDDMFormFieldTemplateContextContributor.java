@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.form.field.type.internal.fieldset;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
+import com.liferay.dynamic.data.mapping.form.field.type.internal.util.DDMFormFieldTypeUtil;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMStructureLayout;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
@@ -87,6 +88,12 @@ public class FieldSetDDMFormFieldTemplateContextContributor
 		}
 
 		return HashMapBuilder.<String, Object>put(
+			"collapsible", ddmFormField.getProperty("collapsible")
+		).put(
+			"dataDefinitionId",
+			DDMFormFieldTypeUtil.getPropertyValue(
+				ddmFormFieldRenderingContext, "dataDefinitionId")
+		).put(
 			"ddmStructureId", ddmFormField.getProperty("ddmStructureId")
 		).put(
 			"ddmStructureLayoutId",

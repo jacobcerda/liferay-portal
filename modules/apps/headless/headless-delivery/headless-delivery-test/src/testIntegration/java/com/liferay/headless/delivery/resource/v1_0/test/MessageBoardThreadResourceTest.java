@@ -22,8 +22,8 @@ import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBCategoryLocalServiceUtil;
 import com.liferay.message.boards.service.MBThreadLocalServiceUtil;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -31,8 +31,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.ratings.kernel.service.RatingsEntryLocalServiceUtil;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -75,38 +74,40 @@ public class MessageBoardThreadResourceTest
 	}
 
 	@Test
-	public void testGraphQLGetSiteMessageBoardThreadByFriendlyUrlPath()
-		throws Exception {
+	public void testGraphQLGetSiteMessageBoardThreadsPage() throws Exception {
+		Long siteId = testGetSiteMessageBoardThreadsPage_getSiteId();
 
-		MessageBoardThread messageBoardThread =
-			testPostSiteMessageBoardThread_addMessageBoardThread(
-				randomMessageBoardThread());
+		MessageBoardThread messageBoardThread1 =
+			testGraphQLMessageBoardThread_addMessageBoardThread();
+		MessageBoardThread messageBoardThread2 =
+			testGraphQLMessageBoardThread_addMessageBoardThread();
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
+		JSONObject messageBoardThreadsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"messageBoardThreads",
+						HashMapBuilder.<String, Object>put(
+							"flatten", true
+						).put(
+							"page", 1
+						).put(
+							"pageSize", 2
+						).put(
+							"siteKey", "\"" + siteId + "\""
+						).build(),
+						new GraphQLField("items", getGraphQLFields()),
+						new GraphQLField("page"),
+						new GraphQLField("totalCount"))),
+				"JSONObject/data", "JSONObject/messageBoardThreads");
 
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"messageBoardThreadByFriendlyUrlPath",
-				(HashMap)HashMapBuilder.put(
-					"friendlyUrlPath",
-					"\"" + messageBoardThread.getFriendlyUrlPath() + "\""
-				).put(
-					"siteKey", "\"" + messageBoardThread.getSiteId() + "\""
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
+		Assert.assertEquals(2, messageBoardThreadsJSONObject.get("totalCount"));
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-		Assert.assertTrue(
-			equals(
-				messageBoardThread,
-				MessageBoardThreadSerDes.toDTO(
-					dataJSONObject.getString(
-						"messageBoardThreadByFriendlyUrlPath"))));
+		assertEqualsIgnoringOrder(
+			Arrays.asList(messageBoardThread1, messageBoardThread2),
+			Arrays.asList(
+				MessageBoardThreadSerDes.toDTOs(
+					messageBoardThreadsJSONObject.getString("items"))));
 	}
 
 	@Override
@@ -158,6 +159,15 @@ public class MessageBoardThreadResourceTest
 			mbThread.getRootMessageId(), 1.0, new ServiceContext());
 
 		return messageBoardThread;
+	}
+
+	@Override
+	protected MessageBoardThread
+			testGraphQLMessageBoardThread_addMessageBoardThread()
+		throws Exception {
+
+		return testPostMessageBoardSectionMessageBoardThread_addMessageBoardThread(
+			randomMessageBoardThread());
 	}
 
 	private MBCategory _mbCategory;

@@ -335,27 +335,19 @@ public class AccountEntryLocalServiceTest {
 		Organization parentOrganization =
 			OrganizationTestUtil.addOrganization();
 
-		_organizations.add(parentOrganization);
-
 		Organization organization = OrganizationTestUtil.addOrganization(
 			parentOrganization.getOrganizationId(),
 			RandomTestUtil.randomString(), false);
 
 		_organizations.add(organization);
 
+		_organizations.add(parentOrganization);
+
 		AccountEntry accountEntry1 = _addAccountEntryWithOrganization(
 			parentOrganization);
 		AccountEntry accountEntry2 = _addAccountEntryWithOrganization(
 			organization);
 
-		_assertSearchWithParams(
-			Arrays.asList(accountEntry1, accountEntry2),
-			_getLinkedHashMap(
-				"organizationIds",
-				new long[] {
-					parentOrganization.getOrganizationId(),
-					organization.getOrganizationId()
-				}));
 		_assertSearchWithParams(
 			Arrays.asList(accountEntry1),
 			_getLinkedHashMap(
@@ -366,6 +358,14 @@ public class AccountEntryLocalServiceTest {
 			_getLinkedHashMap(
 				"organizationIds",
 				new long[] {organization.getOrganizationId()}));
+		_assertSearchWithParams(
+			Arrays.asList(accountEntry1, accountEntry2),
+			_getLinkedHashMap(
+				"organizationIds",
+				new long[] {
+					parentOrganization.getOrganizationId(),
+					organization.getOrganizationId()
+				}));
 	}
 
 	@Test

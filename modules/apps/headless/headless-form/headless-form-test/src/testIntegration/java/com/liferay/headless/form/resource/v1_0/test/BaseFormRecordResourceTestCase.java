@@ -205,29 +205,21 @@ public abstract class BaseFormRecordResourceTestCase {
 	public void testGraphQLGetFormRecord() throws Exception {
 		FormRecord formRecord = testGraphQLFormRecord_addFormRecord();
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"formRecord",
-				new HashMap<String, Object>() {
-					{
-						put("formRecordId", formRecord.getId());
-					}
-				},
-				graphQLFields.toArray(new GraphQLField[0])));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
 		Assert.assertTrue(
 			equals(
 				formRecord,
 				FormRecordSerDes.toDTO(
-					dataJSONObject.getString("formRecord"))));
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"formRecord",
+								new HashMap<String, Object>() {
+									{
+										put("formRecordId", formRecord.getId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/formRecord"))));
 	}
 
 	@Test
@@ -396,29 +388,22 @@ public abstract class BaseFormRecordResourceTestCase {
 	public void testGraphQLGetFormFormRecordByLatestDraft() throws Exception {
 		FormRecord formRecord = testGraphQLFormRecord_addFormRecord();
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"formFormRecordByLatestDraft",
-				new HashMap<String, Object>() {
-					{
-						put("formId", formRecord.getFormId());
-					}
-				},
-				graphQLFields.toArray(new GraphQLField[0])));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
 		Assert.assertTrue(
 			equals(
 				formRecord,
 				FormRecordSerDes.toDTO(
-					dataJSONObject.getString("formFormRecordByLatestDraft"))));
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"formFormRecordByLatestDraft",
+								new HashMap<String, Object>() {
+									{
+										put("formId", formRecord.getFormId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data",
+						"Object/formFormRecordByLatestDraft"))));
 	}
 
 	protected FormRecord testGraphQLFormRecord_addFormRecord()
@@ -606,9 +591,7 @@ public abstract class BaseFormRecordResourceTestCase {
 					ReflectionUtil.getDeclaredFields(clazz));
 
 				graphQLFields.add(
-					new GraphQLField(
-						field.getName(),
-						childrenGraphQLFields.toArray(new GraphQLField[0])));
+					new GraphQLField(field.getName(), childrenGraphQLFields));
 			}
 		}
 
@@ -935,6 +918,26 @@ public abstract class BaseFormRecordResourceTestCase {
 		return httpResponse.getContent();
 	}
 
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected FormRecord randomFormRecord() throws Exception {
 		return new FormRecord() {
 			{
@@ -969,9 +972,22 @@ public abstract class BaseFormRecordResourceTestCase {
 			this(key, new HashMap<>(), graphQLFields);
 		}
 
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
+
 		public GraphQLField(
 			String key, Map<String, Object> parameterMap,
 			GraphQLField... graphQLFields) {
+
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
+
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
 			_key = key;
 			_parameterMap = parameterMap;
@@ -999,7 +1015,7 @@ public abstract class BaseFormRecordResourceTestCase {
 				sb.append(")");
 			}
 
-			if (_graphQLFields.length > 0) {
+			if (!_graphQLFields.isEmpty()) {
 				sb.append("{");
 
 				for (GraphQLField graphQLField : _graphQLFields) {
@@ -1015,7 +1031,7 @@ public abstract class BaseFormRecordResourceTestCase {
 			return sb.toString();
 		}
 
-		private final GraphQLField[] _graphQLFields;
+		private final List<GraphQLField> _graphQLFields;
 		private final String _key;
 		private final Map<String, Object> _parameterMap;
 

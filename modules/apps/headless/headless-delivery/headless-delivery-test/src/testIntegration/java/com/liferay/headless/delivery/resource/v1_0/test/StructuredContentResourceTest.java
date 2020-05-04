@@ -29,12 +29,9 @@ import com.liferay.headless.delivery.client.dto.v1_0.ContentField;
 import com.liferay.headless.delivery.client.dto.v1_0.ContentFieldValue;
 import com.liferay.headless.delivery.client.dto.v1_0.StructuredContent;
 import com.liferay.headless.delivery.client.resource.v1_0.StructuredContentResource;
-import com.liferay.headless.delivery.client.serdes.v1_0.StructuredContentSerDes;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.test.util.JournalTestUtil;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
@@ -56,8 +53,6 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.io.InputStream;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
@@ -182,14 +177,14 @@ public class StructuredContentResourceTest
 			ResourceConstants.SCOPE_GROUP,
 			String.valueOf(testGroup.getGroupId()), ActionKeys.ADD_ARTICLE);
 
-		User user = UserTestUtil.addGroupUser(testGroup, role.getName());
+		User ownerUser = UserTestUtil.addGroupUser(testGroup, role.getName());
 
 		StructuredContentResource.Builder builder =
 			StructuredContentResource.builder();
 
 		StructuredContentResource structuredContentResource =
 			builder.authentication(
-				user.getLogin(), user.getPasswordUnencrypted()
+				ownerUser.getLogin(), ownerUser.getPasswordUnencrypted()
 			).locale(
 				LocaleUtil.getDefault()
 			).build();
@@ -214,7 +209,6 @@ public class StructuredContentResourceTest
 		}
 		finally {
 			_roleLocalService.deleteRole(role);
-			_userLocalService.deleteUser(user);
 		}
 
 		// Regular user
@@ -226,12 +220,12 @@ public class StructuredContentResourceTest
 			ResourceConstants.SCOPE_GROUP,
 			String.valueOf(testGroup.getGroupId()), ActionKeys.VIEW);
 
-		user = UserTestUtil.addGroupUser(testGroup, role.getName());
+		User regularUser = UserTestUtil.addGroupUser(testGroup, role.getName());
 
 		builder = StructuredContentResource.builder();
 
 		structuredContentResource = builder.authentication(
-			user.getLogin(), user.getPasswordUnencrypted()
+			regularUser.getLogin(), regularUser.getPasswordUnencrypted()
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -252,7 +246,8 @@ public class StructuredContentResourceTest
 		}
 		finally {
 			_roleLocalService.deleteRole(role);
-			_userLocalService.deleteUser(user);
+			_userLocalService.deleteUser(regularUser);
+			_userLocalService.deleteUser(ownerUser);
 		}
 	}
 
@@ -274,69 +269,6 @@ public class StructuredContentResourceTest
 			structuredContentResource.
 				getStructuredContentRenderedContentTemplate(
 					structuredContent.getId(), _ddmTemplate.getTemplateId()));
-	}
-
-	@Test
-	public void testGraphQLGetSiteStructuredContentByKey() throws Exception {
-		StructuredContent structuredContent =
-			testPostSiteStructuredContent_addStructuredContent(
-				randomStructuredContent());
-
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"structuredContentByKey",
-				(HashMap)HashMapBuilder.put(
-					"key", "\"" + structuredContent.getKey() + "\""
-				).put(
-					"siteKey", "\"" + structuredContent.getSiteId() + "\""
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-		Assert.assertTrue(
-			equals(
-				structuredContent,
-				StructuredContentSerDes.toDTO(
-					dataJSONObject.getString("structuredContentByKey"))));
-	}
-
-	@Override
-	@Test
-	public void testGraphQLGetSiteStructuredContentByUuid() throws Exception {
-		StructuredContent structuredContent =
-			testPostSiteStructuredContent_addStructuredContent(
-				randomStructuredContent());
-
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"structuredContentByUuid",
-				(HashMap)HashMapBuilder.put(
-					"siteKey", "\"" + structuredContent.getSiteId() + "\""
-				).put(
-					"uuid", "\"" + structuredContent.getUuid() + "\""
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-		Assert.assertTrue(
-			equals(
-				structuredContent,
-				StructuredContentSerDes.toDTO(
-					dataJSONObject.getString("structuredContentByUuid"))));
 	}
 
 	@Test
@@ -426,6 +358,15 @@ public class StructuredContentResourceTest
 		testGetStructuredContentFolderStructuredContentsPage_getStructuredContentFolderId() {
 
 		return _journalFolder.getFolderId();
+	}
+
+	@Override
+	protected StructuredContent
+			testGraphQLStructuredContent_addStructuredContent()
+		throws Exception {
+
+		return testPostSiteStructuredContent_addStructuredContent(
+			randomStructuredContent());
 	}
 
 	private DDMStructure _addDDMStructure(Group group, String fileName)

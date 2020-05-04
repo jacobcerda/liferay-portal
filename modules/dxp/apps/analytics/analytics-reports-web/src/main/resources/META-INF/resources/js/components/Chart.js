@@ -26,7 +26,7 @@ import {
 } from 'recharts';
 
 import ConnectionContext from '../context/ConnectionContext';
-import {useWarning} from '../context/store';
+import {StoreContext, useWarning} from '../context/store';
 import {useChartState} from '../state/chartState';
 import {generateDateFormatters as dateFormat} from '../utils/dateFormat';
 import {numberFormat} from '../utils/numberFormat';
@@ -142,6 +142,8 @@ export default function Chart({
 
 	const [hasWarning, addWarning] = useWarning();
 
+	const [{readsEnabled}] = useContext(StoreContext);
+
 	const {actions, state: chartState} = useChartState({
 		defaultTimeSpanOption,
 		publishDate,
@@ -150,8 +152,7 @@ export default function Chart({
 	const isMounted = useIsMounted();
 
 	const publishedToday =
-		new Date().toDateString() ===
-		new Date(chartState.publishDate).toDateString();
+		new Date().toDateString() === new Date(publishDate).toDateString();
 
 	useEffect(() => {
 		let gone = false;
@@ -211,11 +212,13 @@ export default function Chart({
 				timeSpanComparator,
 			});
 
-			actions.addDataSetItem({
-				dataSetItem: {histogram: [], value: null},
-				key: 'analyticsReportsHistoricalReads',
-				timeSpanComparator,
-			});
+			if (readsEnabled) {
+				actions.addDataSetItem({
+					dataSetItem: {histogram: [], value: null},
+					key: 'analyticsReportsHistoricalReads',
+					timeSpanComparator,
+				});
+			}
 		}
 
 		return () => {
@@ -302,7 +305,7 @@ export default function Chart({
 	});
 
 	const publishedTodayClasses = className({
-		'line-chart-wrapper--published-today text-secondary': publishedToday,
+		'line-chart-wrapper--published-today text-center text-secondary': publishedToday,
 	});
 
 	return (
@@ -363,7 +366,8 @@ export default function Chart({
 								}}
 								dataKey="label"
 								domain={
-									!validAnalyticsConnection
+									!validAnalyticsConnection ||
+									histogram.length === 0
 										? [
 												new Date(
 													defaultTimeRange.startDate
@@ -377,13 +381,15 @@ export default function Chart({
 								interval="preserveStartEnd"
 								tickCount={7}
 								tickFormatter={(value) => {
-									return validAnalyticsConnection
+									return validAnalyticsConnection &&
+										histogram.length !== 0
 										? xAxisFormatter(value)
 										: value;
 								}}
 								tickLine={false}
 								type={
-									validAnalyticsConnection
+									validAnalyticsConnection &&
+									histogram.length !== 0
 										? 'category'
 										: 'number'
 								}
@@ -425,11 +431,9 @@ export default function Chart({
 									/>
 								}
 								cursor={
-									!(
-										!validAnalyticsConnection ||
-										(validAnalyticsConnection &&
-											publishedToday)
-									)
+									validAnalyticsConnection &&
+									histogram.length !== 0 &&
+									!publishedToday
 								}
 								formatter={(value, name) => {
 									return [

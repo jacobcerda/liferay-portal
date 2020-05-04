@@ -22,7 +22,6 @@ import com.liferay.data.engine.rest.resource.v2_0.test.util.DataDefinitionTestUt
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -96,26 +95,24 @@ public class DataRecordCollectionResourceTest
 				_ddmStructure.getStructureId(),
 				_randomDataRecordCollection(_ddmStructure.getStructureKey()));
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"dataDefinitionDataRecordCollection",
-				HashMapBuilder.<String, Object>put(
-					"dataDefinitionId",
-					dataRecordCollection.getDataDefinitionId()
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
+		JSONObject dataRecordCollectionJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"dataDefinitionDataRecordCollection",
+						HashMapBuilder.<String, Object>put(
+							"dataDefinitionId",
+							dataRecordCollection.getDataDefinitionId()
+						).build(),
+						getGraphQLFields())),
+				"JSONObject/data",
+				"JSONObject/dataDefinitionDataRecordCollection");
 
 		Assert.assertEquals(
 			MapUtil.getString(dataRecordCollection.getName(), "en_US"),
 			JSONUtil.getValue(
-				JSONFactoryUtil.createJSONObject(
-					invoke(graphQLField.toString())),
-				"JSONObject/data",
-				"JSONObject/dataDefinitionDataRecordCollection",
-				"JSONObject/name", "Object/en_US"));
+				dataRecordCollectionJSONObject, "JSONObject/name",
+				"Object/en_US"));
 	}
 
 	@Override
@@ -124,32 +121,25 @@ public class DataRecordCollectionResourceTest
 		DataRecordCollection dataRecordCollection =
 			testGraphQLDataRecordCollection_addDataRecordCollection();
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"dataRecordCollection",
-				HashMapBuilder.<String, Object>put(
-					"dataRecordCollectionId", dataRecordCollection.getId()
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
+		JSONObject dataRecordCollectionJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"dataRecordCollection",
+						HashMapBuilder.<String, Object>put(
+							"dataRecordCollectionId",
+							dataRecordCollection.getId()
+						).build(),
+						getGraphQLFields())),
+				"JSONObject/data", "JSONObject/dataRecordCollection");
 
 		Assert.assertEquals(
 			GetterUtil.getLong(dataRecordCollection.getDataDefinitionId()),
-			GetterUtil.getLong(
-				JSONUtil.getValue(
-					jsonObject, "JSONObject/data",
-					"JSONObject/dataRecordCollection",
-					"Object/dataDefinitionId")));
+			dataRecordCollectionJSONObject.getLong("dataDefinitionId"));
 		Assert.assertEquals(
 			MapUtil.getString(dataRecordCollection.getName(), "en_US"),
 			JSONUtil.getValue(
-				jsonObject, "JSONObject/data",
-				"JSONObject/dataRecordCollection", "JSONObject/name",
+				dataRecordCollectionJSONObject, "JSONObject/name",
 				"Object/en_US"));
 	}
 
@@ -161,42 +151,37 @@ public class DataRecordCollectionResourceTest
 		DataRecordCollection dataRecordCollection =
 			testGraphQLDataRecordCollection_addDataRecordCollection();
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"dataRecordCollectionByDataRecordCollectionKey",
-				HashMapBuilder.<String, Object>put(
-					"dataRecordCollectionKey",
-					StringBundler.concat(
-						StringPool.QUOTE,
-						dataRecordCollection.getDataRecordCollectionKey(),
-						StringPool.QUOTE)
-				).put(
-					"siteKey",
-					StringBundler.concat(
-						StringPool.QUOTE, dataRecordCollection.getSiteId(),
-						StringPool.QUOTE)
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
+		JSONObject dataRecordCollectionJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"dataRecordCollectionByDataRecordCollectionKey",
+						HashMapBuilder.<String, Object>put(
+							"dataRecordCollectionKey",
+							StringBundler.concat(
+								StringPool.QUOTE,
+								dataRecordCollection.
+									getDataRecordCollectionKey(),
+								StringPool.QUOTE)
+						).put(
+							"siteKey",
+							StringBundler.concat(
+								StringPool.QUOTE,
+								dataRecordCollection.getSiteId(),
+								StringPool.QUOTE)
+						).build(),
+						getGraphQLFields())),
+				"JSONObject/data",
+				"JSONObject/dataRecordCollectionByDataRecordCollectionKey");
 
 		Assert.assertEquals(
 			GetterUtil.getLong(dataRecordCollection.getDataDefinitionId()),
-			GetterUtil.getLong(
-				JSONUtil.getValue(
-					jsonObject, "JSONObject/data",
-					"JSONObject/dataRecordCollectionByDataRecordCollectionKey",
-					"Object/dataDefinitionId")));
+			dataRecordCollectionJSONObject.getLong("dataDefinitionId"));
 		Assert.assertEquals(
 			MapUtil.getString(dataRecordCollection.getName(), "en_US"),
 			JSONUtil.getValue(
-				jsonObject, "JSONObject/data",
-				"JSONObject/dataRecordCollectionByDataRecordCollectionKey",
-				"JSONObject/name", "Object/en_US"));
+				dataRecordCollectionJSONObject, "JSONObject/name",
+				"Object/en_US"));
 	}
 
 	@Override

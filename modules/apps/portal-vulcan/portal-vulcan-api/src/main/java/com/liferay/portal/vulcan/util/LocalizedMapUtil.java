@@ -14,12 +14,18 @@
 
 package com.liferay.portal.vulcan.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.ws.rs.BadRequestException;
 
 /**
  * @author Brian Wing Shun Chan
@@ -180,6 +186,34 @@ public class LocalizedMapUtil {
 		}
 
 		return resultLocalizedMap;
+	}
+
+	public static void validateI18n(
+		boolean add, Locale defaultLocale, String entityName,
+		Map<Locale, String> localizedMap, Set<Locale> notFoundLocales) {
+
+		if ((add && localizedMap.isEmpty()) ||
+			!localizedMap.containsKey(defaultLocale)) {
+
+			throw new BadRequestException(
+				entityName + " must include the default language " +
+					LocaleUtil.toW3cLanguageId(defaultLocale));
+		}
+
+		notFoundLocales.removeAll(localizedMap.keySet());
+
+		if (!notFoundLocales.isEmpty()) {
+			Stream<Locale> notFoundLocaleStream = notFoundLocales.stream();
+
+			throw new BadRequestException(
+				StringBundler.concat(
+					entityName, " title missing in the languages: ",
+					notFoundLocaleStream.map(
+						LocaleUtil::toW3cLanguageId
+					).collect(
+						Collectors.joining(",")
+					)));
+		}
 	}
 
 	private static Locale _getLocale(String languageId) {

@@ -41,7 +41,7 @@ definition {
 				value1 = "${expirationDate}");
 		}
 
-		Button.clickSave();
+		Button.click(button = "Create");
 
 		if ("${redirectURLVariation}" == "Null") {
 			Alert.viewRequiredField();
@@ -120,7 +120,7 @@ definition {
 				value1 = "${expirationDate}");
 		}
 
-		Button.clickSave();
+		Button.click(button = "Create");
 
 		Alert.viewSuccessMessage();
 	}
@@ -188,9 +188,16 @@ definition {
 
 			MenuItem.click(menuItem = "Ignored URLs");
 
-			Redirect.gotoEntryMenuItem(
-				item = "Unignore",
-				sourceURL = "${ignoreURL}");
+			if ("${unignoreAllEntries}" == "true") {
+				PortletEntry.selectAll();
+
+				Click(locator1 = "Button#UNIGNORE_REDIRECT_URLS");
+			}
+			else {
+				Redirect.gotoEntryMenuItem(
+					item = "Unignore",
+					sourceURL = "${ignoreURL}");
+			}
 
 			Alert.viewSuccessMessage();
 		}
@@ -204,9 +211,16 @@ definition {
 
 			MenuItem.click(menuItem = "Active URLs");
 
-			Redirect.gotoEntryMenuItem(
-				item = "Ignore",
-				sourceURL = "${ignoreURL}");
+			if ("${ignoreAllEntries}" == "true") {
+				PortletEntry.selectAll();
+
+				Click(locator1 = "Button#IGNORE_REDIRECT_URLS");
+			}
+			else {
+				Redirect.gotoEntryMenuItem(
+					item = "Ignore",
+					sourceURL = "${ignoreURL}");
+			}
 
 			Alert.viewSuccessMessage();
 		}
@@ -224,15 +238,23 @@ definition {
 				value1 = "404 URLs");
 		}
 
-		AssertTextEquals.assertPartialText(
-			key_rowEntry = "${ignoreURL}",
-			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
-			value1 = "${ignoreURL}");
+		if ("${multipleURLs}" == "true") {
+			AssertTextEquals.assertPartialText(
+				key_rowEntry = "${ignoreURL}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+				value1 = "${ignoreURL}");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				key_rowEntry = "${ignoreURL}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+				value1 = "${ignoreURL}");
 
-		AssertTextEquals.assertPartialText(
-			key_rowEntry = "${requestNumber}",
-			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
-			value1 = "${requestNumber}");
+			AssertTextEquals.assertPartialText(
+				key_rowEntry = "${requestNumber}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+				value1 = "${requestNumber}");
+		}
 	}
 
 	macro view404URLsDefault {

@@ -29,7 +29,6 @@ import com.liferay.data.engine.rest.resource.v2_0.test.util.DataDefinitionTestUt
 import com.liferay.data.engine.rest.resource.v2_0.test.util.DataLayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -86,31 +85,23 @@ public class DataLayoutResourceTest extends BaseDataLayoutResourceTestCase {
 	public void testGraphQLGetDataLayout() throws Exception {
 		DataLayout dataLayout = testGraphQLDataLayout_addDataLayout();
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"dataLayout",
-				HashMapBuilder.<String, Object>put(
-					"dataLayoutId", dataLayout.getId()
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
+		JSONObject dataLayoutJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"dataLayout",
+					HashMapBuilder.<String, Object>put(
+						"dataLayoutId", dataLayout.getId()
+					).build(),
+					getGraphQLFields())),
+			"JSONObject/data", "JSONObject/dataLayout");
 
 		Assert.assertEquals(
 			GetterUtil.getLong(dataLayout.getDataDefinitionId()),
-			GetterUtil.getLong(
-				JSONUtil.getValue(
-					jsonObject, "JSONObject/data", "JSONObject/dataLayout",
-					"Object/dataDefinitionId")));
+			dataLayoutJSONObject.getLong("dataDefinitionId"));
 		Assert.assertEquals(
 			MapUtil.getString(dataLayout.getName(), "en_US"),
 			JSONUtil.getValue(
-				jsonObject, "JSONObject/data", "JSONObject/dataLayout",
-				"JSONObject/name", "Object/en_US"));
+				dataLayoutJSONObject, "JSONObject/name", "Object/en_US"));
 	}
 
 	@Override
@@ -120,45 +111,36 @@ public class DataLayoutResourceTest extends BaseDataLayoutResourceTestCase {
 
 		DataLayout dataLayout = testGraphQLDataLayout_addDataLayout();
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"dataLayoutByContentTypeByDataLayoutKey",
-				HashMapBuilder.<String, Object>put(
-					"contentType",
-					StringBundler.concat(
-						StringPool.QUOTE, "app-builder", StringPool.QUOTE)
-				).put(
-					"dataLayoutKey",
-					StringBundler.concat(
-						StringPool.QUOTE, dataLayout.getDataLayoutKey(),
-						StringPool.QUOTE)
-				).put(
-					"siteKey",
-					StringBundler.concat(
-						StringPool.QUOTE, dataLayout.getSiteId(),
-						StringPool.QUOTE)
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
+		JSONObject dataLayoutJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"dataLayoutByContentTypeByDataLayoutKey",
+					HashMapBuilder.<String, Object>put(
+						"contentType",
+						StringBundler.concat(
+							StringPool.QUOTE, "app-builder", StringPool.QUOTE)
+					).put(
+						"dataLayoutKey",
+						StringBundler.concat(
+							StringPool.QUOTE, dataLayout.getDataLayoutKey(),
+							StringPool.QUOTE)
+					).put(
+						"siteKey",
+						StringBundler.concat(
+							StringPool.QUOTE, dataLayout.getSiteId(),
+							StringPool.QUOTE)
+					).build(),
+					getGraphQLFields())),
+			"JSONObject/data",
+			"JSONObject/dataLayoutByContentTypeByDataLayoutKey");
 
 		Assert.assertEquals(
 			GetterUtil.getLong(dataLayout.getDataDefinitionId()),
-			GetterUtil.getLong(
-				JSONUtil.getValue(
-					jsonObject, "JSONObject/data",
-					"JSONObject/dataLayoutByContentTypeByDataLayoutKey",
-					"Object/dataDefinitionId")));
+			dataLayoutJSONObject.getLong("dataDefinitionId"));
 		Assert.assertEquals(
 			MapUtil.getString(dataLayout.getName(), "en_US"),
 			JSONUtil.getValue(
-				jsonObject, "JSONObject/data",
-				"JSONObject/dataLayoutByContentTypeByDataLayoutKey",
-				"JSONObject/name", "Object/en_US"));
+				dataLayoutJSONObject, "JSONObject/name", "Object/en_US"));
 	}
 
 	@Override

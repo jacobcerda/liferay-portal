@@ -61,6 +61,7 @@ import com.liferay.portlet.asset.service.permission.AssetCategoryPermission;
 import java.sql.Timestamp;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 
@@ -293,22 +294,26 @@ public class TaxonomyCategoryResourceImpl
 
 		AssetCategory assetCategory = _getAssetCategory(taxonomyCategoryId);
 
-		_validateI18n(
-			false, assetCategory.getDefaultLanguageId(), taxonomyCategory);
+		Map<Locale, String> titleMap = LocalizedMapUtil.getLocalizedMap(
+			contextAcceptLanguage.getPreferredLocale(),
+			taxonomyCategory.getName(), taxonomyCategory.getName_i18n(),
+			assetCategory.getTitleMap());
+		Map<Locale, String> descriptionMap = LocalizedMapUtil.getLocalizedMap(
+			contextAcceptLanguage.getPreferredLocale(),
+			taxonomyCategory.getDescription(),
+			taxonomyCategory.getDescription_i18n(),
+			assetCategory.getDescriptionMap());
 
-		assetCategory.setDescriptionMap(
-			LocalizedMapUtil.getLocalizedMap(
-				contextAcceptLanguage.getPreferredLocale(),
-				taxonomyCategory.getDescription(),
-				taxonomyCategory.getDescription_i18n(),
-				assetCategory.getTitleMap()));
+		LocalizedMapUtil.validateI18n(
+			false,
+			LocaleUtil.fromLanguageId(assetCategory.getDefaultLanguageId()),
+			"Taxonomy category", titleMap,
+			new HashSet<>(descriptionMap.keySet()));
+
 		assetCategory.setExternalReferenceCode(
 			taxonomyCategory.getExternalReferenceCode());
-		assetCategory.setTitleMap(
-			LocalizedMapUtil.getLocalizedMap(
-				contextAcceptLanguage.getPreferredLocale(),
-				taxonomyCategory.getName(), taxonomyCategory.getName_i18n(),
-				assetCategory.getTitleMap()));
+		assetCategory.setTitleMap(titleMap);
+		assetCategory.setDescriptionMap(descriptionMap);
 
 		AssetCategoryPermission.check(
 			PermissionThreadLocal.getPermissionChecker(),
@@ -323,17 +328,20 @@ public class TaxonomyCategoryResourceImpl
 			long taxonomyCategoryId, long taxonomyVocabularyId)
 		throws Exception {
 
-		_validateI18n(true, languageId, taxonomyCategory);
+		Map<Locale, String> titleMap = LocalizedMapUtil.getLocalizedMap(
+			contextAcceptLanguage.getPreferredLocale(),
+			taxonomyCategory.getName(), taxonomyCategory.getName_i18n());
+		Map<Locale, String> descriptionMap = LocalizedMapUtil.getLocalizedMap(
+			contextAcceptLanguage.getPreferredLocale(),
+			taxonomyCategory.getDescription(),
+			taxonomyCategory.getDescription_i18n());
+
+		LocalizedMapUtil.validateI18n(
+			true, LocaleUtil.fromLanguageId(languageId), "Taxonomy category",
+			titleMap, new HashSet<>(descriptionMap.keySet()));
 
 		AssetCategory assetCategory = _assetCategoryService.addCategory(
-			groupId, taxonomyCategoryId,
-			LocalizedMapUtil.getLocalizedMap(
-				contextAcceptLanguage.getPreferredLocale(),
-				taxonomyCategory.getName(), taxonomyCategory.getName_i18n()),
-			LocalizedMapUtil.getLocalizedMap(
-				contextAcceptLanguage.getPreferredLocale(),
-				taxonomyCategory.getDescription(),
-				taxonomyCategory.getDescription_i18n()),
+			groupId, taxonomyCategoryId, titleMap, descriptionMap,
 			taxonomyVocabularyId, null,
 			ServiceContextUtil.createServiceContext(
 				groupId, taxonomyCategory.getViewableByAsString()));
@@ -487,32 +495,6 @@ public class TaxonomyCategoryResourceImpl
 				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
 				contextUser),
 			assetCategory);
-	}
-
-	private void _validateI18n(
-		boolean add, String languageId, TaxonomyCategory taxonomyCategory) {
-
-		Locale defaultLocale = LocaleUtil.fromLanguageId(languageId);
-
-		if (LocaleUtil.equals(
-				defaultLocale, contextAcceptLanguage.getPreferredLocale())) {
-
-			return;
-		}
-
-		Map<String, String> localizedNames = taxonomyCategory.getName_i18n();
-
-		if ((add && (localizedNames == null)) ||
-			(!add && (localizedNames != null) &&
-			 !localizedNames.containsKey(
-				 LocaleUtil.toBCP47LanguageId(defaultLocale)))) {
-
-			String w3cLanguageId = LocaleUtil.toW3cLanguageId(defaultLocale);
-
-			throw new BadRequestException(
-				"Taxonomy categories must include the default language " +
-					w3cLanguageId);
-		}
 	}
 
 	private static final EntityModel _entityModel = new CategoryEntityModel();

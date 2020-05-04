@@ -42,7 +42,7 @@ export default function FloatingToolbar({
 	const panelRef = useRef(null);
 	const hoverItem = useHoverItem();
 	const toolbarRef = useRef(null);
-	const [hidden, setHidden] = useState(false);
+	const [hidden, setHidden] = useState(true);
 	const [windowScrollPosition, setWindowScrollPosition] = useState(0);
 	const [windowWidth, setWindowWidth] = useState(0);
 
@@ -63,7 +63,8 @@ export default function FloatingToolbar({
 				isMounted() &&
 				show &&
 				elementRef.current &&
-				anchorRef.current
+				anchorRef.current &&
+				document.body.contains(anchorRef.current)
 			) {
 				try {
 					Align.align(
@@ -86,6 +87,9 @@ export default function FloatingToolbar({
 						}
 					});
 				}
+			}
+			else if (callback && isMounted() && show) {
+				callback();
 			}
 		},
 		[isMounted, languageId, show]
@@ -148,7 +152,9 @@ export default function FloatingToolbar({
 
 	useEffect(() => {
 		alignElement(toolbarRef, itemRef, () => {
-			alignElement(panelRef, toolbarRef);
+			alignElement(panelRef, toolbarRef, () => {
+				setHidden(false);
+			});
 		});
 	}, [
 		alignElement,

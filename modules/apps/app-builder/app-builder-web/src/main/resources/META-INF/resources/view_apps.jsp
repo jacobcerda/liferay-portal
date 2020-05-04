@@ -15,3 +15,19 @@
 --%>
 
 <%@ include file="/init.jsp" %>
+
+<liferay-util:html-top>
+	<link href="<%= PortalUtil.getStaticResourceURL(request, PortalUtil.getPathModule() + "/data-engine-taglib/data_layout_builder/css/main.css") %>" rel="stylesheet" />
+</liferay-util:html-top>
+
+<div id="<portlet:namespace />-app-builder-root">
+	<react:component
+		data='<%=
+			HashMapBuilder.<String, Object>put(
+				"basePortletURL", renderResponse.createRenderURL()
+			).put(
+				"pathFriendlyURLPublic", PortalUtil.getPathFriendlyURLPublic()
+			).build() %>'
+		module="js/pages/apps/index.es"
+	/>
+</div>

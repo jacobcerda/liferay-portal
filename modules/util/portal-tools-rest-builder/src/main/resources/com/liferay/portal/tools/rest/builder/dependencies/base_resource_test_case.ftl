@@ -1201,51 +1201,45 @@ public abstract class Base${schemaName}ResourceTestCase {
 				<#else>
 					${schemaName} ${schemaVarName} = testGraphQL${schemaName}_add${schemaName}();
 
-					GraphQLField graphQLField = new GraphQLField(
-						"mutation",
-						new GraphQLField(
-							"delete${schemaName}",
-							new HashMap<String, Object>() {
-								{
-									put(
-										"${schemaVarName}Id",
-										<#if stringUtil.equals(properties.id, "String")>
-											"\"" + ${schemaVarName}.getId() + "\""
-										<#else>
-											${schemaVarName}.getId()
-										</#if>
-									);
-								}
-							}));
-
-					JSONObject jsonObject = JSONFactoryUtil.createJSONObject(invoke(graphQLField.toString()));
-
-					JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-					Assert.assertTrue(dataJSONObject.getBoolean("delete${schemaName}"));
+					Assert.assertTrue(
+						JSONUtil.getValueAsBoolean(
+							invokeGraphQLMutation(
+								new GraphQLField(
+									"delete${schemaName}",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"${schemaVarName}Id",
+												<#if stringUtil.equals(properties.id, "String")>
+													"\"" + ${schemaVarName}.getId() + "\""
+												<#else>
+													${schemaVarName}.getId()
+												</#if>
+											);
+										}
+									})),
+							"JSONObject/data",
+							"Object/delete${schemaName}"));
 
 					try (CaptureAppender captureAppender = Log4JLoggerTestUtil.configureLog4JLogger("graphql.execution.SimpleDataFetcherExceptionHandler", Level.WARN)) {
-						graphQLField = new GraphQLField(
-							"query",
-							new GraphQLField(
-								"${schemaName?uncap_first}",
-								new HashMap<String, Object>() {
-									{
-										put(
-											"${schemaVarName}Id",
-											<#if stringUtil.equals(properties.id, "String")>
-												"\"" + ${schemaVarName}.getId() + "\""
-											<#else>
-												${schemaVarName}.getId()
-											</#if>
-										);
-									}
-								},
-								new GraphQLField("id")));
-
-						jsonObject = JSONFactoryUtil.createJSONObject(invoke(graphQLField.toString()));
-
-						JSONArray errorsJSONArray = jsonObject.getJSONArray("errors");
+						JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+							invokeGraphQLQuery(
+								new GraphQLField(
+									"${schemaName?uncap_first}",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"${schemaVarName}Id",
+												<#if stringUtil.equals(properties.id, "String")>
+													"\"" + ${schemaVarName}.getId() + "\""
+												<#else>
+													${schemaVarName}.getId()
+												</#if>
+											);
+										}
+									},
+									new GraphQLField("id"))),
+							"JSONArray/errors");
 
 						Assert.assertTrue(errorsJSONArray.length() > 0);
 					}
@@ -1261,55 +1255,44 @@ public abstract class Base${schemaName}ResourceTestCase {
 						${javaMethodParameter.parameterType} ${javaMethodParameter.parameterName} = test${javaMethodSignature.methodName?cap_first}_get${javaMethodParameter.parameterName?cap_first}();
 					</#list>
 
-					List<GraphQLField> graphQLFields = new ArrayList<>();
-
-					List<GraphQLField> itemsGraphQLFields = getGraphQLFields();
-
-					graphQLFields.add(new GraphQLField("items", itemsGraphQLFields.toArray(new GraphQLField[0])));
-
-					graphQLFields.add(new GraphQLField("page"));
-					graphQLFields.add(new GraphQLField("totalCount"));
-
 					GraphQLField graphQLField = new GraphQLField(
-						"query",
-						new GraphQLField(
-							"${schemaVarNames}",
-							new HashMap<String, Object>() {
-								{
-									<#list javaMethodSignature.javaMethodParameters as javaMethodParameter>
-										<#if stringUtil.equals(javaMethodParameter.parameterName, "pagination")>
-											put("page", 1);
-											put("pageSize", 2);
-										</#if>
-									</#list>
+						"${schemaVarNames}",
+						new HashMap<String, Object>() {
+							{
+								<#list javaMethodSignature.javaMethodParameters as javaMethodParameter>
+									<#if stringUtil.equals(javaMethodParameter.parameterName, "pagination")>
+										put("page", 1);
+										put("pageSize", 2);
+									</#if>
+								</#list>
 
-									<#list javaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
-										<#if stringUtil.equals(javaMethodParameter.parameterName, "siteId")>
-											put("siteKey", "\"" + ${javaMethodParameter.parameterName} + "\"");
-										<#else>
-											put("${javaMethodParameter.parameterName}", ${javaMethodParameter.parameterName});
-										</#if>
-									</#list>
-								}
-							},
-							graphQLFields.toArray(new GraphQLField[0])));
+								<#list javaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
+									<#if stringUtil.equals(javaMethodParameter.parameterName, "siteId")>
+										put("siteKey", "\"" + ${javaMethodParameter.parameterName} + "\"");
+									<#else>
+										put("${javaMethodParameter.parameterName}", ${javaMethodParameter.parameterName});
+									</#if>
+								</#list>
+							}
+						},
+						new GraphQLField("items", getGraphQLFields()),
+						new GraphQLField("page"),
+						new GraphQLField("totalCount"));
 
-					JSONObject jsonObject = JSONFactoryUtil.createJSONObject(invoke(graphQLField.toString()));
-
-					JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-					JSONObject ${schemaVarNames}JSONObject = dataJSONObject.getJSONObject("${schemaVarNames}");
+					JSONObject ${schemaVarNames}JSONObject = JSONUtil.getValueAsJSONObject(
+						invokeGraphQLQuery(graphQLField),
+						"JSONObject/data",
+						"JSONObject/${schemaVarNames}");
 
 					Assert.assertEquals(0, ${schemaVarNames}JSONObject.get("totalCount"));
 
 					${schemaName} ${schemaVarName}1 = testGraphQL${schemaName}_add${schemaName}();
 					${schemaName} ${schemaVarName}2 = testGraphQL${schemaName}_add${schemaName}();
 
-					jsonObject = JSONFactoryUtil.createJSONObject(invoke(graphQLField.toString()));
-
-					dataJSONObject = jsonObject.getJSONObject("data");
-
-						${schemaVarNames}JSONObject = dataJSONObject.getJSONObject("${schemaVarNames}");
+					${schemaVarNames}JSONObject = JSONUtil.getValueAsJSONObject(
+						invokeGraphQLQuery(graphQLField),
+						"JSONObject/data",
+						"JSONObject/${schemaVarNames}");
 
 					Assert.assertEquals(2, ${schemaVarNames}JSONObject.get("totalCount"));
 
@@ -1322,42 +1305,45 @@ public abstract class Base${schemaName}ResourceTestCase {
 				<#if properties?keys?seq_contains("id")>
 					${schemaName} ${schemaVarName} = testGraphQL${schemaName}_add${schemaName}();
 
-					List<GraphQLField> graphQLFields = getGraphQLFields();
-
-					GraphQLField graphQLField = new GraphQLField(
-						"query",
-						new GraphQLField(
-							"${freeMarkerTool.getGraphQLPropertyName(javaMethodSignature, javaMethodSignatures)}",
-							new HashMap<String, Object>() {
-								{
-									<#list javaMethodSignature.javaMethodParameters as javaMethodParameter>
-										<#if freeMarkerTool.isPathParameter(javaMethodParameter, javaMethodSignature.operation)>
-											<#if stringUtil.equals(javaMethodParameter.parameterName, schemaVarName + "Id")>
-												put("${javaMethodParameter.parameterName}",
-													<#if stringUtil.equals(properties.id, "String")>
-														"\"" + ${schemaVarName}.getId() + "\""
-													<#else>
-														${schemaVarName}.getId()
+					Assert.assertTrue(
+						equals(${schemaVarName},
+						${schemaName}SerDes.toDTO(
+							JSONUtil.getValueAsString(
+								invokeGraphQLQuery(
+									new GraphQLField(
+										"${freeMarkerTool.getGraphQLPropertyName(javaMethodSignature, javaMethodSignatures)}",
+										new HashMap<String, Object>() {
+											{
+												<#list javaMethodSignature.javaMethodParameters as javaMethodParameter>
+													<#if freeMarkerTool.isPathParameter(javaMethodParameter, javaMethodSignature.operation)>
+														<#if stringUtil.equals(javaMethodParameter.parameterName, schemaVarName + "Id")>
+															put("${javaMethodParameter.parameterName}",
+																<#if stringUtil.equals(properties.id, "String")>
+																	"\"" + ${schemaVarName}.getId() + "\""
+																<#else>
+																	${schemaVarName}.getId()
+																</#if>
+															);
+														<#elseif stringUtil.equals(javaMethodParameter.parameterName, "siteId")>
+															put("siteKey", "\"" + ${schemaVarName}.get${javaMethodParameter.parameterName?cap_first}() + "\"");
+														<#elseif properties?keys?seq_contains(javaMethodParameter.parameterName)>
+															put("${javaMethodParameter.parameterName}",
+																<#if stringUtil.equals(javaMethodParameter.parameterType, "java.lang.String")>
+																	"\"" + ${schemaVarName}.get${javaMethodParameter.parameterName?cap_first}() + "\""
+																<#else>
+																	${schemaVarName}.get${javaMethodParameter.parameterName?cap_first}()
+																</#if>
+															);
+														<#else>
+															put("${javaMethodParameter.parameterName}", null);
+														</#if>
 													</#if>
-												);
-											<#elseif stringUtil.equals(javaMethodParameter.parameterName, "siteId")>
-												put("siteKey", "\"" + ${schemaVarName}.get${javaMethodParameter.parameterName?cap_first}() + "\"");
-											<#elseif properties?keys?seq_contains(javaMethodParameter.parameterName)>
-												put("${javaMethodParameter.parameterName}", ${schemaVarName}.get${javaMethodParameter.parameterName?cap_first}());
-											<#else>
-												put("${javaMethodParameter.parameterName}", null);
-											</#if>
-										</#if>
-									</#list>
-								}
-							},
-							graphQLFields.toArray(new GraphQLField[0])));
-
-					JSONObject jsonObject = JSONFactoryUtil.createJSONObject(invoke(graphQLField.toString()));
-
-					JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-					Assert.assertTrue(equals(${schemaVarName}, ${schemaName}SerDes.toDTO(dataJSONObject.getString("${freeMarkerTool.getGraphQLPropertyName(javaMethodSignature, javaMethodSignatures)}"))));
+												</#list>
+											}
+										},
+										getGraphQLFields())),
+								"JSONObject/data",
+								"Object/${freeMarkerTool.getGraphQLPropertyName(javaMethodSignature, javaMethodSignatures)}"))));
 				<#else>
 					Assert.assertTrue(true);
 				</#if>
@@ -1492,6 +1478,8 @@ public abstract class Base${schemaName}ResourceTestCase {
 			}
 
 			protected ${schemaName} testGraphQL${schemaName}_add${schemaName}(${schemaName} ${schemaVarName}) throws Exception {
+				JSONDeserializer<${schemaName}> jsonDeserializer = JSONFactoryUtil.createJSONDeserializer();
+
 				StringBuilder sb = new StringBuilder("{");
 
 				for (Field field : ReflectionUtil.getDeclaredFields(${schemaName}.class)) {
@@ -1517,29 +1505,21 @@ public abstract class Base${schemaName}ResourceTestCase {
 					graphQLFields.add(new GraphQLField("id"));
 				</#if>
 
-				GraphQLField graphQLField = new GraphQLField(
-					"mutation",
-					new GraphQLField(
-						"createSite${schemaName}",
-						new HashMap<String, Object>() {
-							{
-								put("siteKey", "\"" + testGroup.getGroupId() + "\"");
-								put("${schemaVarName}", sb.toString());
-							}
-						},
-						graphQLFields.toArray(new GraphQLField[0])
-					)
-				);
-
-				JSONDeserializer<${schemaName}> jsonDeserializer = JSONFactoryUtil.createJSONDeserializer();
-
-				String object = invoke(graphQLField.toString());
-
-				JSONObject jsonObject = JSONFactoryUtil.createJSONObject(object);
-
-				JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-				return jsonDeserializer.deserialize(String.valueOf(dataJSONObject.getJSONObject("createSite${schemaName}")), ${schemaName}.class);
+				return jsonDeserializer.deserialize(
+					JSONUtil.getValueAsString(
+						invokeGraphQLMutation(
+							new GraphQLField(
+								"createSite${schemaName}",
+								new HashMap<String, Object>() {
+									{
+										put("siteKey", "\"" + testGroup.getGroupId() + "\"");
+										put("${schemaVarName}", sb.toString());
+									}
+								},
+								graphQLFields)),
+						"JSONObject/data",
+						"JSONObject/createSite${schemaName}"),
+					${schemaName}.class);
 			}
 		<#else>
 			protected ${schemaName} testGraphQL${schemaName}_add${schemaName}() throws Exception {
@@ -1782,7 +1762,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(ReflectionUtil.getDeclaredFields(clazz));
 
-				graphQLFields.add(new GraphQLField(field.getName(), childrenGraphQLFields.toArray(new GraphQLField[0])));
+				graphQLFields.add(new GraphQLField(field.getName(), childrenGraphQLFields));
 			}
 		}
 
@@ -1991,6 +1971,18 @@ public abstract class Base${schemaName}ResourceTestCase {
 		return httpResponse.getContent();
 	}
 
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField) throws Exception {
+		GraphQLField mutationGraphQLField = new GraphQLField("mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField) throws Exception {
+		GraphQLField queryGraphQLField = new GraphQLField("query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(invoke(queryGraphQLField.toString()));
+	}
+
 	protected ${schemaName} random${schemaName}() throws Exception {
 		return new ${schemaName}() {
 			{
@@ -2056,10 +2048,17 @@ public abstract class Base${schemaName}ResourceTestCase {
 			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		public GraphQLField(
-			String key, Map<String, Object> parameterMap,
-			GraphQLField... graphQLFields) {
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
+		public GraphQLField(String key, Map<String, Object> parameterMap, GraphQLField... graphQLFields) {
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
+
+		public GraphQLField(String key, Map<String, Object> parameterMap, List<GraphQLField> graphQLFields) {
 			_key = key;
 			_parameterMap = parameterMap;
 			_graphQLFields = graphQLFields;
@@ -2086,7 +2085,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 				sb.append(")");
 			}
 
-			if (_graphQLFields.length > 0) {
+			if (!_graphQLFields.isEmpty()) {
 				sb.append("{");
 
 				for (GraphQLField graphQLField : _graphQLFields) {
@@ -2102,7 +2101,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 			return sb.toString();
 		}
 
-		private final GraphQLField[] _graphQLFields;
+		private final List<GraphQLField> _graphQLFields;
 		private final String _key;
 		private final Map<String, Object> _parameterMap;
 

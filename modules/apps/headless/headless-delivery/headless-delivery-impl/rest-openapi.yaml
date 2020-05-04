@@ -1063,8 +1063,11 @@ components:
                     properties:
                         fieldKey:
                             type: string
-                        itemKey:
+                        itemClassName:
                             type: string
+                        itemClassPK:
+                            format: int64
+                            type: integer
                     type: object
             type: object
         FragmentSettingsAllowed:
@@ -1647,6 +1650,11 @@ components:
                     type: string
                 friendlyUrlPath:
                     type: string
+                hasValidAnswer:
+                    # @review
+                    description:
+                        A flag that indicates whether this thread has a message considered as valid
+                    type: boolean
                 headline:
                     description:
                         The thread's main title.
@@ -1873,7 +1881,8 @@ components:
                         $ref: "#/components/schemas/PageElement"
                     type: array
                 type:
-                    enum: [Collection, CollectionItem, Column, DropZone, Fragment, Root, Row, Section, Widget]
+                    enum: [Collection, CollectionItem, Column, DropZone, Fragment, FragmentDropZone, Root, Row, Section,
+                        Widget]
                     type: string
         PageFragmentInstanceDefinition:
             properties:

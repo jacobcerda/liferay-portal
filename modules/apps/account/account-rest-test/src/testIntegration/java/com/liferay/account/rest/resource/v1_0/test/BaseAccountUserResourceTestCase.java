@@ -494,50 +494,31 @@ public abstract class BaseAccountUserResourceTestCase {
 	public void testGraphQLGetAccountUsersPage() throws Exception {
 		Long accountId = testGetAccountUsersPage_getAccountId();
 
-		List<GraphQLField> graphQLFields = new ArrayList<>();
-
-		List<GraphQLField> itemsGraphQLFields = getGraphQLFields();
-
-		graphQLFields.add(
-			new GraphQLField(
-				"items", itemsGraphQLFields.toArray(new GraphQLField[0])));
-
-		graphQLFields.add(new GraphQLField("page"));
-		graphQLFields.add(new GraphQLField("totalCount"));
-
 		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"accountUsers",
-				new HashMap<String, Object>() {
-					{
-						put("page", 1);
-						put("pageSize", 2);
+			"accountUsers",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 2);
 
-						put("accountId", accountId);
-					}
-				},
-				graphQLFields.toArray(new GraphQLField[0])));
+					put("accountId", accountId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-		JSONObject accountUsersJSONObject = dataJSONObject.getJSONObject(
-			"accountUsers");
+		JSONObject accountUsersJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accountUsers");
 
 		Assert.assertEquals(0, accountUsersJSONObject.get("totalCount"));
 
 		AccountUser accountUser1 = testGraphQLAccountUser_addAccountUser();
 		AccountUser accountUser2 = testGraphQLAccountUser_addAccountUser();
 
-		jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		dataJSONObject = jsonObject.getJSONObject("data");
-
-		accountUsersJSONObject = dataJSONObject.getJSONObject("accountUsers");
+		accountUsersJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accountUsers");
 
 		Assert.assertEquals(2, accountUsersJSONObject.get("totalCount"));
 
@@ -566,6 +547,9 @@ public abstract class BaseAccountUserResourceTestCase {
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected AccountUser testGraphQLAccountUser_addAccountUser()
 		throws Exception {
@@ -715,9 +699,6 @@ public abstract class BaseAccountUserResourceTestCase {
 		Assert.assertTrue(valid);
 	}
 
-	@Rule
-	public SearchTestRule searchTestRule = new SearchTestRule();
-
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[0];
 	}
@@ -763,9 +744,7 @@ public abstract class BaseAccountUserResourceTestCase {
 					ReflectionUtil.getDeclaredFields(clazz));
 
 				graphQLFields.add(
-					new GraphQLField(
-						field.getName(),
-						childrenGraphQLFields.toArray(new GraphQLField[0])));
+					new GraphQLField(field.getName(), childrenGraphQLFields));
 			}
 		}
 
@@ -1035,6 +1014,26 @@ public abstract class BaseAccountUserResourceTestCase {
 		return httpResponse.getContent();
 	}
 
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected AccountUser randomAccountUser() throws Exception {
 		return new AccountUser() {
 			{
@@ -1077,9 +1076,22 @@ public abstract class BaseAccountUserResourceTestCase {
 			this(key, new HashMap<>(), graphQLFields);
 		}
 
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
+
 		public GraphQLField(
 			String key, Map<String, Object> parameterMap,
 			GraphQLField... graphQLFields) {
+
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
+
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
 			_key = key;
 			_parameterMap = parameterMap;
@@ -1107,7 +1119,7 @@ public abstract class BaseAccountUserResourceTestCase {
 				sb.append(")");
 			}
 
-			if (_graphQLFields.length > 0) {
+			if (!_graphQLFields.isEmpty()) {
 				sb.append("{");
 
 				for (GraphQLField graphQLField : _graphQLFields) {
@@ -1123,7 +1135,7 @@ public abstract class BaseAccountUserResourceTestCase {
 			return sb.toString();
 		}
 
-		private final GraphQLField[] _graphQLFields;
+		private final List<GraphQLField> _graphQLFields;
 		private final String _key;
 		private final Map<String, Object> _parameterMap;
 

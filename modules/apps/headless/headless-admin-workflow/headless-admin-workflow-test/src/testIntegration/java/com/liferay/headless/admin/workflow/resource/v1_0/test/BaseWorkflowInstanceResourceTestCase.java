@@ -288,36 +288,20 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 
 	@Test
 	public void testGraphQLGetWorkflowInstancesPage() throws Exception {
-		List<GraphQLField> graphQLFields = new ArrayList<>();
-
-		List<GraphQLField> itemsGraphQLFields = getGraphQLFields();
-
-		graphQLFields.add(
-			new GraphQLField(
-				"items", itemsGraphQLFields.toArray(new GraphQLField[0])));
-
-		graphQLFields.add(new GraphQLField("page"));
-		graphQLFields.add(new GraphQLField("totalCount"));
-
 		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"workflowInstances",
-				new HashMap<String, Object>() {
-					{
-						put("page", 1);
-						put("pageSize", 2);
-					}
-				},
-				graphQLFields.toArray(new GraphQLField[0])));
+			"workflowInstances",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 2);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-		JSONObject workflowInstancesJSONObject = dataJSONObject.getJSONObject(
-			"workflowInstances");
+		JSONObject workflowInstancesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/workflowInstances");
 
 		Assert.assertEquals(0, workflowInstancesJSONObject.get("totalCount"));
 
@@ -326,13 +310,9 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 		WorkflowInstance workflowInstance2 =
 			testGraphQLWorkflowInstance_addWorkflowInstance();
 
-		jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		dataJSONObject = jsonObject.getJSONObject("data");
-
-		workflowInstancesJSONObject = dataJSONObject.getJSONObject(
-			"workflowInstances");
+		workflowInstancesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/workflowInstances");
 
 		Assert.assertEquals(2, workflowInstancesJSONObject.get("totalCount"));
 
@@ -396,43 +376,38 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 		WorkflowInstance workflowInstance =
 			testGraphQLWorkflowInstance_addWorkflowInstance();
 
-		GraphQLField graphQLField = new GraphQLField(
-			"mutation",
-			new GraphQLField(
-				"deleteWorkflowInstance",
-				new HashMap<String, Object>() {
-					{
-						put("workflowInstanceId", workflowInstance.getId());
-					}
-				}));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
-		Assert.assertTrue(dataJSONObject.getBoolean("deleteWorkflowInstance"));
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"deleteWorkflowInstance",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"workflowInstanceId",
+									workflowInstance.getId());
+							}
+						})),
+				"JSONObject/data", "Object/deleteWorkflowInstance"));
 
 		try (CaptureAppender captureAppender =
 				Log4JLoggerTestUtil.configureLog4JLogger(
 					"graphql.execution.SimpleDataFetcherExceptionHandler",
 					Level.WARN)) {
 
-			graphQLField = new GraphQLField(
-				"query",
-				new GraphQLField(
-					"workflowInstance",
-					new HashMap<String, Object>() {
-						{
-							put("workflowInstanceId", workflowInstance.getId());
-						}
-					},
-					new GraphQLField("id")));
-
-			jsonObject = JSONFactoryUtil.createJSONObject(
-				invoke(graphQLField.toString()));
-
-			JSONArray errorsJSONArray = jsonObject.getJSONArray("errors");
+			JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"workflowInstance",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"workflowInstanceId",
+									workflowInstance.getId());
+							}
+						},
+						new GraphQLField("id"))),
+				"JSONArray/errors");
 
 			Assert.assertTrue(errorsJSONArray.length() > 0);
 		}
@@ -463,29 +438,23 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 		WorkflowInstance workflowInstance =
 			testGraphQLWorkflowInstance_addWorkflowInstance();
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"workflowInstance",
-				new HashMap<String, Object>() {
-					{
-						put("workflowInstanceId", workflowInstance.getId());
-					}
-				},
-				graphQLFields.toArray(new GraphQLField[0])));
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			invoke(graphQLField.toString()));
-
-		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
-
 		Assert.assertTrue(
 			equals(
 				workflowInstance,
 				WorkflowInstanceSerDes.toDTO(
-					dataJSONObject.getString("workflowInstance"))));
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"workflowInstance",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"workflowInstanceId",
+											workflowInstance.getId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/workflowInstance"))));
 	}
 
 	@Test
@@ -702,9 +671,7 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 					ReflectionUtil.getDeclaredFields(clazz));
 
 				graphQLFields.add(
-					new GraphQLField(
-						field.getName(),
-						childrenGraphQLFields.toArray(new GraphQLField[0])));
+					new GraphQLField(field.getName(), childrenGraphQLFields));
 			}
 		}
 
@@ -1012,6 +979,26 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 		return httpResponse.getContent();
 	}
 
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected WorkflowInstance randomWorkflowInstance() throws Exception {
 		return new WorkflowInstance() {
 			{
@@ -1051,9 +1038,22 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 			this(key, new HashMap<>(), graphQLFields);
 		}
 
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
+
 		public GraphQLField(
 			String key, Map<String, Object> parameterMap,
 			GraphQLField... graphQLFields) {
+
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
+
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
 			_key = key;
 			_parameterMap = parameterMap;
@@ -1081,7 +1081,7 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 				sb.append(")");
 			}
 
-			if (_graphQLFields.length > 0) {
+			if (!_graphQLFields.isEmpty()) {
 				sb.append("{");
 
 				for (GraphQLField graphQLField : _graphQLFields) {
@@ -1097,7 +1097,7 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 			return sb.toString();
 		}
 
-		private final GraphQLField[] _graphQLFields;
+		private final List<GraphQLField> _graphQLFields;
 		private final String _key;
 		private final Map<String, Object> _parameterMap;
 

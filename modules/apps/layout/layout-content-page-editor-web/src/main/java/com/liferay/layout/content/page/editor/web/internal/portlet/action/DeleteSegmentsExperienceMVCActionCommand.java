@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.segments.constants.SegmentsExperienceConstants;
 import com.liferay.segments.service.SegmentsExperienceService;
-import com.liferay.segments.util.SegmentsExperiencePortletUtil;
 
 import java.util.List;
 
@@ -84,24 +83,18 @@ public class DeleteSegmentsExperienceMVCActionCommand
 					fragmentEntryLink);
 
 			for (String portletId : portletIds) {
-				String portletIdWithExperience =
-					SegmentsExperiencePortletUtil.setSegmentsExperienceId(
-						portletId, segmentsExperienceId);
-
 				PortletPreferences jxPortletPreferences =
 					_portletPreferencesLocalService.fetchPreferences(
 						fragmentEntryLink.getCompanyId(),
 						PortletKeys.PREFS_OWNER_ID_DEFAULT,
 						PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
-						fragmentEntryLink.getClassPK(),
-						portletIdWithExperience);
+						fragmentEntryLink.getClassPK(), portletId);
 
 				if (jxPortletPreferences != null) {
 					_portletPreferencesLocalService.deletePortletPreferences(
 						PortletKeys.PREFS_OWNER_ID_DEFAULT,
 						PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
-						fragmentEntryLink.getClassPK(),
-						portletIdWithExperience);
+						fragmentEntryLink.getClassPK(), portletId);
 				}
 			}
 

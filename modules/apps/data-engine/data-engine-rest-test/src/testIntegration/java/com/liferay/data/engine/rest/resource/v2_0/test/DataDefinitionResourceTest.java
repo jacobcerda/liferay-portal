@@ -25,7 +25,6 @@ import com.liferay.data.engine.rest.resource.v2_0.test.util.DataLayoutTestUtil;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.ModelListenerException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.BaseModelListener;
 import com.liferay.portal.kernel.model.ModelListener;
@@ -176,22 +175,16 @@ public class DataDefinitionResourceTest
 		DataDefinition dataDefinition =
 			testGraphQLDataDefinition_addDataDefinition();
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"dataDefinition",
-				HashMapBuilder.<String, Object>put(
-					"dataDefinitionId", dataDefinition.getId()
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
-
 		Assert.assertEquals(
 			MapUtil.getString(dataDefinition.getName(), "en_US"),
 			JSONUtil.getValue(
-				JSONFactoryUtil.createJSONObject(
-					invoke(graphQLField.toString())),
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"dataDefinition",
+						HashMapBuilder.<String, Object>put(
+							"dataDefinitionId", dataDefinition.getId()
+						).build(),
+						getGraphQLFields())),
 				"JSONObject/data", "JSONObject/dataDefinition",
 				"JSONObject/name", "Object/en_US"));
 	}
@@ -205,35 +198,31 @@ public class DataDefinitionResourceTest
 			dataDefinitionResource.postSiteDataDefinitionByContentType(
 				testGroup.getGroupId(), _CONTENT_TYPE, randomDataDefinition());
 
-		List<GraphQLField> graphQLFields = getGraphQLFields();
-
-		GraphQLField graphQLField = new GraphQLField(
-			"query",
-			new GraphQLField(
-				"dataDefinitionByContentTypeByDataDefinitionKey",
-				HashMapBuilder.<String, Object>put(
-					"contentType",
-					StringBundler.concat(
-						StringPool.QUOTE, _CONTENT_TYPE, StringPool.QUOTE)
-				).put(
-					"dataDefinitionKey",
-					StringBundler.concat(
-						StringPool.QUOTE, dataDefinition.getDataDefinitionKey(),
-						StringPool.QUOTE)
-				).put(
-					"siteKey",
-					StringBundler.concat(
-						StringPool.QUOTE,
-						String.valueOf(dataDefinition.getSiteId()),
-						StringPool.QUOTE)
-				).build(),
-				graphQLFields.toArray(new GraphQLField[0])));
-
 		Assert.assertEquals(
 			MapUtil.getString(dataDefinition.getName(), "en_US"),
 			JSONUtil.getValue(
-				JSONFactoryUtil.createJSONObject(
-					invoke(graphQLField.toString())),
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"dataDefinitionByContentTypeByDataDefinitionKey",
+						HashMapBuilder.<String, Object>put(
+							"contentType",
+							StringBundler.concat(
+								StringPool.QUOTE, _CONTENT_TYPE,
+								StringPool.QUOTE)
+						).put(
+							"dataDefinitionKey",
+							StringBundler.concat(
+								StringPool.QUOTE,
+								dataDefinition.getDataDefinitionKey(),
+								StringPool.QUOTE)
+						).put(
+							"siteKey",
+							StringBundler.concat(
+								StringPool.QUOTE,
+								String.valueOf(dataDefinition.getSiteId()),
+								StringPool.QUOTE)
+						).build(),
+						getGraphQLFields())),
 				"JSONObject/data",
 				"JSONObject/dataDefinitionByContentTypeByDataDefinitionKey",
 				"JSONObject/name", "Object/en_US"));

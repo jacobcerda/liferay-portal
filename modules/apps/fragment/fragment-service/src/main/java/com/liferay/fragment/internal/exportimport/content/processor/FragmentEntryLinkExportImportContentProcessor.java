@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.StagedModel;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -46,7 +47,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
-import com.liferay.segments.util.SegmentsExperiencePortletUtil;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.staging.StagingGroupHelperUtil;
 
@@ -184,11 +184,13 @@ public class FragmentEntryLinkExportImportContentProcessor
 			FragmentEntryLink fragmentEntryLink =
 				(FragmentEntryLink)stagedModel;
 
-			if (fragmentEntryLink.getClassNameId() == _portal.getClassNameId(
-					Layout.class)) {
+			if ((fragmentEntryLink.getClassNameId() == _portal.getClassNameId(
+					Layout.class)) &&
+				(fragmentEntryLink.getSegmentsExperienceId() > 0)) {
 
 				_importPortletPreferencesSegmentsExperience(
-					portletDataContext, fragmentEntryLink.getClassPK());
+					portletDataContext, fragmentEntryLink.getClassPK(),
+					fragmentEntryLink.getSegmentsExperienceId());
 			}
 		}
 
@@ -205,33 +207,22 @@ public class FragmentEntryLinkExportImportContentProcessor
 			FragmentEntryLink fragmentEntryLink)
 		throws PortalException {
 
-		List<PortletPreferences> portletPreferencesList =
-			_portletPreferencesLocalService.getPortletPreferences(
-				PortletKeys.PREFS_OWNER_ID_DEFAULT,
-				PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
-				fragmentEntryLink.getClassPK());
+		SegmentsExperience segmentsExperience =
+			_segmentsExperienceLocalService.fetchSegmentsExperience(
+				fragmentEntryLink.getSegmentsExperienceId());
 
-		for (PortletPreferences portletPreferences : portletPreferencesList) {
-			long segmentsExperienceId =
-				SegmentsExperiencePortletUtil.getSegmentsExperienceId(
-					portletPreferences.getPortletId());
-
-			SegmentsExperience segmentsExperience =
-				_segmentsExperienceLocalService.fetchSegmentsExperience(
-					segmentsExperienceId);
-
-			if (segmentsExperience == null) {
-				continue;
-			}
-
-			StagedModelDataHandlerUtil.exportReferenceStagedModel(
-				portletDataContext, fragmentEntryLink, segmentsExperience,
-				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
+		if (segmentsExperience == null) {
+			return;
 		}
+
+		StagedModelDataHandlerUtil.exportReferenceStagedModel(
+			portletDataContext, fragmentEntryLink, segmentsExperience,
+			PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
 	}
 
 	private void _importPortletPreferencesSegmentsExperience(
-			PortletDataContext portletDataContext, long plid)
+			PortletDataContext portletDataContext, long plid,
+			long segmentsExperienceId)
 		throws PortalException {
 
 		Map<Long, Long> plids =
@@ -250,31 +241,25 @@ public class FragmentEntryLinkExportImportContentProcessor
 				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, importedPlid);
 
 		for (PortletPreferences portletPreferences : portletPreferencesList) {
-			String portletId = portletPreferences.getPortletId();
+			long importedSegmentsExperienceId = MapUtil.getLong(
+				segmentsExperienceIds, segmentsExperienceId,
+				segmentsExperienceId);
 
-			long segmentsExperienceId =
-				SegmentsExperiencePortletUtil.getSegmentsExperienceId(
-					portletId);
+			if (importedSegmentsExperienceId != segmentsExperienceId) {
+				portletPreferences.setPortletId(
+					PortletIdCodec.encode(
+						PortletIdCodec.decodePortletName(
+							portletPreferences.getPortletId()),
+						PortletIdCodec.generateInstanceId()));
 
-			if (segmentsExperienceId > 0) {
-				long importedSegmentsExperienceId = MapUtil.getLong(
-					segmentsExperienceIds, segmentsExperienceId,
-					segmentsExperienceId);
+				_portletPreferencesLocalService.deletePortletPreferences(
+					portletPreferences.getPortletPreferencesId());
 
-				if (importedSegmentsExperienceId != segmentsExperienceId) {
-					portletPreferences.setPortletId(
-						SegmentsExperiencePortletUtil.setSegmentsExperienceId(
-							portletId, importedSegmentsExperienceId));
-
-					_portletPreferencesLocalService.deletePortletPreferences(
-						portletPreferences.getPortletPreferencesId());
-
-					_portletPreferencesLocalService.updatePreferences(
-						PortletKeys.PREFS_OWNER_ID_DEFAULT,
-						PortletKeys.PREFS_OWNER_TYPE_LAYOUT, importedPlid,
-						portletPreferences.getPortletId(),
-						portletPreferences.getPreferences());
-				}
+				_portletPreferencesLocalService.updatePreferences(
+					PortletKeys.PREFS_OWNER_ID_DEFAULT,
+					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, importedPlid,
+					portletPreferences.getPortletId(),
+					portletPreferences.getPreferences());
 			}
 		}
 	}

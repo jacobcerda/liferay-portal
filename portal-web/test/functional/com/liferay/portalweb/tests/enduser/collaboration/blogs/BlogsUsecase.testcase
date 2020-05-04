@@ -52,7 +52,7 @@ definition {
 	@priority = "4"
 	test AddBlogsEntryWithHTML {
 		JSONBlog.addEntry(
-			entryContent = '''<b>Bold Type</b> <i>Italics</i>''',
+			entryContent = "<b>Bold Type</b> <i>Italics</i>",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
 
