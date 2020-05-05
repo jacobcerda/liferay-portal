@@ -81,8 +81,10 @@ boolean columnOptionsVisible = GetterUtil.getBoolean(SessionClicks.get(request, 
 	});
 </aui:script>
 
-<aui:container cssClass="calendar-portlet-column-parent">
-	<aui:row>
+<clay:container
+	className="calendar-portlet-column-parent"
+>
+	<clay:row>
 		<c:if test="<%= !displaySchedulerOnly %>">
 			<aui:col cssClass='<%= "calendar-portlet-column-options " + (columnOptionsVisible ? StringPool.BLANK : "hide") %>' id="columnOptions" span="<%= 3 %>">
 				<div class="calendar-portlet-mini-calendar" id="<portlet:namespace />miniCalendarContainer"></div>
@@ -203,8 +205,8 @@ boolean columnOptionsVisible = GetterUtil.getBoolean(SessionClicks.get(request, 
 				<liferay-util:param name="viewCalendarBookingURL" value="<%= viewCalendarBookingURL %>" />
 			</liferay-util:include>
 		</aui:col>
-	</aui:row>
-</aui:container>
+	</clay:row>
+</clay:container>
 
 <div id="<portlet:namespace />message"></div>
 

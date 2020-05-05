@@ -36,6 +36,8 @@ Map<String, Object> data = HashMapBuilder.<String, Object>put(
 ).put(
 	"dataLayoutId", dataLayoutId
 ).put(
+	"fieldSetContentType", fieldSetContentType
+).put(
 	"fieldTypes", fieldTypesJSONArray
 ).put(
 	"fieldTypesModules", fieldTypesModules

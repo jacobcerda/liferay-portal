@@ -227,7 +227,9 @@
 						String[] days = CalendarUtil.getDays(locale);
 						%>
 
-						<div class="row weekdays">
+						<clay:row
+							className="weekdays"
+						>
 
 							<%
 							int firstDayOfWeek = cal.getFirstDayOfWeek();
@@ -239,15 +241,17 @@
 							for (Weekday weekday : weekdaysArray) {
 							%>
 
-								<div class="col-md-3">
+								<clay:col
+									md="3"
+								>
 									<aui:input inlineLabel="right" label="<%= days[weekday.getCalendarWeekday() - 1] %>" name='<%= "weeklyDayPos" + weekday.getCalendarWeekday() %>' type="checkbox" value="<%= _getWeeklyDayPos(request, weekday.getCalendarWeekday(), recurrence) %>" />
-								</div>
+								</clay:col>
 
 							<%
 							}
 							%>
 
-						</div>
+						</clay:row>
 					</td>
 				</tr>
 			</tbody>

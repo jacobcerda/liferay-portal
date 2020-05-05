@@ -18,7 +18,9 @@
 
 <liferay-frontend:fieldset-group>
 	<liferay-frontend:fieldset>
-		<aui:row id="ordering">
+		<clay:row
+			id='<%= renderResponse.getNamespace() + "ordering" %>'
+		>
 			<aui:col width="<%= 50 %>">
 
 				<%
@@ -102,7 +104,7 @@
 					<aui:input cssClass="order-by-type-field" name="TypeSettingsProperties--orderByType2--" type="hidden" value="<%= orderByType2 %>" />
 				</aui:field-wrapper>
 			</aui:col>
-		</aui:row>
+		</clay:row>
 	</liferay-frontend:fieldset>
 </liferay-frontend:fieldset-group>
 

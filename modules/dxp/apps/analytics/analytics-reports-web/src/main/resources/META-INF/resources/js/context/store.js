@@ -11,9 +11,15 @@
 
 import React, {createContext, useCallback, useContext, useReducer} from 'react';
 
-const INITIAL_STATE = {readsEnabled: true, warning: false};
+const INITIAL_STATE = {
+	historicalWarning: false,
+	publishedToday: false,
+	readsEnabled: true,
+	warning: false,
+};
 
 const ADD_WARNING = 'add-warning';
+const ADD_HISTORICAL_WARNING = 'add-historical-warning';
 
 export const StoreContext = createContext([INITIAL_STATE, () => {}]);
 
@@ -22,6 +28,12 @@ function reducer(state = INITIAL_STATE, action) {
 		return {
 			...state,
 			warning: true,
+		};
+	}
+	else if (action.type === ADD_HISTORICAL_WARNING) {
+		return {
+			...state,
+			historicalWarning: true,
 		};
 	}
 
@@ -36,6 +48,20 @@ export function StoreContextProvider({children, value}) {
 			{children}
 		</StoreContext.Provider>
 	);
+}
+
+export function useHistoricalWarning() {
+	const [state, dispatch] = useContext(StoreContext);
+
+	const addHistoricalWarning = useCallback(() => {
+		dispatch({
+			type: ADD_HISTORICAL_WARNING,
+		});
+	}, [dispatch]);
+
+	const hasHistoricalWarning = state.historicalWarning;
+
+	return [hasHistoricalWarning, addHistoricalWarning];
 }
 
 export function useWarning() {

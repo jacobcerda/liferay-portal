@@ -25,9 +25,15 @@ JournalDDMTemplateHelper journalDDMTemplateHelper = (JournalDDMTemplateHelper)re
 <aui:input name="scriptContent" type="hidden" value="<%= journalEditDDMTemplateDisplayContext.getScript() %>" />
 
 <div id="templateScriptContainer">
-	<div class="form-group lfr-template-editor-container row">
+	<clay:row
+		className="form-group lfr-template-editor-container"
+	>
 		<c:if test="<%= journalEditDDMTemplateDisplayContext.isAutocompleteEnabled() %>">
-			<div class="col-md-3 lfr-template-palette-container" id="<portlet:namespace />templatePaletteContainer">
+			<clay:col
+				className="lfr-template-palette-container"
+				id='<%= renderResponse.getNamespace() + "templatePaletteContainer" %>'
+				md="3"
+			>
 				<div class="search" id="<portlet:namespace />paletteSearchContainer">
 					<input class="form-control mb-3" id="<portlet:namespace />paletteSearch" placeholder="<liferay-ui:message key="search" />" type="text" />
 				</div>
@@ -77,7 +83,7 @@ JournalDDMTemplateHelper journalDDMTemplateHelper = (JournalDDMTemplateHelper)re
 						</liferay-frontend:fieldset-group>
 					</div>
 				</div>
-			</div>
+			</clay:col>
 		</c:if>
 
 		<%
@@ -119,7 +125,7 @@ JournalDDMTemplateHelper journalDDMTemplateHelper = (JournalDDMTemplateHelper)re
 
 			<aui:input label="script-file" name="script" type="file" wrapperCssClass="mt-4" />
 		</div>
-	</div>
+	</clay:row>
 </div>
 
 <aui:script use="aui-ace-autocomplete-freemarker,aui-ace-autocomplete-plugin,aui-ace-autocomplete-velocity,aui-toggler,aui-tooltip,autocomplete-base,autocomplete-filters,event-mouseenter,event-outside,liferay-util-window,resize,transition">

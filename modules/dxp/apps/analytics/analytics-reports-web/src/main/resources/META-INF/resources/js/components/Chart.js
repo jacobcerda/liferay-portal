@@ -26,7 +26,7 @@ import {
 } from 'recharts';
 
 import ConnectionContext from '../context/ConnectionContext';
-import {StoreContext, useWarning} from '../context/store';
+import {StoreContext, useHistoricalWarning} from '../context/store';
 import {useChartState} from '../state/chartState';
 import {generateDateFormatters as dateFormat} from '../utils/dateFormat';
 import {numberFormat} from '../utils/numberFormat';
@@ -104,6 +104,7 @@ function thousandsToKilosFormater(value) {
 function legendFormatterGenerator(
 	totals,
 	languageTag,
+	publishedToday,
 	validAnalyticsConnection
 ) {
 	return (value) => {
@@ -121,7 +122,9 @@ function legendFormatterGenerator(
 					{keyToTranslatedLabelValue(value)}
 				</span>
 				<span className="font-weight-bold">
-					{validAnalyticsConnection && preformattedNumber !== null
+					{validAnalyticsConnection &&
+					preformattedNumber !== null &&
+					!publishedToday
 						? numberFormat(languageTag, preformattedNumber)
 						: '-'}
 				</span>
@@ -140,9 +143,9 @@ export default function Chart({
 }) {
 	const {validAnalyticsConnection} = useContext(ConnectionContext);
 
-	const [hasWarning, addWarning] = useWarning();
+	const [hasHistoricalWarning, addHistoricalWarning] = useHistoricalWarning();
 
-	const [{readsEnabled}] = useContext(StoreContext);
+	const [{publishedToday, readsEnabled}] = useContext(StoreContext);
 
 	const {actions, state: chartState} = useChartState({
 		defaultTimeSpanOption,
@@ -150,9 +153,6 @@ export default function Chart({
 	});
 
 	const isMounted = useIsMounted();
-
-	const publishedToday =
-		new Date().toDateString() === new Date(publishDate).toDateString();
 
 	useEffect(() => {
 		let gone = false;
@@ -193,8 +193,8 @@ export default function Chart({
 							key = 'analyticsReportsHistoricalViews';
 						}
 
-						if (!hasWarning) {
-							addWarning();
+						if (!hasHistoricalWarning) {
+							addHistoricalWarning();
 						}
 
 						actions.addDataSetItem({
@@ -290,6 +290,7 @@ export default function Chart({
 		legendFormatterGenerator(
 			dataSet.totals,
 			languageTag,
+			publishedToday,
 			validAnalyticsConnection
 		);
 
@@ -332,11 +333,15 @@ export default function Chart({
 						/>
 					)}
 
-					{validAnalyticsConnection && publishedToday && (
-						<div className={publishedTodayClasses}>
-							{Liferay.Language.get('no-data-is-available-yet')}
-						</div>
-					)}
+					{validAnalyticsConnection &&
+						publishedToday &&
+						!hasHistoricalWarning && (
+							<div className={publishedTodayClasses}>
+								{Liferay.Language.get(
+									'no-data-is-available-yet'
+								)}
+							</div>
+						)}
 
 					{title && <h5>{title}</h5>}
 
@@ -348,7 +353,9 @@ export default function Chart({
 						>
 							<CartesianGrid
 								horizontalPoints={
-									validAnalyticsConnection && publishedToday
+									validAnalyticsConnection &&
+									publishedToday &&
+									!hasHistoricalWarning
 										? [CHART_SIZES.dotRadius]
 										: []
 								}

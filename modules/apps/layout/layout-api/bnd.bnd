@@ -6,6 +6,7 @@ Export-Package:\
 	com.liferay.layout.friendly.url,\
 	com.liferay.layout.list.retriever,\
 	com.liferay.layout.model,\
+	com.liferay.layout.responsive,\
 	com.liferay.layout.security.permission.resource,\
 	com.liferay.layout.service,\
 	com.liferay.layout.service.persistence,\

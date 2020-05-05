@@ -15,7 +15,7 @@
 package com.liferay.change.tracking.internal.reference.portal;
 
 import com.liferay.change.tracking.reference.TableReferenceDefinition;
-import com.liferay.change.tracking.reference.helper.TableReferenceDefinitionHelper;
+import com.liferay.change.tracking.reference.helper.TableReferenceInfoDefiner;
 import com.liferay.portal.kernel.model.CompanyTable;
 import com.liferay.portal.kernel.model.GroupTable;
 import com.liferay.portal.kernel.model.RoleTable;
@@ -36,42 +36,21 @@ public class UserGroupRoleTableReferenceDefinition
 
 	@Override
 	public void defineTableReferences(
-		TableReferenceDefinitionHelper<UserGroupRoleTable>
-			tableReferenceDefinitionHelper) {
+		TableReferenceInfoDefiner<UserGroupRoleTable>
+			tableReferenceInfoDefiner) {
 
-		tableReferenceDefinitionHelper.defineReferenceInnerJoin(
-			fromStep -> fromStep.from(
-				CompanyTable.INSTANCE
-			).innerJoinON(
-				UserGroupRoleTable.INSTANCE,
-				UserGroupRoleTable.INSTANCE.companyId.eq(
-					CompanyTable.INSTANCE.companyId)
-			));
+		tableReferenceInfoDefiner.defineSingleColumnReference(
+			UserGroupRoleTable.INSTANCE.companyId,
+			CompanyTable.INSTANCE.companyId);
 
-		tableReferenceDefinitionHelper.defineReferenceInnerJoin(
-			fromStep -> fromStep.from(
-				UserTable.INSTANCE
-			).innerJoinON(
-				UserGroupRoleTable.INSTANCE,
-				UserGroupRoleTable.INSTANCE.userId.eq(UserTable.INSTANCE.userId)
-			));
+		tableReferenceInfoDefiner.defineSingleColumnReference(
+			UserGroupRoleTable.INSTANCE.userId, UserTable.INSTANCE.userId);
 
-		tableReferenceDefinitionHelper.defineReferenceInnerJoin(
-			fromStep -> fromStep.from(
-				GroupTable.INSTANCE
-			).innerJoinON(
-				UserGroupRoleTable.INSTANCE,
-				UserGroupRoleTable.INSTANCE.groupId.eq(
-					GroupTable.INSTANCE.groupId)
-			));
+		tableReferenceInfoDefiner.defineSingleColumnReference(
+			UserGroupRoleTable.INSTANCE.groupId, GroupTable.INSTANCE.groupId);
 
-		tableReferenceDefinitionHelper.defineReferenceInnerJoin(
-			fromStep -> fromStep.from(
-				RoleTable.INSTANCE
-			).innerJoinON(
-				UserGroupRoleTable.INSTANCE,
-				UserGroupRoleTable.INSTANCE.roleId.eq(RoleTable.INSTANCE.roleId)
-			));
+		tableReferenceInfoDefiner.defineSingleColumnReference(
+			UserGroupRoleTable.INSTANCE.roleId, RoleTable.INSTANCE.roleId);
 	}
 
 	@Override

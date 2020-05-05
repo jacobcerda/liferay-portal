@@ -26,6 +26,14 @@ if ((assetEntry != null) && layout.isTypeAssetDisplay()) {
 	className = assetEntry.getClassName();
 	classPK = assetEntry.getClassPK();
 }
+
+InfoDisplayContributor infoDisplayContributor = (InfoDisplayContributor)request.getAttribute(InfoDisplayWebKeys.INFO_DISPLAY_CONTRIBUTOR);
+Object infoListDisplayObject = request.getAttribute(InfoDisplayWebKeys.INFO_LIST_DISPLAY_OBJECT);
+
+if ((infoDisplayContributor != null) && (infoListDisplayObject != null)) {
+	className = infoDisplayContributor.getClassName();
+	classPK = infoDisplayContributor.getInfoDisplayObjectClassPK(infoListDisplayObject);
+}
 %>
 
 <liferay-ratings:ratings

@@ -30,8 +30,10 @@ List<LayoutPageTemplateCollection> layoutPageTemplateCollections = layoutPageTem
 <liferay-ui:success key="layoutPageTemplatePublished" message="the-page-template-was-published-succesfully" />
 
 <div class="container-fluid container-fluid-max-xl container-view">
-	<div class="row">
-		<div class="col-lg-3">
+	<clay:row>
+		<clay:col
+			lg="3"
+		>
 			<nav class="menubar menubar-transparent menubar-vertical-expand-lg">
 				<ul class="nav nav-nested">
 					<li class="nav-item">
@@ -114,9 +116,11 @@ List<LayoutPageTemplateCollection> layoutPageTemplateCollections = layoutPageTem
 					</li>
 				</ul>
 			</nav>
-		</div>
+		</clay:col>
 
-		<div class="col-lg-9">
+		<clay:col
+			lg="9"
+		>
 
 			<%
 			LayoutPageTemplateCollection layoutPageTemplateCollection = layoutPageTemplateDisplayContext.getLayoutPageTemplateCollection();
@@ -143,8 +147,8 @@ List<LayoutPageTemplateCollection> layoutPageTemplateCollections = layoutPageTem
 					</div>
 				</div>
 			</c:if>
-		</div>
-	</div>
+		</clay:col>
+	</clay:row>
 </div>
 
 <aui:form cssClass="hide" name="layoutPageTemplateCollectionsFm">

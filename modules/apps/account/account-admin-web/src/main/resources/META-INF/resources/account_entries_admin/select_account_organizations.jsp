@@ -19,7 +19,7 @@
 <%
 long accountEntryId = ParamUtil.getLong(request, "accountEntryId");
 
-SearchContainer organizationSearchContainer = AssignableAccountOrganizationSearchContainerFactory.create(accountEntryId, liferayPortletRequest, liferayPortletResponse);
+SearchContainer<Organization> organizationSearchContainer = AssignableAccountOrganizationSearchContainerFactory.create(accountEntryId, liferayPortletRequest, liferayPortletResponse);
 
 SelectAccountOrganizationsManagementToolbarDisplayContext selectAccountOrganizationsManagementToolbarDisplayContext = new SelectAccountOrganizationsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, organizationSearchContainer);
 %>
@@ -28,7 +28,7 @@ SelectAccountOrganizationsManagementToolbarDisplayContext selectAccountOrganizat
 	displayContext="<%= selectAccountOrganizationsManagementToolbarDisplayContext %>"
 />
 
-<aui:container cssClass="container-fluid container-fluid-max-xl">
+<clay:container>
 	<liferay-ui:search-container
 		searchContainer="<%= organizationSearchContainer %>"
 	>
@@ -54,7 +54,7 @@ SelectAccountOrganizationsManagementToolbarDisplayContext selectAccountOrganizat
 			markupView="lexicon"
 		/>
 	</liferay-ui:search-container>
-</aui:container>
+</clay:container>
 
 <aui:script use="liferay-search-container">
 	var searchContainer = Liferay.SearchContainer.get(
