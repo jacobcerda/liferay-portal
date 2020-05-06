@@ -12,11 +12,28 @@
  * details.
  */
 
-import {cancelDebounce, debounce} from 'frontend-js-web';
-import {useRef} from 'react';
+package com.liferay.portal.kernel.test.rule;
 
-export function useDebounceCallback(callback, milliseconds) {
-	const callbackRef = useRef(debounce(callback, milliseconds));
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-	return [callbackRef.current, () => cancelDebounce(callbackRef.current)];
+/**
+ * @author Shuyang Zhou
+ */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface DataGuard {
+
+	public Scope scope() default Scope.CLASS;
+
+	public enum Scope {
+
+		CLASS, METHOD, NONE
+
+	}
+
 }

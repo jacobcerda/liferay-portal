@@ -18,12 +18,29 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import {Z_KEYCODE} from '../../config/constants/keycodes';
+import {useSelector} from '../../store/index';
+
+const isTextElement = (element) => {
+	return (
+		(element.tagName === 'INPUT' && element.type === 'text') ||
+		element.tagName === 'TEXTAREA'
+	);
+};
+
+const isAlloyEditor = (element) => {
+	return (
+		element.classList.contains('alloy-editor') &&
+		element.parentElement.classList.contains('alloy-editor-container')
+	);
+};
 
 export default function Undo({onRedo = () => {}, onUndo = () => {}}) {
 	useEventListener(
 		'keydown',
 		(event) => {
 			if (
+				!isTextElement(event.target) &&
+				!isAlloyEditor(event.target) &&
 				event.keyCode === Z_KEYCODE &&
 				(event.ctrlKey || event.metaKey)
 			) {
@@ -34,11 +51,14 @@ export default function Undo({onRedo = () => {}, onUndo = () => {}}) {
 		window
 	);
 
+	const undoHistory = useSelector((state) => state.undoHistory);
+
 	return (
 		<ClayButton.Group className="d-block d-none mr-3">
 			<ClayButtonWithIcon
 				aria-label={Liferay.Language.get('undo')}
 				className="btn-monospaced"
+				disabled={!undoHistory || !undoHistory.length}
 				displayType="secondary"
 				onClick={onUndo}
 				small

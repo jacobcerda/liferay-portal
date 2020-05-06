@@ -665,7 +665,7 @@ AUI.add(
 							'div[role="alert"]'
 						);
 
-						// Prevent screen reader from rereading alert:
+						// Prevent screen reader from rereading alert
 
 						if (alert) {
 							alert.removeAttribute('role');
