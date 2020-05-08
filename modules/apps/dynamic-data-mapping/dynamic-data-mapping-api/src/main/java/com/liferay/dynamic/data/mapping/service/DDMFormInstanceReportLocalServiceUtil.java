@@ -120,6 +120,12 @@ public class DDMFormInstanceReportLocalServiceUtil {
 		return getService().deletePersistedModel(persistedModel);
 	}
 
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
 		dynamicQuery() {
 
@@ -256,6 +262,14 @@ public class DDMFormInstanceReportLocalServiceUtil {
 	 */
 	public static int getDDMFormInstanceReportsCount() {
 		return getService().getDDMFormInstanceReportsCount();
+	}
+
+	public static com.liferay.dynamic.data.mapping.model.DDMFormInstanceReport
+			getFormInstanceReportByFormInstanceId(long formInstanceId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().getFormInstanceReportByFormInstanceId(
+			formInstanceId);
 	}
 
 	public static

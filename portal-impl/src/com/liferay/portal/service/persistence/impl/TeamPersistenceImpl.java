@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.exception.NoSuchTeamException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Team;
+import com.liferay.portal.kernel.model.TeamTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -2671,17 +2672,19 @@ public class TeamPersistenceImpl
 		"(team.name IS NULL OR team.name = '')";
 
 	public TeamPersistenceImpl() {
+		Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+		dbColumnNames.put("uuid", "uuid_");
+
+		setDBColumnNames(dbColumnNames);
+
 		setModelClass(Team.class);
 
 		setModelImplClass(TeamImpl.class);
 		setModelPKClass(long.class);
 		setEntityCacheEnabled(TeamModelImpl.ENTITY_CACHE_ENABLED);
 
-		Map<String, String> dbColumnNames = new HashMap<String, String>();
-
-		dbColumnNames.put("uuid", "uuid_");
-
-		setDBColumnNames(dbColumnNames);
+		setTable(TeamTable.INSTANCE);
 	}
 
 	/**

@@ -15,7 +15,7 @@
 package com.liferay.change.tracking.internal.reference.portal;
 
 import com.liferay.change.tracking.reference.TableReferenceDefinition;
-import com.liferay.change.tracking.reference.helper.TableReferenceInfoDefiner;
+import com.liferay.change.tracking.reference.builder.TableReferenceInfoBuilder;
 import com.liferay.portal.kernel.model.ClassNameTable;
 import com.liferay.portal.kernel.model.CompanyTable;
 import com.liferay.portal.kernel.model.GroupTable;
@@ -38,43 +38,26 @@ public class UserGroupTableReferenceDefinition
 
 	@Override
 	public void defineTableReferences(
-		TableReferenceInfoDefiner<UserGroupTable> tableReferenceInfoDefiner) {
+		TableReferenceInfoBuilder<UserGroupTable> tableReferenceInfoBuilder) {
 
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			UserGroupTable.INSTANCE.uuid);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			UserGroupTable.INSTANCE.externalReferenceCode);
-
-		tableReferenceInfoDefiner.defineSingleColumnReference(
-			UserGroupTable.INSTANCE.companyId, CompanyTable.INSTANCE.companyId);
-
-		tableReferenceInfoDefiner.defineSingleColumnReference(
-			UserGroupTable.INSTANCE.userId, UserTable.INSTANCE.userId);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			UserGroupTable.INSTANCE.userName);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			UserGroupTable.INSTANCE.createDate);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			UserGroupTable.INSTANCE.modifiedDate);
-
-		tableReferenceInfoDefiner.defineParentColumnReference(
+		tableReferenceInfoBuilder.nonreferenceColumns(
+			UserGroupTable.INSTANCE.uuid,
+			UserGroupTable.INSTANCE.externalReferenceCode
+		).singleColumnReference(
+			UserGroupTable.INSTANCE.companyId, CompanyTable.INSTANCE.companyId
+		).singleColumnReference(
+			UserGroupTable.INSTANCE.userId, UserTable.INSTANCE.userId
+		).nonreferenceColumns(
+			UserGroupTable.INSTANCE.userName,
+			UserGroupTable.INSTANCE.createDate,
+			UserGroupTable.INSTANCE.modifiedDate
+		).parentColumnReference(
 			UserGroupTable.INSTANCE.userGroupId,
-			UserGroupTable.INSTANCE.parentUserGroupId);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			UserGroupTable.INSTANCE.name);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			UserGroupTable.INSTANCE.description);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			UserGroupTable.INSTANCE.addedByLDAPImport);
-
-		tableReferenceInfoDefiner.defineReferenceInnerJoin(
+			UserGroupTable.INSTANCE.parentUserGroupId
+		).nonreferenceColumns(
+			UserGroupTable.INSTANCE.name, UserGroupTable.INSTANCE.description,
+			UserGroupTable.INSTANCE.addedByLDAPImport
+		).referenceInnerJoin(
 			fromStep -> fromStep.from(
 				GroupTable.INSTANCE
 			).innerJoinON(
@@ -92,9 +75,8 @@ public class UserGroupTableReferenceDefinition
 				).and(
 					ClassNameTable.INSTANCE.value.eq(UserGroup.class.getName())
 				)
-			));
-
-		tableReferenceInfoDefiner.defineReferenceInnerJoin(
+			)
+		).referenceInnerJoin(
 			fromStep -> fromStep.from(
 				ResourcePermissionTable.INSTANCE
 			).innerJoinON(
@@ -108,7 +90,8 @@ public class UserGroupTableReferenceDefinition
 					ResourcePermissionTable.INSTANCE.primKeyId.eq(
 						UserGroupTable.INSTANCE.userGroupId)
 				)
-			));
+			)
+		);
 	}
 
 	@Override

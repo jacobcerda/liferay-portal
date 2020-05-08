@@ -15,7 +15,7 @@
 package com.liferay.change.tracking.internal.reference.portal;
 
 import com.liferay.change.tracking.reference.TableReferenceDefinition;
-import com.liferay.change.tracking.reference.helper.TableReferenceInfoDefiner;
+import com.liferay.change.tracking.reference.builder.TableReferenceInfoBuilder;
 import com.liferay.portal.kernel.model.CompanyTable;
 import com.liferay.portal.kernel.model.GroupTable;
 import com.liferay.portal.kernel.model.RoleTable;
@@ -36,21 +36,19 @@ public class UserGroupRoleTableReferenceDefinition
 
 	@Override
 	public void defineTableReferences(
-		TableReferenceInfoDefiner<UserGroupRoleTable>
-			tableReferenceInfoDefiner) {
+		TableReferenceInfoBuilder<UserGroupRoleTable>
+			tableReferenceInfoBuilder) {
 
-		tableReferenceInfoDefiner.defineSingleColumnReference(
+		tableReferenceInfoBuilder.singleColumnReference(
 			UserGroupRoleTable.INSTANCE.companyId,
-			CompanyTable.INSTANCE.companyId);
-
-		tableReferenceInfoDefiner.defineSingleColumnReference(
-			UserGroupRoleTable.INSTANCE.userId, UserTable.INSTANCE.userId);
-
-		tableReferenceInfoDefiner.defineSingleColumnReference(
-			UserGroupRoleTable.INSTANCE.groupId, GroupTable.INSTANCE.groupId);
-
-		tableReferenceInfoDefiner.defineSingleColumnReference(
-			UserGroupRoleTable.INSTANCE.roleId, RoleTable.INSTANCE.roleId);
+			CompanyTable.INSTANCE.companyId
+		).singleColumnReference(
+			UserGroupRoleTable.INSTANCE.userId, UserTable.INSTANCE.userId
+		).singleColumnReference(
+			UserGroupRoleTable.INSTANCE.groupId, GroupTable.INSTANCE.groupId
+		).singleColumnReference(
+			UserGroupRoleTable.INSTANCE.roleId, RoleTable.INSTANCE.roleId
+		);
 	}
 
 	@Override

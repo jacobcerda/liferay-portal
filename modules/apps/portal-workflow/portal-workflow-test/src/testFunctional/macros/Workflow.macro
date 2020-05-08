@@ -180,9 +180,15 @@ definition {
 
 		IFrame.selectConfigurationFrame();
 
-		Select(
-			locator1 = "MyWorkflowTasks#DIALOG_BOX_ASSIGN_TO_SELECT",
-			value1 = "${user}");
+		Click(locator1 = "MyWorkflowTasks#DIALOG_BOX_ASSIGN_TO_SELECT");
+
+		Pause(locator1 = "1000");
+
+		Click(
+			key_user = "${user}",
+			locator1 = "MyWorkflowTasks#DIALOG_BOX_ASSIGN_TO_VALUE");
+
+		Pause(locator1 = "1000");
 
 		if (isSet(comment)) {
 			Type(
@@ -624,9 +630,9 @@ definition {
 
 	macro tearDownPortalWorkflow {
 		ProductMenu.gotoPortlet(
-			category = "Configuration",
+			category = "Workflow",
 			panel = "Control Panel",
-			portlet = "Workflow");
+			portlet = "Process Builder");
 
 		Navigator.gotoNavItem(navItem = "Schemes");
 
@@ -666,9 +672,9 @@ definition {
 
 	macro tearDownSpecificWorkflowDefinition {
 		ProductMenu.gotoPortlet(
-			category = "Configuration",
+			category = "Workflow",
 			panel = "Control Panel",
-			portlet = "Workflow");
+			portlet = "Process Builder");
 
 		var key_workflowDefinitionTitle = "${workflowDefinitionTitle}";
 
@@ -680,15 +686,17 @@ definition {
 	}
 
 	macro tearDownWorkflowDefinitions {
+		var key_workflowDefinitionTitle = "${workflowDefinitionTitle}";
+
 		ProductMenu.gotoPortlet(
-			category = "Configuration",
+			category = "Workflow",
 			panel = "Control Panel",
-			portlet = "Workflow");
+			portlet = "Process Builder");
 
-		while (IsElementPresent(locator1 = "WorkflowDefinition#DEFINITION_TABLE_ADDED_DEFINITION_ELLIPSIS")) {
-			Workflow.unpublishWorkflowDefinition();
+		while (IsElementPresent(locator1 = "WorkflowDefinition#DEFINITION_TABLE_TITLE")) {
+			Workflow.unpublishWorkflowDefinition(workflowDefinitionTitle = "${workflowDefinitionTitle}");
 
-			Workflow.deleteWorkflowDefinition();
+			Workflow.deleteWorkflowDefinition(workflowDefinitionTitle = "${workflowDefinitionTitle}");
 		}
 	}
 

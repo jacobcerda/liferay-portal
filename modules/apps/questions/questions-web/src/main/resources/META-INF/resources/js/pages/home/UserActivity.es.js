@@ -21,19 +21,25 @@ import {withRouter} from 'react-router-dom';
 import {AppContext} from '../../AppContext.es';
 import QuestionRow from '../../components/QuestionRow.es';
 import UserIcon from '../../components/UserIcon.es';
+import useQuery from '../../hooks/useQuery.es';
 import {getUserActivity} from '../../utils/client.es';
+import {historyPushWithSlug} from '../../utils/utils.es';
 import NavigationBar from '../NavigationBar.es';
 
 export default withRouter(
 	({
+		history,
+		location,
 		match: {
 			params: {creatorId},
 		},
 	}) => {
 		const context = useContext(AppContext);
-		const siteKey = context.siteKey;
 		const defaultPostsNumber = 0;
 		const defaultRank = context.defaultRank;
+		const historyPushParser = historyPushWithSlug(history.push);
+		const queryParams = useQuery(location);
+		const siteKey = context.siteKey;
 
 		const [creatorInfo, setCreatorInfo] = useState({});
 		const [loading, setLoading] = useState(true);
@@ -41,7 +47,12 @@ export default withRouter(
 		const [questions, setQuestions] = useState([]);
 
 		useEffect(() => {
-			getUserActivity(siteKey, creatorId)
+			const pageNumber = queryParams.get('page') || 1;
+			setPage(isNaN(pageNumber) ? 1 : parseInt(pageNumber, 10));
+		}, [queryParams]);
+
+		useEffect(() => {
+			getUserActivity({page, siteKey, userId: creatorId})
 				.then((questions) => {
 					const creatorBasicInfo = questions.items[0].creator;
 					const creatorStatistics =
@@ -61,7 +72,7 @@ export default withRouter(
 					setLoading(false);
 					setCreatorInfo(getCreatorDefaultInfo(creatorId));
 				});
-		}, [creatorId, getCreatorDefaultInfo, siteKey]);
+		}, [creatorId, getCreatorDefaultInfo, page, siteKey]);
 
 		const getCreatorDefaultInfo = useCallback(
 			(creatorId) => ({
@@ -76,43 +87,54 @@ export default withRouter(
 			[defaultPostsNumber, defaultRank]
 		);
 
+		const changePage = (number) => {
+			historyPushParser(`/activity/${creatorId}?page=${number}`);
+		};
+
 		return (
 			<>
 				<NavigationBar />
-				<PageHeader />
-				<Questions />
+				<section className="questions-section questions-section-list">
+					<div className="questions-container">
+						<div className="c-p-5 row">
+							<PageHeader />
+							<Questions />
+						</div>
+					</div>
+				</section>
 			</>
 		);
 
 		function PageHeader() {
 			return (
-				<>
-					<div className="d-flex flex-row justify-content-between">
-						<div className="d-flex">
+				<div className="c-mt-3 c-mx-auto c-px-0 col-xl-10">
+					<div className="d-flex flex-row">
+						<div className="c-mt-3">
 							<UserIcon
 								fullName={creatorInfo.name}
 								portraitURL={creatorInfo.image}
+								size="xl"
 								userId={String(creatorInfo.id)}
 							/>
-							<div className="c-ml-3 flex-column">
-								<div>
-									<span className="h3">
-										Rank: {creatorInfo.rank}
-									</span>
-								</div>
-								<div>
-									<span className="h3">
-										{creatorInfo.name}
-									</span>
-								</div>
-								<div>
-									<span className="h3">
-										Posts: {creatorInfo.postsNumber}
-									</span>
-								</div>
+						</div>
+						<div className="c-ml-4 flex-column">
+							<div>
+								<span className="small">
+									Rank: {creatorInfo.rank}
+								</span>
+							</div>
+							<div>
+								<strong className="h2">
+									{creatorInfo.name}
+								</strong>
+							</div>
+							<div>
+								<span className="small">
+									Posts: {creatorInfo.postsNumber}
+								</span>
 							</div>
 						</div>
-						<div>
+						<div className="flex-column justify-content-end">
 							<ClayButton
 								className="d-none"
 								displayType="secondary"
@@ -121,16 +143,16 @@ export default withRouter(
 							</ClayButton>
 						</div>
 					</div>
-					<div>
-						<h1>Latest Questions Asked</h1>
+					<div className="border-bottom c-mt-5">
+						<h2>Latest Questions Asked</h2>
 					</div>
-				</>
+				</div>
 			);
 		}
 
 		function Questions() {
 			return (
-				<>
+				<div className="c-mx-auto c-px-0 col-xl-10">
 					{loading ? (
 						<ClayLoadingIndicator />
 					) : (
@@ -148,13 +170,13 @@ export default withRouter(
 							<ClayPaginationWithBasicItems
 								activePage={page}
 								ellipsisBuffer={2}
-								onPageChange={setPage}
+								onPageChange={changePage}
 								totalPages={Math.ceil(
 									questions.totalCount / questions.pageSize
 								)}
 							/>
 						)}
-				</>
+				</div>
 			);
 		}
 	}

@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.GroupPersistence;
 import com.liferay.portal.kernel.service.persistence.OrganizationPersistence;
@@ -12794,12 +12795,6 @@ public class GroupPersistenceImpl
 		"group_.inheritContent = ?";
 
 	public GroupPersistenceImpl() {
-		setModelClass(Group.class);
-
-		setModelImplClass(GroupImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(GroupModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
@@ -12807,6 +12802,14 @@ public class GroupPersistenceImpl
 		dbColumnNames.put("active", "active_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(Group.class);
+
+		setModelImplClass(GroupImpl.class);
+		setModelPKClass(long.class);
+		setEntityCacheEnabled(GroupModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(GroupTable.INSTANCE);
 	}
 
 	/**

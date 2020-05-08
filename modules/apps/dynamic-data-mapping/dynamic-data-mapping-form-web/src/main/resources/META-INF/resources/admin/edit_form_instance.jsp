@@ -142,7 +142,10 @@ renderResponse.setTitle((formInstance == null) ? LanguageUtil.get(request, "new-
 <liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="saveFormInstance" var="autoSaveFormInstanceURL" />
 
 <c:if test="<%= ddmFormAdminDisplayContext.isShowReport() %>">
-	<liferay-util:include page="/admin/view_form_instance_report.jsp" servletContext="<%= application %>" />
+	<liferay-portlet:runtime
+		portletName="<%= DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_REPORT %>"
+		queryString='<%= "formInstanceId=" + formInstanceId %>'
+	/>
 </c:if>
 
 <aui:script>

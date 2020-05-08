@@ -36,6 +36,7 @@ import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Assert;
@@ -178,6 +179,27 @@ public class DataDefinitionResourceTest
 				"JSONObject/data",
 				"JSONObject/dataDefinitionByContentTypeByDataDefinitionKey",
 				"JSONObject/name", "Object/en_US"));
+
+		// Not Found
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"dataDefinitionByContentTypeByDataDefinitionKey",
+						HashMapBuilder.<String, Object>put(
+							"contentType", "\"native-object\""
+						).put(
+							"dataDefinitionKey",
+							"\"" + RandomTestUtil.randomString() + "\""
+						).put(
+							"siteKey",
+							"\"" + irrelevantGroup.getGroupId() + "\""
+						).build(),
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	@Override
@@ -246,6 +268,307 @@ public class DataDefinitionResourceTest
 			Assert.assertEquals("MustNotDuplicateFieldName", problem.getType());
 		}
 
+		// MustSetAvailableLocales
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				_CONTENT_TYPE,
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[0];
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									fieldType = "text";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "text1";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "en_US";
+						name = HashMapBuilder.<String, Object>put(
+							"en_US", RandomTestUtil.randomString()
+						).build();
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals("MustSetAvailableLocales", problem.getType());
+		}
+
+		// MustSetDefaultLocaleAsAvailableLocale
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				_CONTENT_TYPE,
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[] {"en_US", "pt_BR"};
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									fieldType = "text";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "text1";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "es_ES";
+						name = HashMapBuilder.<String, Object>put(
+							"en_US", RandomTestUtil.randomString()
+						).build();
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("es_ES", problem.getDetail());
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals(
+				"MustSetDefaultLocaleAsAvailableLocale", problem.getType());
+		}
+
+		// MustSetFieldType
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				_CONTENT_TYPE,
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[] {"en_US", "pt_BR"};
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "text1";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "en_US";
+						name = HashMapBuilder.<String, Object>put(
+							"en_US", RandomTestUtil.randomString()
+						).build();
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("text1", problem.getDetail());
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals("MustSetFieldType", problem.getType());
+		}
+
+		// MustSetOptionsForField
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				_CONTENT_TYPE,
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[] {"en_US", "pt_BR"};
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									fieldType = "select";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "select1";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "en_US";
+						name = HashMapBuilder.<String, Object>put(
+							"en_US", RandomTestUtil.randomString()
+						).build();
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("select1", problem.getDetail());
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals("MustSetOptionsForField", problem.getType());
+		}
+
+		// MustSetValidAvailableLocalesForProperty
+
+		HashMap<String, Object> optionsMap = HashMapBuilder.<String, Object>put(
+			"en_US",
+			new String[] {
+				JSONUtil.put(
+					"label", "Label 1"
+				).put(
+					"value", "value1"
+				).toJSONString(),
+				JSONUtil.put(
+					"label", "Label 2"
+				).put(
+					"value", "value2"
+				).toJSONString()
+			}
+		).build();
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				_CONTENT_TYPE,
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[] {"en_US", "pt_BR"};
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									customProperties =
+										HashMapBuilder.<String, Object>put(
+											"options", optionsMap
+										).build();
+									fieldType = "select";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "select1";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "en_US";
+						name = HashMapBuilder.<String, Object>put(
+							"en_US", RandomTestUtil.randomString()
+						).build();
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals(
+				JSONUtil.put(
+					"fieldName", "select1"
+				).put(
+					"property", "options"
+				).toJSONString(),
+				problem.getDetail());
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals(
+				"MustSetValidAvailableLocalesForProperty", problem.getType());
+		}
+
+		// MustSetValidCharactersForFieldName
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				_CONTENT_TYPE,
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[] {"en_US", "pt_BR"};
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									fieldType = "text";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "#name*";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "en_US";
+						name = HashMapBuilder.<String, Object>put(
+							"en_US", RandomTestUtil.randomString()
+						).build();
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("#name*", problem.getDetail());
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals(
+				"MustSetValidCharactersForFieldName", problem.getType());
+		}
+
+		// MustSetValidCharactersForFieldType
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				_CONTENT_TYPE,
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[] {"en_US", "pt_BR"};
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									fieldType = "text$#";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "text1";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "en_US";
+						name = HashMapBuilder.<String, Object>put(
+							"en_US", RandomTestUtil.randomString()
+						).build();
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("text$#", problem.getDetail());
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals(
+				"MustSetValidCharactersForFieldType", problem.getType());
+		}
+
 		// MustSetValidContentType
 
 		try {
@@ -283,6 +606,41 @@ public class DataDefinitionResourceTest
 			Assert.assertEquals("INVALID", problem.getDetail());
 			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
 			Assert.assertEquals("MustSetValidContentType", problem.getType());
+		}
+
+		// MustSetValidName
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				"app-builder",
+				new DataDefinition() {
+					{
+						availableLanguageIds = new String[] {"en_US", "pt_BR"};
+						dataDefinitionFields = new DataDefinitionField[] {
+							new DataDefinitionField() {
+								{
+									fieldType = "text";
+									label = HashMapBuilder.<String, Object>put(
+										"en_US", RandomTestUtil.randomString()
+									).put(
+										"pt_BR", RandomTestUtil.randomString()
+									).build();
+									name = "text1";
+								}
+							}
+						};
+						dataDefinitionKey = RandomTestUtil.randomString();
+						defaultLanguageId = "en_US";
+					}
+				});
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals("MustSetValidName", problem.getType());
 		}
 	}
 

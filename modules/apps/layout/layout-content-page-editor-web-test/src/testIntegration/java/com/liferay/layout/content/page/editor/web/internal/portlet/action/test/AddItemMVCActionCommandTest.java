@@ -17,34 +17,39 @@ package com.liferay.layout.content.page.editor.web.internal.portlet.action.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
-import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
+import com.liferay.layout.util.structure.ContainerLayoutStructureItem;
+import com.liferay.layout.util.structure.LayoutStructure;
+import com.liferay.layout.util.structure.LayoutStructureItem;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionRequest;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
-import java.io.InputStream;
+import java.util.List;
 
 import javax.portlet.ActionRequest;
 
@@ -75,14 +80,18 @@ public class AddItemMVCActionCommandTest {
 
 		_company = _companyLocalService.getCompany(_group.getCompanyId());
 
-		_layout = LayoutTestUtil.addLayout(_group);
+		_layout = _addLayout();
+
+		_layoutStructure = new LayoutStructure();
+
+		_layoutStructure.addRootLayoutStructureItem();
 
 		_layoutPageTemplateStructure =
 			_layoutPageTemplateStructureLocalService.
 				addLayoutPageTemplateStructure(
 					TestPropsValues.getUserId(), _group.getGroupId(),
 					_portal.getClassNameId(Layout.class.getName()),
-					_layout.getPlid(), _read("layout_data.json"),
+					_layout.getPlid(), _layoutStructure.toString(),
 					ServiceContextTestUtil.getServiceContext(
 						_group, TestPropsValues.getUserId()));
 	}
@@ -94,7 +103,8 @@ public class AddItemMVCActionCommandTest {
 
 		mockLiferayPortletActionRequest.addParameter(
 			"itemType", LayoutDataItemTypeConstants.TYPE_CONTAINER);
-		mockLiferayPortletActionRequest.addParameter("parentItemId", "root");
+		mockLiferayPortletActionRequest.addParameter(
+			"parentItemId", _layoutStructure.getMainItemId());
 		mockLiferayPortletActionRequest.addParameter("position", "0");
 
 		JSONObject jsonObject = ReflectionTestUtil.invoke(
@@ -105,22 +115,29 @@ public class AddItemMVCActionCommandTest {
 		JSONObject layoutDataJSONObject = jsonObject.getJSONObject(
 			"layoutData");
 
-		JSONObject itemsJSONObject = layoutDataJSONObject.getJSONObject(
-			"items");
+		LayoutStructure layoutStructure = LayoutStructure.of(
+			layoutDataJSONObject.toString());
 
-		JSONObject rootItemJSONObject = itemsJSONObject.getJSONObject("root");
+		LayoutStructureItem rootLayoutStructureItem =
+			layoutStructure.getLayoutStructureItem(
+				layoutStructure.getMainItemId());
 
-		JSONArray childrenJSONArray = rootItemJSONObject.getJSONArray(
-			"children");
+		List<String> childrenItemIds =
+			rootLayoutStructureItem.getChildrenItemIds();
 
-		String itemId = childrenJSONArray.getString(0);
+		String itemId = childrenItemIds.get(0);
 
-		JSONObject newItemJSONObject = itemsJSONObject.getJSONObject(itemId);
+		LayoutStructureItem layoutStructureItem =
+			layoutStructure.getLayoutStructureItem(itemId);
 
-		Assert.assertEquals("root", newItemJSONObject.getString("parentId"));
+		Assert.assertEquals(
+			_layoutStructure.getMainItemId(),
+			layoutStructureItem.getParentItemId());
 		Assert.assertEquals(
 			LayoutDataItemTypeConstants.TYPE_CONTAINER,
-			newItemJSONObject.getString("type"));
+			layoutStructureItem.getItemType());
+		Assert.assertTrue(
+			layoutStructureItem instanceof ContainerLayoutStructureItem);
 	}
 
 	@Test
@@ -128,15 +145,19 @@ public class AddItemMVCActionCommandTest {
 		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
 			_getMockLiferayPortletActionRequest();
 
+		_layoutStructure.addContainerLayoutStructureItem(
+			_layoutStructure.getMainItemId(), 0);
+
 		_layoutPageTemplateStructureLocalService.
 			updateLayoutPageTemplateStructure(
 				_group.getGroupId(),
 				_portal.getClassNameId(Layout.class.getName()),
-				_layout.getPlid(), _read("layout_data_with_children.json"));
+				_layout.getPlid(), _layoutStructure.toString());
 
 		mockLiferayPortletActionRequest.addParameter(
 			"itemType", LayoutDataItemTypeConstants.TYPE_CONTAINER);
-		mockLiferayPortletActionRequest.addParameter("parentItemId", "root");
+		mockLiferayPortletActionRequest.addParameter(
+			"parentItemId", _layoutStructure.getMainItemId());
 		mockLiferayPortletActionRequest.addParameter("position", "1");
 
 		JSONObject jsonObject = ReflectionTestUtil.invoke(
@@ -147,22 +168,42 @@ public class AddItemMVCActionCommandTest {
 		JSONObject layoutDataJSONObject = jsonObject.getJSONObject(
 			"layoutData");
 
-		JSONObject itemsJSONObject = layoutDataJSONObject.getJSONObject(
-			"items");
+		LayoutStructure layoutStructure = LayoutStructure.of(
+			layoutDataJSONObject.toString());
 
-		JSONObject rootItemJSONObject = itemsJSONObject.getJSONObject("root");
+		LayoutStructureItem rootLayoutStructureItem =
+			layoutStructure.getLayoutStructureItem(
+				layoutStructure.getMainItemId());
 
-		JSONArray childrenJSONArray = rootItemJSONObject.getJSONArray(
-			"children");
+		List<String> childrenItemIds =
+			rootLayoutStructureItem.getChildrenItemIds();
 
-		String itemId = childrenJSONArray.getString(1);
+		String itemId = childrenItemIds.get(1);
 
-		JSONObject newItemJSONObject = itemsJSONObject.getJSONObject(itemId);
+		LayoutStructureItem layoutStructureItem =
+			layoutStructure.getLayoutStructureItem(itemId);
 
-		Assert.assertEquals("root", newItemJSONObject.getString("parentId"));
+		Assert.assertEquals(
+			_layoutStructure.getMainItemId(),
+			layoutStructureItem.getParentItemId());
 		Assert.assertEquals(
 			LayoutDataItemTypeConstants.TYPE_CONTAINER,
-			newItemJSONObject.getString("type"));
+			layoutStructureItem.getItemType());
+		Assert.assertTrue(
+			layoutStructureItem instanceof ContainerLayoutStructureItem);
+	}
+
+	private Layout _addLayout() throws PortalException {
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				TestPropsValues.getGroupId(), TestPropsValues.getUserId());
+
+		return _layoutLocalService.addLayout(
+			TestPropsValues.getUserId(), _group.getGroupId(), false,
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			StringPool.BLANK, LayoutConstants.TYPE_CONTENT, false,
+			StringPool.BLANK, serviceContext);
 	}
 
 	private MockLiferayPortletActionRequest
@@ -197,15 +238,6 @@ public class AddItemMVCActionCommandTest {
 		return themeDisplay;
 	}
 
-	private String _read(String fileName) throws Exception {
-		Class<?> clazz = getClass();
-
-		InputStream inputStream = clazz.getResourceAsStream(
-			"dependencies/" + fileName);
-
-		return StringUtil.read(inputStream);
-	}
-
 	private Company _company;
 
 	@Inject
@@ -216,12 +248,17 @@ public class AddItemMVCActionCommandTest {
 
 	private Layout _layout;
 
+	@Inject
+	private LayoutLocalService _layoutLocalService;
+
 	@DeleteAfterTestRun
 	private LayoutPageTemplateStructure _layoutPageTemplateStructure;
 
 	@Inject
 	private LayoutPageTemplateStructureLocalService
 		_layoutPageTemplateStructureLocalService;
+
+	private LayoutStructure _layoutStructure;
 
 	@Inject(filter = "mvc.command.name=/content_layout/add_item")
 	private MVCActionCommand _mvcActionCommand;

@@ -737,10 +737,17 @@ components:
             description:
                 ""
             properties:
-                contentSubtypeName:
-                    type: string
-                contentTypeClassName:
-                    type: string
+                contentSubtype:
+                    properties:
+                        classTypeId:
+                            format: int64
+                            type: integer
+                    type: object
+                contentType:
+                    properties:
+                        className:
+                            type: string
+                    type: object
                 key:
                     type: string
                 name:
@@ -1896,6 +1903,10 @@ components:
                     items:
                         $ref: "#/components/schemas/FragmentField"
                     type: array
+                widgetInstances:
+                    items:
+                        $ref: "#/components/schemas/WidgetInstance"
+                    type: array
             type: object
         PageRootDefinition:
             type: object
@@ -2008,23 +2019,8 @@ components:
             type: object
         PageWidgetInstanceDefinition:
             properties:
-                widget:
-                    $ref: "#/components/schemas/Widget"
-                widgetConfig:
-                    additionalProperties:
-                        type: object
-                    type: object
-                widgetPermissions:
-                    items:
-                        properties:
-                            actionKeys:
-                                items:
-                                    type: string
-                                type: array
-                            roleKey:
-                                type: string
-                        type: object
-                    type: array
+                widgetInstance:
+                    $ref: "#/components/schemas/WidgetInstance"
             type: object
         Rating:
             description:
@@ -2374,10 +2370,27 @@ components:
                     readOnly: true
                     type: object
             type: object
-        Widget:
+        WidgetInstance:
             properties:
-                name:
+                widgetConfig:
+                    additionalProperties:
+                        type: object
+                    type: object
+                widgetInstanceId:
                     type: string
+                widgetName:
+                    type: string
+                widgetPermissions:
+                    items:
+                        properties:
+                            actionKeys:
+                                items:
+                                    type: string
+                                type: array
+                            roleKey:
+                                type: string
+                        type: object
+                    type: array
             type: object
         WikiNode:
             # @review

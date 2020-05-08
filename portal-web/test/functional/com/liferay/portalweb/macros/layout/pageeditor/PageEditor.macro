@@ -203,9 +203,11 @@ definition {
 
 		PageEditor.waitForAutoSave();
 
-		AssertElementPresent(
-			key_fragmentName = "${fragmentName}",
-			locator1 = "Fragment#FRAGMENT_HEADER");
+		if (!(isSet(withSection))) {
+			AssertElementPresent(
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#FRAGMENT_HEADER");
+		}
 	}
 
 	macro addLayoutRow {
@@ -786,17 +788,17 @@ definition {
 		}
 
 		if ("${spaceBetweenColumns}" == "true") {
-			while (IsNotChecked.isNotCheckedNotVisible(checkboxName = "Columns Gutter", locator1 = "Checkbox#ANY_CHECKBOX")) {
+			while (IsNotChecked.isNotCheckedNotVisible(checkboxName = "Show Gutter", locator1 = "Checkbox#ANY_CHECKBOX")) {
 				Click.clickAtNotVisible(
-					checkboxName = "Columns Gutter",
+					checkboxName = "Show Gutter",
 					locator1 = "Checkbox#ANY_CHECKBOX");
 			}
 		}
 
 		if ("${spaceBetweenColumns}" == "false") {
-			while (IsChecked(checkboxName = "Columns Gutter", locator1 = "Checkbox#ANY_CHECKBOX")) {
+			while (IsChecked(checkboxName = "Show Gutter", locator1 = "Checkbox#ANY_CHECKBOX")) {
 				Click.clickAtNotVisible(
-					checkboxName = "Columns Gutter",
+					checkboxName = "Show Gutter",
 					locator1 = "Checkbox#ANY_CHECKBOX");
 			}
 		}
@@ -833,9 +835,16 @@ definition {
 					entryTitle = "${entryTitle}",
 					navItem = "${navItem}");
 
-				Select(
-					locator1 = "PageEditorEditableLink#LAYOUT_BACKGROUND_IMAGE_FIELD",
-					value1 = "Image");
+				if ("${navItem}" == "Documents and Media") {
+					Select(
+						locator1 = "PageEditorEditableLink#LAYOUT_BACKGROUND_IMAGE_FIELD",
+						value1 = "${fieldName}");
+				}
+				else {
+					Select(
+						locator1 = "PageEditorEditableLink#LAYOUT_BACKGROUND_IMAGE_FIELD",
+						value1 = "Image");
+				}
 
 				SelectFrame(value1 = "relative=top");
 			}
@@ -1006,6 +1015,26 @@ definition {
 			id = "${id}");
 
 		Click(locator1 = "PageEditor#EDITABLE_FIELD_TOOLBAR_IMAGE_PROPERTIES_BUTTON");
+	}
+
+	macro gotoSaveAsFrgament {
+		PageEditor.clickConfigurableField(fragmentName = "${fragmentName}");
+
+		PageEditor.gotoTab(tabName = "Page Structure");
+
+		if (IsElementNotPresent(key_nodeName = "${fragmentName}", locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE_ACTIVE")) {
+			Click(
+				key_nodeName = "${fragmentName}",
+				locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE");
+		}
+
+		if (IsNotVisible(key_fragmentName = "${fragmentName}", locator1 = "Fragment#FRAGMENT_HEADER")) {
+			Click(
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#FRAGMENT_BODY");
+		}
+
+		Click(locator1 = "PageEditor#FRAGMENT_BODY_TOOLBAR_SAVE_AS_FRAGMENT_BUTTON");
 	}
 
 	macro gotoSelectPanel {

@@ -15,7 +15,7 @@
 package com.liferay.change.tracking.internal.reference.portal;
 
 import com.liferay.change.tracking.reference.TableReferenceDefinition;
-import com.liferay.change.tracking.reference.helper.TableReferenceInfoDefiner;
+import com.liferay.change.tracking.reference.builder.TableReferenceInfoBuilder;
 import com.liferay.portal.kernel.model.ClassNameTable;
 import com.liferay.portal.kernel.model.ResourcePermissionTable;
 import com.liferay.portal.kernel.model.RoleTable;
@@ -36,23 +36,14 @@ public class TeamTableReferenceDefinition
 
 	@Override
 	public void defineTableReferences(
-		TableReferenceInfoDefiner<TeamTable> tableReferenceInfoDefiner) {
+		TableReferenceInfoBuilder<TeamTable> tableReferenceInfoBuilder) {
 
-		tableReferenceInfoDefiner.defineGroupedModel(TeamTable.INSTANCE);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			TeamTable.INSTANCE.uuid);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			TeamTable.INSTANCE.name);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			TeamTable.INSTANCE.description);
-
-		tableReferenceInfoDefiner.defineNonreferenceColumn(
-			TeamTable.INSTANCE.lastPublishDate);
-
-		tableReferenceInfoDefiner.defineReferenceInnerJoin(
+		tableReferenceInfoBuilder.groupedModel(
+			TeamTable.INSTANCE
+		).nonreferenceColumns(
+			TeamTable.INSTANCE.uuid, TeamTable.INSTANCE.name,
+			TeamTable.INSTANCE.description, TeamTable.INSTANCE.lastPublishDate
+		).referenceInnerJoin(
 			fromStep -> fromStep.from(
 				ResourcePermissionTable.INSTANCE
 			).innerJoinON(
@@ -66,9 +57,8 @@ public class TeamTableReferenceDefinition
 					ResourcePermissionTable.INSTANCE.primKeyId.eq(
 						TeamTable.INSTANCE.teamId)
 				)
-			));
-
-		tableReferenceInfoDefiner.defineReferenceInnerJoin(
+			)
+		).referenceInnerJoin(
 			fromStep -> fromStep.from(
 				RoleTable.INSTANCE
 			).innerJoinON(
@@ -85,7 +75,8 @@ public class TeamTableReferenceDefinition
 				).and(
 					ClassNameTable.INSTANCE.value.eq(Team.class.getName())
 				)
-			));
+			)
+		);
 	}
 
 	@Override

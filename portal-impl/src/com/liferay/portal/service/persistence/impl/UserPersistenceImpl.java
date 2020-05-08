@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.UserTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -8372,12 +8373,6 @@ public class UserPersistenceImpl
 		"(user.externalReferenceCode IS NULL OR user.externalReferenceCode = '')";
 
 	public UserPersistenceImpl() {
-		setModelClass(User.class);
-
-		setModelImplClass(UserImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(UserModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
@@ -8385,6 +8380,14 @@ public class UserPersistenceImpl
 		dbColumnNames.put("groups", "groups_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(User.class);
+
+		setModelImplClass(UserImpl.class);
+		setModelPKClass(long.class);
+		setEntityCacheEnabled(UserModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(UserTable.INSTANCE);
 	}
 
 	/**

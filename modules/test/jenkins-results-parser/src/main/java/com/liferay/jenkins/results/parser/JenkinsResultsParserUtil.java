@@ -1537,6 +1537,12 @@ public class JenkinsResultsParserUtil {
 				properties, new ArrayList<String>(), basePropertyName);
 		}
 
+		Set<String> optSet = new LinkedHashSet<>(Arrays.asList(opts));
+
+		optSet.remove(null);
+
+		opts = optSet.toArray(new String[0]);
+
 		Properties matchingProperties = new Properties();
 
 		for (Object key : properties.keySet()) {

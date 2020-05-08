@@ -16,6 +16,7 @@ package com.liferay.portlet.documentlibrary.service.persistence.impl;
 
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.model.DLFileEntryTable;
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryPersistence;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
@@ -14922,18 +14923,20 @@ public class DLFileEntryPersistenceImpl
 		"dlFileEntry.custom2ImageId = ?";
 
 	public DLFileEntryPersistenceImpl() {
-		setModelClass(DLFileEntry.class);
-
-		setModelImplClass(DLFileEntryImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(DLFileEntryModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
 		dbColumnNames.put("size", "size_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(DLFileEntry.class);
+
+		setModelImplClass(DLFileEntryImpl.class);
+		setModelPKClass(long.class);
+		setEntityCacheEnabled(DLFileEntryModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(DLFileEntryTable.INSTANCE);
 	}
 
 	/**

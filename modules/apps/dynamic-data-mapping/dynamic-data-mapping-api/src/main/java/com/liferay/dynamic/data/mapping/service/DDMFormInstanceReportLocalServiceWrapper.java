@@ -129,6 +129,11 @@ public class DDMFormInstanceReportLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _ddmFormInstanceReportLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _ddmFormInstanceReportLocalService.dynamicQuery();
 	}
@@ -280,6 +285,15 @@ public class DDMFormInstanceReportLocalServiceWrapper
 	public int getDDMFormInstanceReportsCount() {
 		return _ddmFormInstanceReportLocalService.
 			getDDMFormInstanceReportsCount();
+	}
+
+	@Override
+	public com.liferay.dynamic.data.mapping.model.DDMFormInstanceReport
+			getFormInstanceReportByFormInstanceId(long formInstanceId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _ddmFormInstanceReportLocalService.
+			getFormInstanceReportByFormInstanceId(formInstanceId);
 	}
 
 	@Override

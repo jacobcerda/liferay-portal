@@ -69,6 +69,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANY_WITH_COLOR</td>
+	<td>//*[contains(@class,'btn-${key_color}')][normalize-space(text())='${key_text}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ANY_DISABLED</td>
 	<td>//*[contains(@class,'btn')][normalize-space(text())='${key_text}'][@disabled='']</td>
 	<td></td>
@@ -711,6 +716,11 @@
 <tr>
 	<td>MAIN_CONTENT_SUBMIT</td>
 	<td>//div[@id='main-content']//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODAL_ITEM_SUBMIT</td>
+	<td>//div[contains(@class,'modal-item')]//button[@type='submit']</td>
 	<td></td>
 </tr>
 <tr>

@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.exception.NoSuchImageException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Image;
+import com.liferay.portal.kernel.model.ImageTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.ImagePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelperUtil;
@@ -578,18 +579,20 @@ public class ImagePersistenceImpl
 	private static final String _FINDER_COLUMN_LTSIZE_SIZE_2 = "image.size < ?";
 
 	public ImagePersistenceImpl() {
-		setModelClass(Image.class);
-
-		setModelImplClass(ImageImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(ImageModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("type", "type_");
 		dbColumnNames.put("size", "size_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(Image.class);
+
+		setModelImplClass(ImageImpl.class);
+		setModelPKClass(long.class);
+		setEntityCacheEnabled(ImageModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(ImageTable.INSTANCE);
 	}
 
 	/**

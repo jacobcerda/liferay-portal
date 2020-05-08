@@ -143,6 +143,27 @@ public class DataLayoutResourceTest extends BaseDataLayoutResourceTestCase {
 			MapUtil.getString(dataLayout.getName(), "en_US"),
 			JSONUtil.getValue(
 				dataLayoutJSONObject, "JSONObject/name", "Object/en_US"));
+
+		// Not Found
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"dataLayoutByContentTypeByDataLayoutKey",
+						HashMapBuilder.<String, Object>put(
+							"contentType", "\"native-object\""
+						).put(
+							"dataLayoutKey",
+							"\"" + RandomTestUtil.randomString() + "\""
+						).put(
+							"siteKey",
+							"\"" + irrelevantGroup.getGroupId() + "\""
+						).build(),
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	@Override

@@ -16,6 +16,7 @@ package com.liferay.portlet.documentlibrary.service.persistence.impl;
 
 import com.liferay.document.library.kernel.exception.NoSuchFileShortcutException;
 import com.liferay.document.library.kernel.model.DLFileShortcut;
+import com.liferay.document.library.kernel.model.DLFileShortcutTable;
 import com.liferay.document.library.kernel.service.persistence.DLFileShortcutPersistence;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
@@ -6203,18 +6204,20 @@ public class DLFileShortcutPersistenceImpl
 		"dlFileShortcut.status = ?";
 
 	public DLFileShortcutPersistenceImpl() {
-		setModelClass(DLFileShortcut.class);
-
-		setModelImplClass(DLFileShortcutImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(DLFileShortcutModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
 		dbColumnNames.put("active", "active_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(DLFileShortcut.class);
+
+		setModelImplClass(DLFileShortcutImpl.class);
+		setModelPKClass(long.class);
+		setEntityCacheEnabled(DLFileShortcutModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(DLFileShortcutTable.INSTANCE);
 	}
 
 	/**

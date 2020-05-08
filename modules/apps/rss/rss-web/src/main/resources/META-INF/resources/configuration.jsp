@@ -23,6 +23,7 @@
 	action="<%= configurationActionURL %>"
 	method="post"
 	name="fm"
+	novalidate=""
 >
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
@@ -101,13 +102,13 @@
 				</div>
 
 				<aui:input label="num-of-entries-per-feed" name="preferences--entriesPerFeed--" type="number" value="<%= rssPortletInstanceConfiguration.entriesPerFeed() %>">
-					<aui:validator name="digits" />
-					<aui:validator name="min">1</aui:validator>
+					<aui:validator errorMessage='<%= LanguageUtil.get(request, "only-integers-are-allowed") %>' name="digits" />
+					<aui:validator errorMessage='<%= LanguageUtil.format(request, "only-integers-greater-than-or-equal-to-x-are-allowed", 1) %>' name="min">1</aui:validator>
 				</aui:input>
 
 				<aui:input label="num-of-expanded-entries-per-feed" name="preferences--expandedEntriesPerFeed--" type="number" value="<%= rssPortletInstanceConfiguration.expandedEntriesPerFeed() %>">
-					<aui:validator name="digits" />
-					<aui:validator name="min">1</aui:validator>
+					<aui:validator errorMessage='<%= LanguageUtil.get(request, "only-integers-are-allowed") %>' name="digits" />
+					<aui:validator errorMessage='<%= LanguageUtil.format(request, "only-integers-greater-than-or-equal-to-x-are-allowed", 1) %>' name="min">1</aui:validator>
 				</aui:input>
 
 				<aui:select disabled="<%= !rssPortletInstanceConfiguration.showFeedImage() %>" name="preferences--feedImageAlignment--">
@@ -116,15 +117,19 @@
 				</aui:select>
 
 				<clay:row>
-					<aui:col width="<%= 50 %>">
+					<clay:col
+						md="6"
+					>
 						<aui:input name="preferences--showFeedTitle--" type="checkbox" value="<%= rssPortletInstanceConfiguration.showFeedTitle() %>" />
 
 						<aui:input name="preferences--showFeedPublishedDate--" type="checkbox" value="<%= rssPortletInstanceConfiguration.showFeedPublishedDate() %>" />
 
 						<aui:input name="preferences--showFeedDescription--" type="checkbox" value="<%= rssPortletInstanceConfiguration.showFeedDescription() %>" />
-					</aui:col>
+					</clay:col>
 
-					<aui:col width="<%= 50 %>">
+					<clay:col
+						md="6"
+					>
 
 						<%
 						String taglibShowFeedImageOnClick = "if (this.checked) {document." + renderResponse.getNamespace() + "fm." + renderResponse.getNamespace() + "feedImageAlignment.disabled = '';} else {document." + renderResponse.getNamespace() + "fm." + renderResponse.getNamespace() + "feedImageAlignment.disabled = 'disabled';}";
@@ -133,7 +138,7 @@
 						<aui:input name="preferences--showFeedImage--" onClick="<%= taglibShowFeedImageOnClick %>" type="checkbox" value="<%= rssPortletInstanceConfiguration.showFeedImage() %>" />
 
 						<aui:input name="preferences--showFeedItemAuthor--" type="checkbox" value="<%= rssPortletInstanceConfiguration.showFeedItemAuthor() %>" />
-					</aui:col>
+					</clay:col>
 				</clay:row>
 			</liferay-ui:section>
 		</liferay-ui:tabs>

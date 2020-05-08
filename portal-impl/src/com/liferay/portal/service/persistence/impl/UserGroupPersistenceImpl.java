@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.exception.NoSuchUserGroupException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.UserGroup;
+import com.liferay.portal.kernel.model.UserGroupTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -6188,18 +6189,20 @@ public class UserGroupPersistenceImpl
 		"(userGroup.externalReferenceCode IS NULL OR userGroup.externalReferenceCode = '')";
 
 	public UserGroupPersistenceImpl() {
-		setModelClass(UserGroup.class);
-
-		setModelImplClass(UserGroupImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(UserGroupModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
 		dbColumnNames.put("groups", "groups_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(UserGroup.class);
+
+		setModelImplClass(UserGroupImpl.class);
+		setModelPKClass(long.class);
+		setEntityCacheEnabled(UserGroupModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(UserGroupTable.INSTANCE);
 	}
 
 	/**

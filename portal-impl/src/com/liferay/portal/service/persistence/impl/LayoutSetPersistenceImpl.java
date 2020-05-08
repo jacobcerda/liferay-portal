@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.exception.NoSuchLayoutSetException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutSet;
+import com.liferay.portal.kernel.model.LayoutSetTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -2301,17 +2302,19 @@ public class LayoutSetPersistenceImpl
 		"layoutSet.logoId = ?";
 
 	public LayoutSetPersistenceImpl() {
+		Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+		dbColumnNames.put("settings", "settings_");
+
+		setDBColumnNames(dbColumnNames);
+
 		setModelClass(LayoutSet.class);
 
 		setModelImplClass(LayoutSetImpl.class);
 		setModelPKClass(long.class);
 		setEntityCacheEnabled(LayoutSetModelImpl.ENTITY_CACHE_ENABLED);
 
-		Map<String, String> dbColumnNames = new HashMap<String, String>();
-
-		dbColumnNames.put("settings", "settings_");
-
-		setDBColumnNames(dbColumnNames);
+		setTable(LayoutSetTable.INSTANCE);
 	}
 
 	/**

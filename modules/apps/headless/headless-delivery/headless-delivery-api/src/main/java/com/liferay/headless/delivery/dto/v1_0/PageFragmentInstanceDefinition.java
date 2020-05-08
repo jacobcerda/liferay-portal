@@ -135,6 +135,36 @@ public class PageFragmentInstanceDefinition {
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected FragmentField[] fragmentFields;
 
+	@Schema
+	@Valid
+	public WidgetInstance[] getWidgetInstances() {
+		return widgetInstances;
+	}
+
+	public void setWidgetInstances(WidgetInstance[] widgetInstances) {
+		this.widgetInstances = widgetInstances;
+	}
+
+	@JsonIgnore
+	public void setWidgetInstances(
+		UnsafeSupplier<WidgetInstance[], Exception>
+			widgetInstancesUnsafeSupplier) {
+
+		try {
+			widgetInstances = widgetInstancesUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected WidgetInstance[] widgetInstances;
+
 	@Override
 	public boolean equals(Object object) {
 		if (this == object) {
@@ -197,6 +227,26 @@ public class PageFragmentInstanceDefinition {
 				sb.append(String.valueOf(fragmentFields[i]));
 
 				if ((i + 1) < fragmentFields.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
+		if (widgetInstances != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"widgetInstances\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < widgetInstances.length; i++) {
+				sb.append(String.valueOf(widgetInstances[i]));
+
+				if ((i + 1) < widgetInstances.length) {
 					sb.append(", ");
 				}
 			}

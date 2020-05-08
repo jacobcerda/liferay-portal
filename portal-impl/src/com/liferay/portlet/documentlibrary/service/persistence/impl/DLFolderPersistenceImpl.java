@@ -16,6 +16,7 @@ package com.liferay.portlet.documentlibrary.service.persistence.impl;
 
 import com.liferay.document.library.kernel.exception.NoSuchFolderException;
 import com.liferay.document.library.kernel.model.DLFolder;
+import com.liferay.document.library.kernel.model.DLFolderTable;
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryTypePersistence;
 import com.liferay.document.library.kernel.service.persistence.DLFolderPersistence;
 import com.liferay.petra.string.StringBundler;
@@ -12635,18 +12636,20 @@ public class DLFolderPersistenceImpl
 		"dlFolder.status = ?";
 
 	public DLFolderPersistenceImpl() {
-		setModelClass(DLFolder.class);
-
-		setModelImplClass(DLFolderImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(DLFolderModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
 		dbColumnNames.put("hidden", "hidden_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(DLFolder.class);
+
+		setModelImplClass(DLFolderImpl.class);
+		setModelPKClass(long.class);
+		setEntityCacheEnabled(DLFolderModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(DLFolderTable.INSTANCE);
 	}
 
 	/**

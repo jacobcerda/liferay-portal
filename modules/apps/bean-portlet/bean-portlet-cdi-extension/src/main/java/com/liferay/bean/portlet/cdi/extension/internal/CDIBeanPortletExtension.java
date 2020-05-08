@@ -189,11 +189,11 @@ public class CDIBeanPortletExtension implements Extension {
 			annotations.remove(
 				annotatedType.getAnnotation(ConversationScoped.class));
 			annotations.remove(
-				annotatedType.getAnnotation(RequestScoped.class));
-			annotations.remove(
 				annotatedType.getAnnotation(PortletRequestScoped.class));
 			annotations.remove(
 				annotatedType.getAnnotation(PortletSessionScoped.class));
+			annotations.remove(
+				annotatedType.getAnnotation(RequestScoped.class));
 			annotations.remove(
 				annotatedType.getAnnotation(SessionScoped.class));
 
@@ -538,7 +538,7 @@ public class CDIBeanPortletExtension implements Extension {
 
 				if (requestDispatcher == null) {
 					_log.error(
-						"Unable to acquire dispatcher to include=" + include);
+						"Unable to acquire dispatcher to include " + include);
 				}
 				else {
 					requestDispatcher.include(portletRequest, portletResponse);

@@ -81,31 +81,32 @@ public class HistogramMetricResourceTest
 	@Override
 	@Test
 	public void testGetProcessHistogramMetric() throws Exception {
-		LocalDate localDate = LocalDate.now(ZoneId.of("GMT"));
+		LocalDate nowlocalDate = LocalDate.now(ZoneId.of("GMT"));
 
-		LocalDateTime nowLocalDateTime = _createLocalDateTime();
-
-		_testGetProcessMetric(
-			nowLocalDateTime,
-			LocalDateTime.of(localDate.minusDays(6), LocalTime.MIDNIGHT));
-		_testGetProcessMetric(
-			nowLocalDateTime,
-			LocalDateTime.of(localDate.minusDays(29), LocalTime.MIDNIGHT));
-		_testGetProcessMetric(
-			nowLocalDateTime,
-			LocalDateTime.of(localDate.minusDays(89), LocalTime.MIDNIGHT));
-		_testGetProcessMetric(
-			nowLocalDateTime,
-			LocalDateTime.of(localDate.minusDays(179), LocalTime.MIDNIGHT));
-		_testGetProcessMetric(
-			nowLocalDateTime,
-			LocalDateTime.of(localDate.minusDays(364), LocalTime.MIDNIGHT));
-		_testGetProcessMetric(
-			nowLocalDateTime, LocalDateTime.of(localDate, LocalTime.MIDNIGHT));
+		LocalDateTime nowLocalDateTime = _createLocalDateTime(nowlocalDate);
 
 		_testGetProcessMetric(
-			LocalDateTime.of(localDate.minusDays(1), LocalTime.MAX),
-			LocalDateTime.of(localDate.minusDays(1), LocalTime.MIDNIGHT));
+			nowLocalDateTime,
+			LocalDateTime.of(nowlocalDate.minusDays(6), LocalTime.MIDNIGHT));
+		_testGetProcessMetric(
+			nowLocalDateTime,
+			LocalDateTime.of(nowlocalDate.minusDays(29), LocalTime.MIDNIGHT));
+		_testGetProcessMetric(
+			nowLocalDateTime,
+			LocalDateTime.of(nowlocalDate.minusDays(89), LocalTime.MIDNIGHT));
+		_testGetProcessMetric(
+			nowLocalDateTime,
+			LocalDateTime.of(nowlocalDate.minusDays(179), LocalTime.MIDNIGHT));
+		_testGetProcessMetric(
+			nowLocalDateTime,
+			LocalDateTime.of(nowlocalDate.minusDays(364), LocalTime.MIDNIGHT));
+		_testGetProcessMetric(
+			nowLocalDateTime,
+			LocalDateTime.of(nowlocalDate, LocalTime.MIDNIGHT));
+
+		_testGetProcessMetric(
+			LocalDateTime.of(nowlocalDate.minusDays(1), LocalTime.MAX),
+			LocalDateTime.of(nowlocalDate.minusDays(1), LocalTime.MIDNIGHT));
 	}
 
 	@Override
@@ -162,8 +163,9 @@ public class HistogramMetricResourceTest
 		return histogramMetric;
 	}
 
-	private LocalDateTime _createLocalDateTime() {
-		LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("GMT"));
+	private LocalDateTime _createLocalDateTime(LocalDate localDate) {
+		LocalDateTime localDateTime = localDate.atTime(
+			LocalTime.now(ZoneId.of("GMT")));
 
 		localDateTime = localDateTime.withMinute(0);
 		localDateTime = localDateTime.withNano(0);
@@ -183,11 +185,15 @@ public class HistogramMetricResourceTest
 
 		double timeAmount = histograms.size();
 
+		if (timeRange == 0) {
+			timeRange = 1;
+		}
+
 		if (Objects.equals(unit, HistogramMetric.Unit.MONTHS.getValue())) {
 			timeAmount = timeRange / 30.0;
 		}
 		else if (Objects.equals(unit, HistogramMetric.Unit.WEEKS.getValue())) {
-			timeAmount = timeRange / 7.;
+			timeAmount = timeRange / 7.0;
 		}
 		else if (Objects.equals(unit, HistogramMetric.Unit.YEARS.getValue())) {
 			timeAmount = timeRange / 365.0;
@@ -224,7 +230,8 @@ public class HistogramMetricResourceTest
 					}
 				}
 			},
-			endLocalDateTime, startLocalDateTime, "Months");
+			endLocalDateTime, startLocalDateTime,
+			HistogramMetric.Unit.MONTHS.getValue());
 		_assertMetric(
 			new LinkedHashSet<Histogram>(histograms) {
 				{
@@ -248,7 +255,8 @@ public class HistogramMetricResourceTest
 					}
 				}
 			},
-			endLocalDateTime, startLocalDateTime, "Weeks");
+			endLocalDateTime, startLocalDateTime,
+			HistogramMetric.Unit.WEEKS.getValue());
 		_assertMetric(
 			new LinkedHashSet<Histogram>(histograms) {
 				{
@@ -267,7 +275,8 @@ public class HistogramMetricResourceTest
 					}
 				}
 			},
-			endLocalDateTime, startLocalDateTime, "Years");
+			endLocalDateTime, startLocalDateTime,
+			HistogramMetric.Unit.YEARS.getValue());
 		_assertMetric(
 			new LinkedHashSet<Histogram>(histograms) {
 				{
@@ -282,7 +291,8 @@ public class HistogramMetricResourceTest
 					}
 				}
 			},
-			endLocalDateTime, startLocalDateTime, "Days");
+			endLocalDateTime, startLocalDateTime,
+			HistogramMetric.Unit.DAYS.getValue());
 		_assertMetric(
 			new LinkedHashSet<Histogram>(histograms) {
 				{
@@ -297,7 +307,8 @@ public class HistogramMetricResourceTest
 					}
 				}
 			},
-			endLocalDateTime, startLocalDateTime, "Hours");
+			endLocalDateTime, startLocalDateTime,
+			HistogramMetric.Unit.HOURS.getValue());
 	}
 
 	private Date _toDate(LocalDateTime localDateTime) {

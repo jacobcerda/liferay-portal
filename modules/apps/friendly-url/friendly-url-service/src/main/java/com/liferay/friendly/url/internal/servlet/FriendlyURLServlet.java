@@ -343,6 +343,17 @@ public class FriendlyURLServlet extends HttpServlet {
 			}
 		}
 
+		Layout layout = (Layout)httpServletRequest.getAttribute(WebKeys.LAYOUT);
+
+		if ((layout != null) &&
+			Objects.equals(layout.getType(), LayoutConstants.TYPE_URL)) {
+
+			actualURL = actualURL.concat(
+				HttpUtil.parameterMapToString(
+					httpServletRequest.getParameterMap(),
+					!actualURL.contains(StringPool.QUESTION)));
+		}
+
 		return new Redirect(actualURL);
 	}
 

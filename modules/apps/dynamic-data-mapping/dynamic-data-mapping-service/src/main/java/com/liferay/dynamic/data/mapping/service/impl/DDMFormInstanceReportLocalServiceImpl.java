@@ -67,6 +67,14 @@ public class DDMFormInstanceReportLocalServiceImpl
 		return ddmFormInstanceReportPersistence.update(formInstanceReport);
 	}
 
+	public DDMFormInstanceReport getFormInstanceReportByFormInstanceId(
+			long formInstanceId)
+		throws PortalException {
+
+		return ddmFormInstanceReportPersistence.findByFormInstanceId(
+			formInstanceId);
+	}
+
 	@Override
 	public DDMFormInstanceReport updateFormInstanceReport(
 			long formInstanceReportId, long formInstanceRecordVersionId,
@@ -110,13 +118,14 @@ public class DDMFormInstanceReportLocalServiceImpl
 					ddmFormFieldValue.getName());
 
 			if (fieldJSONObject == null) {
+				fieldJSONObject = JSONUtil.put(
+					"type", ddmFormFieldValue.getType()
+				).put(
+					"values", JSONFactoryUtil.createJSONObject()
+				);
+
 				formInstanceReportDataJSONObject.put(
-					ddmFormFieldValue.getName(),
-					JSONUtil.put(
-						"type", ddmFormFieldValue.getType()
-					).put(
-						"values", JSONFactoryUtil.createJSONObject()
-					));
+					ddmFormFieldValue.getName(), fieldJSONObject);
 			}
 
 			if (StringUtil.equals(ddmFormFieldValue.getType(), "radio")) {
@@ -130,10 +139,17 @@ public class DDMFormInstanceReportLocalServiceImpl
 
 					int count = valuesJSONObject.getInt(key);
 
-					if (DDMFormInstanceReportConstants.EVENT_ADD_RECORD_VERSION.
-							equals(formInstanceReportEvent)) {
+					if (formInstanceReportEvent.equals(
+							DDMFormInstanceReportConstants.
+								EVENT_ADD_RECORD_VERSION)) {
 
-						count = count + 1;
+						count++;
+					}
+					else if (formInstanceReportEvent.equals(
+								DDMFormInstanceReportConstants.
+									EVENT_DELETE_RECORD_VERSION)) {
+
+						count--;
 					}
 
 					valuesJSONObject.put(key, count);

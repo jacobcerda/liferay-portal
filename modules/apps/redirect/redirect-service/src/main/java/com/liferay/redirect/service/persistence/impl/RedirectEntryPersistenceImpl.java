@@ -46,6 +46,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.redirect.exception.NoSuchEntryException;
 import com.liferay.redirect.model.RedirectEntry;
+import com.liferay.redirect.model.RedirectEntryTable;
 import com.liferay.redirect.model.impl.RedirectEntryImpl;
 import com.liferay.redirect.model.impl.RedirectEntryModelImpl;
 import com.liferay.redirect.service.persistence.RedirectEntryPersistence;
@@ -3646,17 +3647,19 @@ public class RedirectEntryPersistenceImpl
 		"(redirectEntry.sourceURL IS NULL OR redirectEntry.sourceURL = '')";
 
 	public RedirectEntryPersistenceImpl() {
-		setModelClass(RedirectEntry.class);
-
-		setModelImplClass(RedirectEntryImpl.class);
-		setModelPKClass(long.class);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
 		dbColumnNames.put("permanent", "permanent_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(RedirectEntry.class);
+
+		setModelImplClass(RedirectEntryImpl.class);
+		setModelPKClass(long.class);
+
+		setTable(RedirectEntryTable.INSTANCE);
 	}
 
 	/**

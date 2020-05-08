@@ -256,6 +256,11 @@ public abstract class BaseUserAccountResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetMyUserAccountNotFound() throws Exception {
+		Assert.assertTrue(true);
+	}
+
+	@Test
 	public void testGetOrganizationUserAccountsPage() throws Exception {
 		Page<UserAccount> page =
 			userAccountResource.getOrganizationUserAccountsPage(
@@ -1125,6 +1130,25 @@ public abstract class BaseUserAccountResourceTestCase {
 	}
 
 	@Test
+	public void testPostUserAccount() throws Exception {
+		UserAccount randomUserAccount = randomUserAccount();
+
+		UserAccount postUserAccount = testPostUserAccount_addUserAccount(
+			randomUserAccount);
+
+		assertEquals(randomUserAccount, postUserAccount);
+		assertValid(postUserAccount);
+	}
+
+	protected UserAccount testPostUserAccount_addUserAccount(
+			UserAccount userAccount)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetUserAccount() throws Exception {
 		UserAccount postUserAccount = testGetUserAccount_addUserAccount();
 
@@ -1161,6 +1185,26 @@ public abstract class BaseUserAccountResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data", "Object/userAccount"))));
+	}
+
+	@Test
+	public void testGraphQLGetUserAccountNotFound() throws Exception {
+		Long irrelevantUserAccountId = RandomTestUtil.randomLong();
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"userAccount",
+						new HashMap<String, Object>() {
+							{
+								put("userAccountId", irrelevantUserAccountId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	@Rule

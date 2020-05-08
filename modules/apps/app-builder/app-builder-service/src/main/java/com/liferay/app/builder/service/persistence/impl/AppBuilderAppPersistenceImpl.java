@@ -16,6 +16,7 @@ package com.liferay.app.builder.service.persistence.impl;
 
 import com.liferay.app.builder.exception.NoSuchAppException;
 import com.liferay.app.builder.model.AppBuilderApp;
+import com.liferay.app.builder.model.AppBuilderAppTable;
 import com.liferay.app.builder.model.impl.AppBuilderAppImpl;
 import com.liferay.app.builder.model.impl.AppBuilderAppModelImpl;
 import com.liferay.app.builder.service.persistence.AppBuilderAppPersistence;
@@ -4929,16 +4930,18 @@ public class AppBuilderAppPersistenceImpl
 		"appBuilderApp.ddmStructureId = ?";
 
 	public AppBuilderAppPersistenceImpl() {
-		setModelClass(AppBuilderApp.class);
-
-		setModelImplClass(AppBuilderAppImpl.class);
-		setModelPKClass(long.class);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(AppBuilderApp.class);
+
+		setModelImplClass(AppBuilderAppImpl.class);
+		setModelPKClass(long.class);
+
+		setTable(AppBuilderAppTable.INSTANCE);
 	}
 
 	/**

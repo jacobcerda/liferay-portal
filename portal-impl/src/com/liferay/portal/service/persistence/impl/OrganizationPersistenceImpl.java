@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.exception.NoSuchOrganizationException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Organization;
+import com.liferay.portal.kernel.model.OrganizationTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -9287,12 +9288,6 @@ public class OrganizationPersistenceImpl
 		"(organization.externalReferenceCode IS NULL OR organization.externalReferenceCode = '')";
 
 	public OrganizationPersistenceImpl() {
-		setModelClass(Organization.class);
-
-		setModelImplClass(OrganizationImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(OrganizationModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
@@ -9300,6 +9295,14 @@ public class OrganizationPersistenceImpl
 		dbColumnNames.put("groups", "groups_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(Organization.class);
+
+		setModelImplClass(OrganizationImpl.class);
+		setModelPKClass(long.class);
+		setEntityCacheEnabled(OrganizationModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(OrganizationTable.INSTANCE);
 	}
 
 	/**
