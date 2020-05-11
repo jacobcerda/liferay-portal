@@ -526,11 +526,13 @@ public class JournalContentDisplayContext {
 
 		assetEntryItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new AssetEntryItemSelectorReturnType());
-		assetEntryItemSelectorCriterion.setGroupId(
-			_themeDisplay.getScopeGroupId());
+
+		long groupId = getGroupId();
+
+		assetEntryItemSelectorCriterion.setGroupId(groupId);
 		assetEntryItemSelectorCriterion.setSelectedGroupIds(
-			PortalUtil.getCurrentAndAncestorSiteGroupIds(
-				_themeDisplay.getScopeGroupId()));
+			PortalUtil.getCurrentAndAncestorSiteGroupIds(groupId));
+
 		assetEntryItemSelectorCriterion.setShowNonindexable(true);
 		assetEntryItemSelectorCriterion.setShowScheduled(true);
 		assetEntryItemSelectorCriterion.setSingleSelect(true);

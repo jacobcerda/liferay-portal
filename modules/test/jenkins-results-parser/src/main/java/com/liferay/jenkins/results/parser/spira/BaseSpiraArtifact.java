@@ -16,6 +16,10 @@ package com.liferay.jenkins.results.parser.spira;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import java.lang.reflect.Field;
 
 import java.util.Calendar;
@@ -272,7 +276,7 @@ public abstract class BaseSpiraArtifact implements SpiraArtifact {
 		this.jsonObject = jsonObject;
 	}
 
-	protected final JSONObject jsonObject;
+	protected transient JSONObject jsonObject;
 
 	private static Object _getClassField(
 		Class<? extends SpiraArtifact> spiraArtifactClass, String fieldName) {
@@ -411,6 +415,22 @@ public abstract class BaseSpiraArtifact implements SpiraArtifact {
 			_getPathSpiraArtifactsMap(spiraArtifactClass);
 
 		pathSpiraArtifactsMap.remove(pathSpiraArtifact.getPath());
+	}
+
+	private void readObject(ObjectInputStream objectInputStream)
+		throws ClassNotFoundException, IOException {
+
+		objectInputStream.defaultReadObject();
+
+		jsonObject = new JSONObject(objectInputStream.readUTF());
+	}
+
+	private void writeObject(ObjectOutputStream objectOutputStream)
+		throws IOException {
+
+		objectOutputStream.defaultWriteObject();
+
+		objectOutputStream.writeUTF(jsonObject.toString());
 	}
 
 	private static final Map<Class<?>, Map<Integer, SpiraArtifact>>

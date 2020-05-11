@@ -175,6 +175,8 @@ public class DepotAdminSelectRoleDisplayContext {
 				_renderRequest,
 				_getPortletURL(_renderRequest, _renderResponse, _user));
 
+			groupSearch.setEmptyResultsMessage("no-asset-libraries-were-found");
+
 			GroupSearchTerms groupSearchTerms =
 				(GroupSearchTerms)groupSearch.getSearchTerms();
 
@@ -402,9 +404,14 @@ public class DepotAdminSelectRoleDisplayContext {
 				Stream<Role> stream = roles.stream();
 
 				return stream.filter(
-					role -> !Objects.equals(
-						role.getName(),
-						DepotRolesConstants.ASSET_LIBRARY_MEMBER)
+					role ->
+						!Objects.equals(
+							role.getName(),
+							DepotRolesConstants.
+								ASSET_LIBRARY_CONNECTED_SITE_MEMBER) &&
+						!Objects.equals(
+							role.getName(),
+							DepotRolesConstants.ASSET_LIBRARY_MEMBER)
 				).collect(
 					Collectors.toList()
 				);
@@ -423,6 +430,10 @@ public class DepotAdminSelectRoleDisplayContext {
 
 			return stream.filter(
 				role ->
+					!Objects.equals(
+						role.getName(),
+						DepotRolesConstants.
+							ASSET_LIBRARY_CONNECTED_SITE_MEMBER) &&
 					!Objects.equals(
 						role.getName(),
 						DepotRolesConstants.ASSET_LIBRARY_MEMBER) &&

@@ -109,9 +109,9 @@ definition {
 
 			AssertConfirm(value1 = "Are you sure you want to activate local staging for ${siteName}?");
 
-			Pause(locator1 = "5000");
-
-			Refresh();
+			while (IsElementNotPresent(locator1 = "Staging#PROCESS_SUCCESSFUL")) {
+				Pause(locator1 = "3000");
+			}
 
 			AssertTextEquals(
 				locator1 = "Staging#PROCESS_RESULT",
@@ -625,7 +625,9 @@ definition {
 
 		Click(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		while (IsElementPresent(locator1 = "IFrame#DIALOG")) {
+			SelectFrame(locator1 = "IFrame#DIALOG");
+		}
 	}
 
 	macro markAsReadyForPublication {
@@ -837,7 +839,7 @@ definition {
 			locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON",
 			value1 = "Publish to Live");
 
-		Pause(locator1 = "8000");
+		Pause(locator1 = "10000");
 
 		if (IsElementPresent(locator1 = "Staging#PROCESS_SUCCESSFUL")) {
 			AssertTextEquals(

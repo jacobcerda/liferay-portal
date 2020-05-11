@@ -14,7 +14,7 @@
 
 import {openToast} from 'frontend-js-web';
 
-export default function ({checkDestinationURL, namespace}) {
+export default function ({checkRedirectEntryChainURL, namespace}) {
 	var form = document[`${namespace}fm`];
 	form.addEventListener('submit', saveRedirectEntry);
 
@@ -23,8 +23,9 @@ export default function ({checkDestinationURL, namespace}) {
 		var sourceURL = form.elements[`${namespace}sourceURL`];
 
 		if (destinationURL.value && sourceURL.value) {
-			Liferay.Util.fetch(checkDestinationURL, {
+			Liferay.Util.fetch(checkRedirectEntryChainURL, {
 				body: Liferay.Util.objectToFormData({
+					[`${namespace}destinationURL`]: destinationURL.value,
 					[`${namespace}sourceURL`]: sourceURL.value,
 				}),
 				method: 'POST',
@@ -33,11 +34,11 @@ export default function ({checkDestinationURL, namespace}) {
 					return response.json();
 				})
 				.then((response) => {
-					if (response.success) {
-						submitForm(form);
+					if (response.redirectEntryChainCause) {
+						showModal(response.redirectEntryChainCause);
 					}
 					else {
-						showModal();
+						submitForm(form);
 					}
 				})
 				.catch(() => {
@@ -56,16 +57,19 @@ export default function ({checkDestinationURL, namespace}) {
 		}
 	}
 
-	function showModal() {
+	function showModal(redirectEntryChainCause) {
 		Liferay.componentReady(`${namespace}RedirectsChainedRedirections`).then(
 			(ChainedRedirections) => {
-				ChainedRedirections.open((updateReferences) => {
-					Liferay.Util.postForm(form, {
-						data: {
-							updateReferences,
-						},
-					});
-				});
+				ChainedRedirections.open(
+					redirectEntryChainCause,
+					(updateChainedRedirectEntries) => {
+						Liferay.Util.postForm(form, {
+							data: {
+								updateChainedRedirectEntries,
+							},
+						});
+					}
+				);
 			}
 		);
 	}

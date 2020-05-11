@@ -14,7 +14,6 @@
 
 package com.liferay.redirect.web.internal.portlet.action;
 
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
@@ -65,26 +64,23 @@ public class EditRedirectEntryMVCActionCommand extends BaseMVCActionCommand {
 		Date expirationDate = _getExpirationDate(actionRequest, themeDisplay);
 		boolean permanent = ParamUtil.getBoolean(actionRequest, "permanent");
 		String sourceURL = ParamUtil.getString(actionRequest, "sourceURL");
+		boolean updateChainedRedirectEntries = ParamUtil.getBoolean(
+			actionRequest, "updateChainedRedirectEntries");
 
 		try {
 			if (redirectEntryId == 0) {
 				_redirectEntryService.addRedirectEntry(
 					themeDisplay.getScopeGroupId(), destinationURL,
-					expirationDate, permanent, sourceURL,
+					expirationDate, RedirectUtil.getGroupBaseURL(themeDisplay),
+					permanent, sourceURL, updateChainedRedirectEntries,
 					ServiceContextFactory.getInstance(
 						RedirectEntry.class.getName(), actionRequest));
 			}
 			else {
 				_redirectEntryService.updateRedirectEntry(
-					redirectEntryId, destinationURL, expirationDate, permanent,
-					sourceURL);
-			}
-
-			if (ParamUtil.getBoolean(actionRequest, "updateReferences")) {
-				_redirectEntryService.updateChainedRedirectEntries(
-					themeDisplay.getScopeGroupId(), destinationURL,
-					RedirectUtil.getGroupBaseURL(themeDisplay) +
-						StringPool.SLASH + sourceURL);
+					redirectEntryId, destinationURL, expirationDate,
+					RedirectUtil.getGroupBaseURL(themeDisplay), permanent,
+					sourceURL, updateChainedRedirectEntries);
 			}
 		}
 		catch (Exception exception) {

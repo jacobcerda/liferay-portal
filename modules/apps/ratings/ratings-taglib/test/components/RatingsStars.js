@@ -37,9 +37,11 @@ describe('RatingsStars', () => {
 
 	describe('when rendered with the default props', () => {
 		let starsDropdownToggle;
+		let starsButtons;
 
 		beforeEach(() => {
-			starsDropdownToggle = renderComponent().getAllByRole('button')[0];
+			starsButtons = renderComponent().getAllByRole('button');
+			starsDropdownToggle = starsButtons[0];
 		});
 
 		it('is enabled', () => {
@@ -52,6 +54,10 @@ describe('RatingsStars', () => {
 
 		it('has vote title', () => {
 			expect(starsDropdownToggle.title).toBe('vote');
+		});
+
+		it('has delete option disabled', () => {
+			expect(starsButtons[6]).toHaveProperty('disabled', true);
 		});
 	});
 
@@ -109,7 +115,11 @@ describe('RatingsStars', () => {
 				);
 			});
 
-			describe('and the user vote 5/5 stars', () => {
+			it('has delete option enabled', () => {
+				expect(starsButtons[6]).toHaveProperty('disabled', false);
+			});
+
+			describe('later the user vote 5/5 stars', () => {
 				beforeEach(() => {
 					act(() => {
 						fireEvent.click(starsButtons[5]);
@@ -118,6 +128,22 @@ describe('RatingsStars', () => {
 
 				it('increase the user score', () => {
 					expect(starsDropdownToggle.value).toBe('5');
+				});
+			});
+
+			describe('finally the user unvote', () => {
+				beforeEach(() => {
+					act(() => {
+						fireEvent.click(starsButtons[6]);
+					});
+				});
+
+				it('delete the user score', () => {
+					expect(starsDropdownToggle.value).toBe('0');
+				});
+
+				it('has delete option disabled', () => {
+					expect(starsButtons[6]).toHaveProperty('disabled', true);
 				});
 			});
 		});
@@ -200,7 +226,7 @@ describe('RatingsStars', () => {
 				expect(starsDropdownToggle.value).toBe('1');
 			});
 
-			describe('and the user change her vote to 5/5 stars', () => {
+			describe('later the user change her vote to 5/5 stars', () => {
 				beforeEach(async () => {
 					fetch.mockResponseOnce(
 						JSON.stringify({
@@ -221,6 +247,30 @@ describe('RatingsStars', () => {
 
 				it('updates the average score of 1 vote', async () => {
 					expect(result.queryByText(`5.0 (1 vote)`)).toBeTruthy();
+				});
+			});
+
+			describe('finally the user unvote', () => {
+				beforeEach(async () => {
+					fetch.mockResponseOnce(
+						JSON.stringify({
+							averageScore: 0,
+							score: -1,
+							totalEntries: 0,
+						})
+					);
+
+					await act(async () => {
+						fireEvent.click(starsButtons[6]);
+					});
+				});
+
+				it('delete the user score', () => {
+					expect(starsDropdownToggle.value).toBe('0');
+				});
+
+				it('has delete option disabled', () => {
+					expect(starsButtons[6]).toHaveProperty('disabled', true);
 				});
 			});
 		});

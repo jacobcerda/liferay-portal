@@ -54,14 +54,17 @@ RedirectManagementToolbarDisplayContext redirectManagementToolbarDisplayContext 
 
 					<%
 					row.setData(HashMapBuilder.<String, Object>put("actions", redirectManagementToolbarDisplayContext.getAvailableActions(redirectEntry)).build());
-
-					String sourceURL = RedirectUtil.getGroupBaseURL(themeDisplay) + StringPool.SLASH + redirectEntry.getSourceURL();
 					%>
 
 					<liferay-ui:search-container-column-text
 						cssClass="table-cell-content"
 						name="source-url"
 					>
+
+						<%
+						String sourceURL = RedirectUtil.getGroupBaseURL(themeDisplay) + StringPool.SLASH + redirectEntry.getSourceURL();
+						%>
+
 						<span data-title="<%= sourceURL %>">
 							<%= HtmlUtil.escape(sourceURL) %>
 						</span>
@@ -73,25 +76,11 @@ RedirectManagementToolbarDisplayContext redirectManagementToolbarDisplayContext 
 					>
 
 						<%
-						String destinationUrl = HtmlUtil.escape(redirectEntry.getDestinationURL());
-
-						Map<String, String> data = HashMapBuilder.put(
-							"href", sourceURL
-						).build();
+						String destinationURL = HtmlUtil.escape(redirectEntry.getDestinationURL());
 						%>
 
-						<clay:button
-							data="<%= data %>"
-							elementClasses="icon-shortcut"
-							icon="shortcut"
-							monospaced="<%= true %>"
-							size="sm"
-							style="unstyled"
-							title='<%= LanguageUtil.get(request, "try-redirection") %>'
-						/>
-
-						<span data-title="<%= destinationUrl %>">
-							<%= destinationUrl %>
+						<span data-title="<%= destinationURL %>">
+							<%= destinationURL %>
 						</span>
 					</liferay-ui:search-container-column-text>
 
@@ -149,10 +138,10 @@ RedirectManagementToolbarDisplayContext redirectManagementToolbarDisplayContext 
 		function (event) {
 			var delegateTarget = event.delegateTarget;
 
-			var destinationUrl = delegateTarget.dataset.href;
+			var destinationURL = delegateTarget.dataset.href;
 
-			if (destinationUrl) {
-				window.open(destinationUrl, '_blank');
+			if (destinationURL) {
+				window.open(destinationURL, '_blank');
 			}
 		}
 	);

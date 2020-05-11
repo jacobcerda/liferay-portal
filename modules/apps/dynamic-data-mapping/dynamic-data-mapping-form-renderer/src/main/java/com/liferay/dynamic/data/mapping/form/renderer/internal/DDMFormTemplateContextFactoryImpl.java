@@ -120,6 +120,14 @@ public class DDMFormTemplateContextFactoryImpl
 
 		Map<String, Object> templateContext = new HashMap<>();
 
+		ResourceBundle resourceBundle = getResourceBundle(locale);
+
+		String cancelLabel = GetterUtil.getString(
+			ddmFormRenderingContext.getCancelLabel(),
+			LanguageUtil.get(resourceBundle, "cancel"));
+
+		templateContext.put("cancelLabel", cancelLabel);
+
 		templateContext.put("containerId", containerId);
 		templateContext.put(
 			"currentPage",
@@ -139,6 +147,10 @@ public class DDMFormTemplateContextFactoryImpl
 			"portletNamespace", ddmFormRenderingContext.getPortletNamespace());
 		templateContext.put("readOnly", ddmFormRenderingContext.isReadOnly());
 
+		String redirectURL = ddmFormRenderingContext.getRedirectURL();
+
+		templateContext.put("redirectURL", redirectURL);
+
 		List<DDMFormRule> ddmFormRules = ddmFormLayout.getDDMFormRules();
 
 		if (ListUtil.isEmpty(ddmFormRules)) {
@@ -146,6 +158,16 @@ public class DDMFormTemplateContextFactoryImpl
 		}
 
 		templateContext.put("rules", toObjectList(ddmFormRules));
+
+		boolean showCancelButton = ddmFormRenderingContext.isShowCancelButton();
+
+		if (ddmFormRenderingContext.isReadOnly() ||
+			Validator.isNull(redirectURL)) {
+
+			showCancelButton = false;
+		}
+
+		templateContext.put("showCancelButton", showCancelButton);
 
 		templateContext.put(
 			"showRequiredFieldsWarning",
@@ -158,8 +180,6 @@ public class DDMFormTemplateContextFactoryImpl
 		}
 
 		templateContext.put("showSubmitButton", showSubmitButton);
-
-		ResourceBundle resourceBundle = getResourceBundle(locale);
 
 		templateContext.put("strings", getLanguageStringsMap(resourceBundle));
 

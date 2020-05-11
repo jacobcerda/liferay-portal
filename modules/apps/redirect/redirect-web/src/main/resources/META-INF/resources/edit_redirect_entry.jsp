@@ -46,7 +46,7 @@ else {
 	<aui:input name="<%= Constants.CMD %>" type="hidden" />
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 	<aui:input name="backURL" type="hidden" value="<%= backURL %>" />
-	<aui:input name="updateReferences" type="hidden" value="" />
+	<aui:input name="updateChainedRedirectEntries" type="hidden" value="" />
 
 	<c:if test="<%= redirectEntry != null %>">
 		<aui:input name="redirectEntryId" type="hidden" value="<%= redirectEntry.getRedirectEntryId() %>" />
@@ -127,12 +127,12 @@ else {
 	/>
 </div>
 
-<portlet:actionURL name="/redirect/check_destination_url" var="checkDestinationURL" />
+<portlet:actionURL name="/redirect/check_redirect_entry_chain" var="checkRedirectEntryChainURL" />
 
 <liferay-frontend:component
 	context='<%=
 		HashMapBuilder.<String, Object>put(
-			"checkDestinationURL", checkDestinationURL
+			"checkRedirectEntryChainURL", checkRedirectEntryChainURL
 		).build()
 	%>'
 	module="js/editRedirectEntry"

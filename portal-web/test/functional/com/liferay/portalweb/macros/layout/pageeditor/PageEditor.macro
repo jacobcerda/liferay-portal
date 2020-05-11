@@ -5,7 +5,7 @@ definition {
 
 		PageEditor.gotoTab(tabName = "Fragments");
 
-		PageEditor.expandFragmentCollection(collectionName = "Collection Display");
+		PageEditor.expandFragmentCollection(collectionName = "Content Display");
 
 		if ("${scope}" == "Master") {
 			if ("${dropTarget}" == "Header") {
@@ -742,6 +742,26 @@ definition {
 		Click(locator1 = "Button#ADD");
 
 		PageEditor.waitForAutoSave();
+
+		if (isSet(imageDescription)) {
+			Pause(locator1 = "3000");
+
+			Type(
+				key_fieldName = "imageDescription",
+				locator1 = "FormFields#TEXT_FIELD",
+				value1 = "${imageDescription}");
+
+			Pause(locator1 = "3000");
+
+			AssertTextEquals(
+				key_fieldName = "imageDescription",
+				locator1 = "FormFields#TEXT_FIELD",
+				value1 = "${imageDescription}");
+
+			Click(locator1 = "PageEditor#EDITABLE_FIELD_TOOLBAR_IMAGE_PROPERTIES_BUTTON");
+
+			PageEditor.waitForAutoSave();
+		}
 	}
 
 	macro editFragmentText {
@@ -862,11 +882,23 @@ definition {
 				}
 
 				else {
-					SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+					if (isSet(uploadFileName)) {
+						ItemSelector.uploadFile(
+							navTab = "Documents and Media",
+							uploadFileName = "${uploadFileName}");
+					}
+					else if (isSet(imageSourceURL)) {
+						ItemSelector.addFromURL(
+							imageSourceURL = "${imageSourceURL}",
+							navTab = "URL");
+					}
+					else {
+						SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-					Click(
-						key_card = "${entryTitle}",
-						locator1 = "LexiconCard#CARD_TITLE");
+						Click(
+							key_card = "${entryTitle}",
+							locator1 = "LexiconCard#CARD_TITLE");
+					}
 				}
 
 				SelectFrame(value1 = "relative=top");
@@ -1281,6 +1313,22 @@ definition {
 		AssertElementPresent(
 			key_fragmentName = "${fragmentName}",
 			locator1 = "Fragment#FRAGMENT_HEADER");
+	}
+
+	macro viewFragmentEditableImage {
+		if ("${contributed}" == "false") {
+			AssertVisible(
+				key_fragmentClass = "${fragmentClass}",
+				key_image = "${imageFileName}",
+				locator1 = "Fragment#PAGE_EDITOR_FRAGMENT_IMAGE");
+		}
+		else {
+			AssertVisible(
+				id = "${id}",
+				key_image = "${imageFileName}",
+				key_imageDescription = "${imageDescription}",
+				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_EDITABLE_FIELD_IMAGE_PROPERTIES");
+		}
 	}
 
 	macro viewFragmentEditableText {

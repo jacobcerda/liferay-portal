@@ -62,6 +62,21 @@ public class RedirectEntryServiceImpl extends RedirectEntryServiceBaseImpl {
 	}
 
 	@Override
+	public RedirectEntry addRedirectEntry(
+			long groupId, String destinationURL, Date expirationDate,
+			String groupBaseURL, boolean permanent, String sourceURL,
+			boolean updateChainedRedirectEntries, ServiceContext serviceContext)
+		throws PortalException {
+
+		_portletResourcePermission.check(
+			getPermissionChecker(), groupId, ActionKeys.ADD_ENTRY);
+
+		return redirectEntryLocalService.addRedirectEntry(
+			groupId, destinationURL, expirationDate, groupBaseURL, permanent,
+			sourceURL, updateChainedRedirectEntries, serviceContext);
+	}
+
+	@Override
 	public RedirectEntry deleteRedirectEntry(long redirectEntryId)
 		throws PortalException {
 
@@ -124,24 +139,6 @@ public class RedirectEntryServiceImpl extends RedirectEntryServiceBaseImpl {
 	}
 
 	@Override
-	public void updateChainedRedirectEntries(
-			long groupId, String destinationURL, String sourceURL)
-		throws PortalException {
-
-		List<RedirectEntry> redirectEntries =
-			redirectEntryLocalService.
-				getRedirectEntriesByGroupIdAndDestinationURL(
-					groupId, sourceURL);
-
-		for (RedirectEntry redirectEntry : redirectEntries) {
-			updateRedirectEntry(
-				redirectEntry.getRedirectEntryId(), destinationURL,
-				redirectEntry.getExpirationDate(), redirectEntry.isPermanent(),
-				redirectEntry.getSourceURL());
-		}
-	}
-
-	@Override
 	public RedirectEntry updateRedirectEntry(
 			long redirectEntryId, String destinationURL, Date expirationDate,
 			boolean permanent, String sourceURL)
@@ -153,6 +150,21 @@ public class RedirectEntryServiceImpl extends RedirectEntryServiceBaseImpl {
 		return redirectEntryLocalService.updateRedirectEntry(
 			redirectEntryId, destinationURL, expirationDate, permanent,
 			sourceURL);
+	}
+
+	@Override
+	public RedirectEntry updateRedirectEntry(
+			long redirectEntryId, String destinationURL, Date expirationDate,
+			String groupBaseURL, boolean permanent, String sourceURL,
+			boolean updateChainedRedirectEntries)
+		throws PortalException {
+
+		_redirectEntryModelResourcePermission.check(
+			getPermissionChecker(), redirectEntryId, ActionKeys.UPDATE);
+
+		return redirectEntryLocalService.updateRedirectEntry(
+			redirectEntryId, destinationURL, expirationDate, groupBaseURL,
+			permanent, sourceURL, updateChainedRedirectEntries);
 	}
 
 	@Reference(

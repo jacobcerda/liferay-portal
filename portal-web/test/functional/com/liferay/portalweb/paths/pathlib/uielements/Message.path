@@ -39,6 +39,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>EMPTY_DEPOT_ROLE</td>
+	<td>//div[contains(@id,'depotRoles')]/p[contains(@class,'text-muted')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>EMPTY_INFO</td>
 	<td>//div[contains(@class,'sheet')]/div[contains(@class,'sheet-text')]</td>
 	<td></td>
@@ -176,6 +181,11 @@
 <tr>
 	<td>ERROR_FORM_VALIDATION</td>
 	<td>//div[contains(@class,'form-validator-stack')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_INFO</td>
+	<td>//*[contains(@class,'danger-info') or contains(@class,'error-info')][contains(.,'${key_errorInfo}')]</td>
 	<td></td>
 </tr>
 <tr>

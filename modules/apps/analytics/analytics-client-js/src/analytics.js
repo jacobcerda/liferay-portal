@@ -48,7 +48,7 @@ class Analytics {
 	 * Returns an Analytics instance and triggers the automatic flush loop
 	 * @param {Object} config object to instantiate the Analytics tool
 	 */
-	constructor(config) {
+	constructor(config, middlewares) {
 		if (!instance) {
 			instance = this;
 		}
@@ -65,6 +65,12 @@ class Analytics {
 		instance.config = config;
 		instance.identityEndpoint = `${endpointUrl}/identity`;
 		instance.delay = config.flushInterval || FLUSH_INTERVAL;
+
+		// Register initial middlewares
+
+		middlewares.map((middleware) =>
+			instance.registerMiddleware(middleware)
+		);
 
 		this._initializeEventQueue();
 
@@ -120,8 +126,8 @@ class Analytics {
 	 *   }
 	 * );
 	 */
-	static create(config = {}) {
-		const self = new Analytics(config);
+	static create(config = {}, middlewares = []) {
+		const self = new Analytics(config, middlewares);
 
 		ENV.Analytics = self;
 		ENV.Analytics.create = Analytics.create;

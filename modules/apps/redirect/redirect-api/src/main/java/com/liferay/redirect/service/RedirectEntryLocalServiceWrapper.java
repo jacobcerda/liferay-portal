@@ -65,6 +65,19 @@ public class RedirectEntryLocalServiceWrapper
 			serviceContext);
 	}
 
+	@Override
+	public com.liferay.redirect.model.RedirectEntry addRedirectEntry(
+			long groupId, String destinationURL, java.util.Date expirationDate,
+			String groupBaseURL, boolean permanent, String sourceURL,
+			boolean updateChainedRedirectEntries,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _redirectEntryLocalService.addRedirectEntry(
+			groupId, destinationURL, expirationDate, groupBaseURL, permanent,
+			sourceURL, updateChainedRedirectEntries, serviceContext);
+	}
+
 	/**
 	 * Adds the redirect entry to the database. Also notifies the appropriate model listeners.
 	 *
@@ -76,12 +89,6 @@ public class RedirectEntryLocalServiceWrapper
 		com.liferay.redirect.model.RedirectEntry redirectEntry) {
 
 		return _redirectEntryLocalService.addRedirectEntry(redirectEntry);
-	}
-
-	@Override
-	public boolean checkRedirectionChain(long groupId, String destinationURL) {
-		return _redirectEntryLocalService.checkRedirectionChain(
-			groupId, destinationURL);
 	}
 
 	/**
@@ -357,12 +364,10 @@ public class RedirectEntryLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.redirect.model.RedirectEntry>
-		getRedirectEntriesByGroupIdAndDestinationURL(
-			long groupId, String destinationURL) {
+		getRedirectEntries(long groupId, String destinationURL) {
 
-		return _redirectEntryLocalService.
-			getRedirectEntriesByGroupIdAndDestinationURL(
-				groupId, destinationURL);
+		return _redirectEntryLocalService.getRedirectEntries(
+			groupId, destinationURL);
 	}
 
 	/**
@@ -457,6 +462,19 @@ public class RedirectEntryLocalServiceWrapper
 		return _redirectEntryLocalService.updateRedirectEntry(
 			redirectEntryId, destinationURL, expirationDate, permanent,
 			sourceURL);
+	}
+
+	@Override
+	public com.liferay.redirect.model.RedirectEntry updateRedirectEntry(
+			long redirectEntryId, String destinationURL,
+			java.util.Date expirationDate, String groupBaseURL,
+			boolean permanent, String sourceURL,
+			boolean updateChainedRedirectEntries)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _redirectEntryLocalService.updateRedirectEntry(
+			redirectEntryId, destinationURL, expirationDate, groupBaseURL,
+			permanent, sourceURL, updateChainedRedirectEntries);
 	}
 
 	/**

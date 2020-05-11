@@ -44,15 +44,15 @@ String analyticsClientGroupIds = (String)request.getAttribute(AnalyticsWebKeys.A
 	})('https://analytics-js-cdn.liferay.com', function () {
 		var config = <%= analyticsClientConfig %>;
 
-		Analytics.create(config);
-
-		Analytics.registerMiddleware(function (request) {
+		var dxpMiddleware = function (request) {
 			request.context.canonicalUrl = themeDisplay.getCanonicalURL();
 			request.context.channelId = analyticsClientChannelId;
 			request.context.groupId = themeDisplay.getScopeGroupIdOrLiveGroupId();
 
 			return request;
-		});
+		};
+
+		Analytics.create(config, [dxpMiddleware]);
 
 		if (themeDisplay.isSignedIn()) {
 			Analytics.setIdentity({
@@ -75,14 +75,7 @@ String analyticsClientGroupIds = (String)request.getAttribute(AnalyticsWebKeys.A
 					!themeDisplay.isControlPanel() &&
 					analyticsClientGroupIds.indexOf(groupId) >= 0
 				) {
-					Analytics.create(config);
-
-					Analytics.registerMiddleware(function (request) {
-						request.context.canonicalUrl = themeDisplay.getCanonicalURL();
-						request.context.groupId = groupId;
-
-						return request;
-					});
+					Analytics.create(config, [dxpMiddleware]);
 
 					if (themeDisplay.isSignedIn()) {
 						Analytics.setIdentity({

@@ -419,6 +419,10 @@ public class PageFragmentInstanceDefinitionDTOConverter {
 			return true;
 		}
 
+		if (saveMapping && jsonObject.has("collectionFieldId")) {
+			return true;
+		}
+
 		if (saveMapping && jsonObject.has("mappedField")) {
 			return true;
 		}
@@ -740,6 +744,8 @@ public class PageFragmentInstanceDefinitionDTOConverter {
 			{
 				mapping = new Mapping() {
 					{
+						collectionItemFieldKey = jsonObject.getString(
+							"collectionFieldId", null);
 						defaultValue = fragmentInlineValue;
 						itemClassName = _toItemClassName(jsonObject);
 						itemClassPK = _toitemClassPK(jsonObject);
@@ -753,7 +759,14 @@ public class PageFragmentInstanceDefinitionDTOConverter {
 									return fieldId;
 								}
 
-								return jsonObject.getString("mappedField");
+								String mappedField = jsonObject.getString(
+									"mappedField");
+
+								if (Validator.isNotNull(mappedField)) {
+									return mappedField;
+								}
+
+								return null;
 							});
 					}
 				};

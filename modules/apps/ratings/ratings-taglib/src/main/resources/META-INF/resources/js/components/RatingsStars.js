@@ -19,7 +19,10 @@ import {useIsMounted} from 'frontend-js-react-web';
 import PropTypes from 'prop-types';
 import React, {useCallback, useState} from 'react';
 
+import isNumber from '../utils/isNumber';
 import Lang from '../utils/lang';
+
+const SCORE_UNVOTE = -1;
 
 const RatingsStars = ({
 	disabled = true,
@@ -62,7 +65,18 @@ const RatingsStars = ({
 	const isMounted = useIsMounted();
 
 	const handleOnClick = (index) => {
-		const {label, value} = starScores[index];
+		let value, label;
+
+		if (index) {
+			const starScore = starScores[index];
+
+			value = starScore.value;
+			label = starScore.label;
+		}
+		else {
+			value = SCORE_UNVOTE;
+			label = getLabelScore(SCORE_UNVOTE);
+		}
 
 		setScore(label);
 		handleSendVoteRequest(value);
@@ -73,7 +87,12 @@ const RatingsStars = ({
 		(score) => {
 			sendVoteRequest(score).then(
 				({averageScore, score, totalEntries} = {}) => {
-					if (isMounted() && averageScore && score && totalEntries) {
+					if (
+						isMounted() &&
+						isNumber(averageScore) &&
+						isNumber(score) &&
+						isNumber(totalEntries)
+					) {
 						setTotalEntries(totalEntries);
 						setAverageScore(formatAverageScore(averageScore));
 						setScore(getLabelScore(score));
@@ -176,6 +195,15 @@ const RatingsStars = ({
 								</ClayDropDown.Item>
 							);
 						})}
+
+						<ClayDropDown.Item
+							disabled={score === 0}
+							onClick={() => {
+								handleOnClick();
+							}}
+						>
+							{Liferay.Language.get('delete')}
+						</ClayDropDown.Item>
 					</ClayDropDown.ItemList>
 				</ClayDropDown>
 			</div>

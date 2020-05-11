@@ -74,8 +74,6 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 
 		String state = (String)request.getParameter(WorkflowWebKeys.WORKFLOW_JSP_STATE);
 
-		boolean isPreviewBeforeRestoreState = WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE.equals(state);
-
 		String duplicateTitle = kaleoDesignerDisplayContext.getDuplicateTitle(kaleoDefinition);
 
 		String randomNamespace = StringUtil.randomId() + StringPool.UNDERLINE;
@@ -86,7 +84,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 
 			<liferay-frontend:info-bar>
 				<div class="container-fluid-1280">
-					<c:if test="<%= !isPreviewBeforeRestoreState %>">
+					<c:if test="<%= !Objects.equals(state, WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE) %>">
 						<div class="info-bar-item">
 							<c:choose>
 								<c:when test="<%= (kaleoDefinition != null) && kaleoDefinition.isActive() %>">
@@ -112,7 +110,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 							<c:when test="<%= userName == null %>">
 								<%= dateFormatTime.format(kaleoDefinitionVersion.getModifiedDate()) %>
 							</c:when>
-							<c:when test="<%= isPreviewBeforeRestoreState %>">
+							<c:when test="<%= Objects.equals(state, WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE) %>">
 								<liferay-ui:message arguments="<%= new String[] {dateFormatTime.format(kaleoDefinitionVersion.getModifiedDate()), HtmlUtil.escape(userName)} %>" key="revision-from-x-by-x" translateArguments="<%= false %>" />
 							</c:when>
 							<c:otherwise>
@@ -122,7 +120,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 					</span>
 				</div>
 
-				<c:if test="<%= !isPreviewBeforeRestoreState %>">
+				<c:if test='<%= !Objects.equals(state, WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE) && !Objects.equals(state, "view") %>'>
 					<liferay-frontend:info-bar-buttons>
 						<liferay-frontend:info-bar-sidenav-toggler-button
 							icon="info-circle"
@@ -135,7 +133,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 		</c:if>
 
 		<div class="closed sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
-			<c:if test="<%= (kaleoDefinitionVersion != null) && !isPreviewBeforeRestoreState %>">
+			<c:if test='<%= (kaleoDefinitionVersion != null) && !Objects.equals(state, WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE) && !Objects.equals(state, "view") %>'>
 				<div class="sidenav-menu-slider sidenav-visible-xs">
 					<div class="sidebar sidebar-light">
 						<div class="tbar-visible-xs">
@@ -218,7 +216,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 										</liferay-ui:section>
 									</c:if>
 
-									<c:if test="<%= !isPreviewBeforeRestoreState %>">
+									<c:if test='<%= !Objects.equals(state, WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE) && !Objects.equals(state, "view") %>'>
 										<liferay-ui:section>
 											<liferay-util:include page="/designer/view_kaleo_definition_version_history.jsp" servletContext="<%= application %>">
 												<liferay-util:param name="redirect" value="<%= redirect %>" />
@@ -232,7 +230,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 				</div>
 			</c:if>
 
-			<div class="<%= isPreviewBeforeRestoreState ? "" : "container-fluid-1280" %>">
+			<div class="<%= Objects.equals(renderRequest.getWindowState(), LiferayWindowState.POP_UP) ? "" : "container-fluid-1280" %>">
 				<div class="sidenav-content">
 					<aui:form method="post" name="fm" onSubmit="event.preventDefault();">
 						<aui:model-context bean="<%= kaleoDefinitionVersion %>" model="<%= KaleoDefinitionVersion.class %>" />
@@ -250,7 +248,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 						<aui:fieldset-group markupView="lexicon">
 							<aui:fieldset>
 								<liferay-ui:input-localized
-									disabled="<%= kaleoDesignerDisplayContext.isDefinitionInputDisabled(isPreviewBeforeRestoreState, kaleoDefinitionVersion, permissionChecker) %>"
+									disabled='<%= kaleoDesignerDisplayContext.isDefinitionInputDisabled((Objects.equals(state, WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE) || Objects.equals(state, "view")), kaleoDefinitionVersion, permissionChecker) %>'
 									name="title"
 									placeholder="untitled-workflow"
 									xml='<%= BeanPropertiesUtil.getString(kaleoDefinitionVersion, "title") %>'
@@ -315,7 +313,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 																</label>
 															</liferay-util:buffer>
 
-															<c:if test="<%= !kaleoDesignerDisplayContext.isDefinitionInputDisabled(isPreviewBeforeRestoreState, kaleoDefinitionVersion, permissionChecker) %>">
+															<c:if test='<%= !kaleoDesignerDisplayContext.isDefinitionInputDisabled(Objects.equals(state, WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE) || Objects.equals(state, "view"), kaleoDefinitionVersion, permissionChecker) %>'>
 																<liferay-ui:message arguments="<%= importFileMark %>" key="write-your-definition-or-x" translateArguments="<%= false %>" />
 															</c:if>
 
@@ -529,7 +527,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 										srcNode: '#<portlet:namespace />propertyBuilderContent',
 									}).render();
 
-									<c:if test="<%= kaleoDesignerDisplayContext.isDefinitionInputDisabled(isPreviewBeforeRestoreState, kaleoDefinitionVersion, permissionChecker) %>">
+									<c:if test='<%= kaleoDesignerDisplayContext.isDefinitionInputDisabled((Objects.equals(state, WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE) || Objects.equals(state, "view")), kaleoDefinitionVersion, permissionChecker) %>'>
 										<portlet:namespace />kaleoDesigner.after('render', function () {
 											var diagramBuilderControlElements = document.querySelectorAll(
 												'#<portlet:namespace />propertyBuilder .diagram-builder-controls'
@@ -746,23 +744,37 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 							</aui:fieldset>
 						</aui:fieldset-group>
 
-						<c:if test="<%= !isPreviewBeforeRestoreState %>">
-							<aui:button-row>
-								<c:if test="<%= kaleoDesignerDisplayContext.isPublishKaleoDefinitionVersionButtonVisible(permissionChecker, kaleoDefinitionVersion) %>">
-									<aui:button onClick='<%= renderResponse.getNamespace() + "publishKaleoDefinitionVersion();" %>' primary="<%= true %>" value="<%= kaleoDesignerDisplayContext.getPublishKaleoDefinitionVersionButtonLabel(kaleoDefinitionVersion) %>" />
-								</c:if>
+						<c:choose>
+							<c:when test='<%= !Objects.equals(state, WorkflowWebKeys.WORKFLOW_PREVIEW_BEFORE_RESTORE_STATE) && !Objects.equals(state, "view") %>'>
+								<aui:button-row>
+									<c:if test="<%= kaleoDesignerDisplayContext.isPublishKaleoDefinitionVersionButtonVisible(permissionChecker, kaleoDefinitionVersion) %>">
+										<aui:button onClick='<%= renderResponse.getNamespace() + "publishKaleoDefinitionVersion();" %>' primary="<%= true %>" value="<%= kaleoDesignerDisplayContext.getPublishKaleoDefinitionVersionButtonLabel(kaleoDefinitionVersion) %>" />
+									</c:if>
 
-								<c:if test="<%= kaleoDesignerDisplayContext.isSaveKaleoDefinitionVersionButtonVisible(kaleoDefinitionVersion) %>">
-									<aui:button onClick='<%= renderResponse.getNamespace() + "saveKaleoDefinitionVersion();" %>' value="save" />
-								</c:if>
+									<c:if test="<%= kaleoDesignerDisplayContext.isSaveKaleoDefinitionVersionButtonVisible(kaleoDefinitionVersion) %>">
+										<aui:button onClick='<%= renderResponse.getNamespace() + "saveKaleoDefinitionVersion();" %>' value="save" />
+									</c:if>
 
-								<c:if test="<%= Validator.isNotNull(closeRedirect) %>">
-									<aui:button onClick='<%= renderResponse.getNamespace() + "closeKaleoDialog();" %>' value="cancel" />
-								</c:if>
+									<c:if test="<%= Validator.isNotNull(closeRedirect) %>">
+										<aui:button onClick='<%= renderResponse.getNamespace() + "closeKaleoDialog();" %>' value="cancel" />
+									</c:if>
 
-								<span class="lfr-portlet-workflowdesigner-message" id="<portlet:namespace />toolbarMessage"></span>
-							</aui:button-row>
-						</c:if>
+									<span class="lfr-portlet-workflowdesigner-message" id="<portlet:namespace />toolbarMessage"></span>
+								</aui:button-row>
+							</c:when>
+							<c:when test='<%= Objects.equals(state, "view") && KaleoDefinitionVersionPermission.contains(permissionChecker, kaleoDefinitionVersion, ActionKeys.UPDATE) %>'>
+								<portlet:renderURL var="editURL">
+									<portlet:param name="mvcPath" value='<%= "/designer/edit_kaleo_definition_version.jsp" %>' />
+									<portlet:param name="redirect" value="<%= currentURL %>" />
+									<portlet:param name="name" value="<%= kaleoDefinitionVersion.getName() %>" />
+									<portlet:param name="draftVersion" value="<%= kaleoDefinitionVersion.getVersion() %>" />
+								</portlet:renderURL>
+
+								<aui:button-row>
+									<aui:button href="<%= editURL %>" primary="<%= true %>" value="edit" />
+								</aui:button-row>
+							</c:when>
+						</c:choose>
 					</aui:form>
 				</div>
 			</div>
