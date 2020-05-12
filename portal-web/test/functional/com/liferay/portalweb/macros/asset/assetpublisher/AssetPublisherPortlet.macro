@@ -36,6 +36,11 @@ definition {
 
 		SelectFrame(value1 = "relative=top");
 
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
 		SelectFrame(locator1 = "IFrame#SELECT_SITES");
 
 		Navigator.gotoNavTab(navTab = "My Sites");
@@ -69,6 +74,11 @@ definition {
 
 			SelectFrame(value1 = "relative=top");
 
+			LiferayEvent.waitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
+
 			SelectFrame(locator1 = "IFrame#SELECT_SITES");
 
 			Navigator.gotoNavTab(navTab = "My Sites");
@@ -84,7 +94,12 @@ definition {
 
 		SelectFrameTop();
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Alert.viewSuccessMessage();
 	}
@@ -287,7 +302,12 @@ definition {
 	}
 
 	macro configureDisplayTemplatePG {
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Navigator.gotoNavTab(navTab = "Display Settings");
 
@@ -323,6 +343,11 @@ definition {
 
 		SelectFrame();
 
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
 		SelectFrame(locator1 = "IFrame#SELECT_STRUCTURE_FIELD");
 
 		var key_fieldName = "${fieldFilter}";
@@ -343,7 +368,12 @@ definition {
 
 		SelectFrame(value1 = "relative=top");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		if (isSet(fieldValue)) {
 			AssertTextEquals.assertPartialText(
@@ -384,7 +414,12 @@ definition {
 
 			SelectFrameTop();
 
-			SelectFrame(locator1 = "IFrame#DIALOG");
+			LiferayEvent.waitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 			var key_assetTitle = "${assetTitle}";
 
@@ -396,7 +431,12 @@ definition {
 
 			Button.clickAdd();
 
-			SelectFrame(locator1 = "IFrame#DIALOG");
+			LiferayEvent.waitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 		}
 
 		Alert.viewSuccessMessage();
@@ -507,6 +547,11 @@ definition {
 
 			SelectFrame(value1 = "relative=top");
 
+			LiferayEvent.waitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
+
 			SelectFrame(locator1 = "IFrame#SELECT_SITES");
 
 			Navigator.gotoNavTab(navTab = "My Sites");
@@ -535,7 +580,12 @@ definition {
 
 			SelectFrame(value1 = "relative=top");
 
-			SelectFrame(locator1 = "IFrame#DIALOG");
+			LiferayEvent.waitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 		}
 
 		Panel.expandPanel(panel = "Scope");
@@ -624,7 +674,12 @@ definition {
 			portletName = "Asset Publisher",
 			portletOption = "Configuration Templates");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		LexiconTable.clickEllipsisItem(
 			item = "Delete",
@@ -664,7 +719,12 @@ definition {
 			locator1 = "Button#ADD",
 			value1 = "Add");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		PortletEntry.save();
 	}
@@ -700,7 +760,12 @@ definition {
 	}
 
 	macro enableRSSSubscription {
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Navigator.gotoNavTab(navTab = "Subscriptions");
 
@@ -738,7 +803,12 @@ definition {
 			portletName = "${portletName}",
 			portletOption = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoEditAssetPG {
@@ -782,7 +852,12 @@ definition {
 			portletName = "Asset Publisher",
 			portletOption = "Configuration Templates");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		LexiconTable.clickEllipsisItem(
 			item = "Apply",
@@ -796,7 +871,12 @@ definition {
 			portletName = "Asset Publisher",
 			portletOption = "Configuration Templates");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		PortletEntry.viewEmptyMessage(entity = "Configuration Templates");
 
@@ -826,7 +906,12 @@ definition {
 
 		var key_title = "${assetListName}";
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Navigator.gotoNavTab(navTab = "Asset Selection");
 
@@ -839,6 +924,11 @@ definition {
 		Button.clickSelect();
 
 		SelectFrameTop();
+
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
 
 		SelectFrame(locator1 = "IFrame#ASSET_LIST_DIALOG");
 
@@ -865,7 +955,12 @@ definition {
 
 		SelectFrameTop();
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Pause(locator1 = "3000");
 
@@ -942,6 +1037,11 @@ definition {
 	}
 
 	macro viewAssetTypeNotAvailable {
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
 		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
 		Panel.expandPanel(panel = "Source");
@@ -1035,6 +1135,11 @@ definition {
 			MenuItem.click(menuItem = "Other Site or Asset Library...");
 
 			SelectFrame(value1 = "relative=top");
+
+			LiferayEvent.waitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
 
 			SelectFrame(locator1 = "IFrame#SELECT_SITES");
 
@@ -1241,6 +1346,11 @@ definition {
 
 			SelectFrame();
 
+			LiferayEvent.waitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
+
 			SelectFrame(locator1 = "IFrame#SELECT_STRUCTURE_FIELD");
 
 			for (var assetSubtypeField : list "${assetSubtypeFields}") {
@@ -1284,7 +1394,12 @@ definition {
 	}
 
 	macro viewManualAssetTypesPG {
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Panel.expandPanel(panel = "Asset Entries");
 

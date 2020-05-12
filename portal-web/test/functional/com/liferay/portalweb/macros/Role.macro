@@ -35,6 +35,11 @@ definition {
 	macro addAssignees {
 		LexiconEntry.gotoAdd();
 
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
 		SelectFrame(locator1 = "IFrame#SELECT_ASSIGNEES");
 
 		Search.searchCP(searchTerm = "${assigneeName}");
@@ -68,6 +73,11 @@ definition {
 		Navigator.gotoNavItem(navItem = "Assignees");
 
 		LexiconEntry.gotoAdd();
+
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
 
 		SelectFrame(locator1 = "IFrame#SELECT_ASSIGNEES");
 
@@ -138,8 +148,13 @@ definition {
 		var key_roleTitle = StringUtil.replace("${roleTitle}", " ", "-");
 		var key_roleTitle = StringUtil.lowerCase("${key_roleTitle}");
 
-		if (IsElementPresent.isElementPresentAfterWait(locator1 = "IFrame#DIALOG")) {
-			SelectFrame(locator1 = "IFrame#DIALOG");
+		if (IsElementPresent.isElementPresentAfterWait(locator1 = "IFrame#MODAL_BODY")) {
+			LiferayEvent.waitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 		}
 
 		if (isSet(permissionsList)) {
@@ -377,6 +392,11 @@ definition {
 
 				var key_card = "${siteNameScope}";
 
+				LiferayEvent.waitForLiferayEvent(
+					attributeName = "src",
+					attributeValue = "dialog-iframe-popup",
+					eventName = "modalIframeLoaded");
+
 				SelectFrame(locator1 = "RolesPermissionsSelectSite#SELECT_SITE_IFRAME");
 
 				AssertClick(
@@ -461,8 +481,13 @@ definition {
 		var key_roleTitle = StringUtil.replace("${roleTitle}", " ", "-");
 		var key_roleTitle = StringUtil.lowerCase("${key_roleTitle}");
 
-		if (IsElementPresent.isElementPresentAfterWait(locator1 = "IFrame#DIALOG")) {
-			SelectFrame(locator1 = "IFrame#DIALOG");
+		if (IsElementPresent.isElementPresentAfterWait(locator1 = "IFrame#MODAL_BODY")) {
+			LiferayEvent.waitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 		}
 
 		Uncheck(locator1 = "Permissions#${permissionDefinitionKey}");

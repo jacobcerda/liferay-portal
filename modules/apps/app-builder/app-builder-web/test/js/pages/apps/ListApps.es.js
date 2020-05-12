@@ -17,11 +17,19 @@ import {cleanup, render} from '@testing-library/react';
 import React from 'react';
 
 import ListApps from '../../../../src/main/resources/META-INF/resources/js/pages/apps/ListApps.es';
+import * as time from '../../../../src/main/resources/META-INF/resources/js/utils/time.es';
 import AppContextProviderWrapper from '../../AppContextProviderWrapper.es';
 import {RESPONSES} from '../../constants.es';
 
-describe('ListApp', () => {
-	afterEach(cleanup);
+describe('ListApps', () => {
+	beforeEach(() => {
+		jest.spyOn(time, 'fromNow').mockImplementation(() => 'months ago');
+	});
+
+	afterEach(() => {
+		cleanup();
+		jest.restoreAllMocks();
+	});
 
 	it('renders', async () => {
 		fetch.mockResponse(JSON.stringify(RESPONSES.ONE_ITEM));

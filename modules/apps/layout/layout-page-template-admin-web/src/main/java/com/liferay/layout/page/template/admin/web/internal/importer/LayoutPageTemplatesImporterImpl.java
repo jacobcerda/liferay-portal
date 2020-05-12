@@ -308,7 +308,7 @@ public class LayoutPageTemplatesImporterImpl
 
 	private List<FragmentEntryLink> _getFragmentEntryLinks(
 			LayoutStructure layoutStructure, List<String> childrenItemIds)
-		throws PortalException {
+		throws Exception {
 
 		List<FragmentEntryLink> fragmentEntryLinks = new ArrayList<>();
 
@@ -360,7 +360,7 @@ public class LayoutPageTemplatesImporterImpl
 			long groupId, long layoutPageTemplateCollectionId,
 			PageTemplateCollectionEntry pageTemplateCollectionEntry,
 			boolean overwrite)
-		throws PortalException {
+		throws Exception {
 
 		LayoutPageTemplateCollection layoutPageTemplateCollection = null;
 
@@ -1097,7 +1097,7 @@ public class LayoutPageTemplatesImporterImpl
 			LayoutPageTemplateCollection layoutPageTemplateCollection,
 			Map<String, PageTemplateEntry> pageTemplateEntryMap,
 			boolean overwrite, ZipFile zipFile)
-		throws PortalException {
+		throws Exception {
 
 		for (Map.Entry<String, PageTemplateEntry> entry :
 				pageTemplateEntryMap.entrySet()) {
@@ -1164,7 +1164,7 @@ public class LayoutPageTemplatesImporterImpl
 
 	private void _updateLayoutPageTemplateStructure(
 			Layout layout, LayoutStructure layoutStructure)
-		throws PortalException {
+		throws Exception {
 
 		long classNameId = _portal.getClassNameId(Layout.class.getName());
 

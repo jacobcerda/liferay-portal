@@ -157,6 +157,22 @@ public class DDMFormInstanceReportLocalServiceImpl
 			}
 		}
 
+		int totalItems = formInstanceReportDataJSONObject.getInt("totalItems");
+
+		if (formInstanceReportEvent.equals(
+				DDMFormInstanceReportConstants.EVENT_ADD_RECORD_VERSION)) {
+
+			totalItems++;
+		}
+		else if (formInstanceReportEvent.equals(
+					DDMFormInstanceReportConstants.
+						EVENT_DELETE_RECORD_VERSION)) {
+
+			totalItems--;
+		}
+
+		formInstanceReportDataJSONObject.put("totalItems", totalItems);
+
 		return formInstanceReportDataJSONObject.toString();
 	}
 

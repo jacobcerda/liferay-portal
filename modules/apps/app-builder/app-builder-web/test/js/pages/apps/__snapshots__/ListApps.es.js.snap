@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ListApp renders 1`] = `
+exports[`ListApps renders 1`] = `
 <DocumentFragment>
   <div
     class="tools-control-group"
@@ -170,12 +170,12 @@ exports[`ListApp renders 1`] = `
               <td
                 class="table-cell-expand-smaller text-left"
               >
-                a month ago
+                months ago
               </td>
               <td
                 class="table-cell-expand-smaller text-left"
               >
-                a month ago
+                months ago
               </td>
               <td
                 class="table-cell-expand-smaller text-left"

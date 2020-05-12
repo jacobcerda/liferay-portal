@@ -90,7 +90,6 @@ public class DDMFormReportPortlet extends MVCPortlet {
 			renderRequest.setAttribute(
 				WebKeys.PORTLET_DISPLAY_CONTEXT,
 				new DDMFormReportDisplayContext(
-					ddmFormInstanceId, _ddmFormInstanceRecordLocalService,
 					ddmFormInstanceReport, renderRequest));
 		}
 		catch (Exception exception) {

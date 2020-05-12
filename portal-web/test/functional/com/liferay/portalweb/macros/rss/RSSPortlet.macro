@@ -5,7 +5,12 @@ definition {
 		var key_feedRowIndexNumber = "${feedRowIndexNumber}";
 		var key_feedTitle = "${feedTitle}";
 
-		SelectFrame(locator1 = "RSSFeed#RSS_CONFIGURATION_IFRAME");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		if (isSet(buttonRowIndexNumber)) {
 			Click(locator1 = "RSSFeed#FEEDS_ADD_ROW_BUTTON");
@@ -42,7 +47,12 @@ definition {
 	}
 
 	macro changeNumberOfEntriesPerFeed {
-		SelectFrame(locator1 = "RSSFeed#RSS_CONFIGURATION_IFRAME");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Navigator.gotoNavTab(navTab = "Display Settings");
 
@@ -55,7 +65,12 @@ definition {
 	macro configureFeedDisplayStyle {
 		SelectFrame(value1 = "relative=top");
 
-		SelectFrame(locator1 = "RSSFeed#RSS_CONFIGURATION_IFRAME");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Navigator.gotoNavTab(navTab = "Display Settings");
 
@@ -67,7 +82,12 @@ definition {
 	macro deleteFeed {
 		var key_buttonRowIndexNumber = "${buttonRowIndexNumber}";
 
-		SelectFrame(locator1 = "RSSFeed#RSS_CONFIGURATION_IFRAME");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Click(locator1 = "RSSFeed#FEEDS_DELETE_ROW_BUTTON");
 
@@ -77,7 +97,12 @@ definition {
 	}
 
 	macro disableShowFeedTitle {
-		SelectFrame(locator1 = "RSSFeed#RSS_CONFIGURATION_IFRAME");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Navigator.gotoNavTab(navTab = "Display Settings");
 
@@ -170,7 +195,12 @@ definition {
 
 		SelectFrame(value1 = "relative=top");
 
-		SelectFrame(locator1 = "RSSFeed#RSS_CONFIGURATION_IFRAME");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		AssertElementPresent(locator1 = "RSSFeed#FEEDS_DEFAULT");
 

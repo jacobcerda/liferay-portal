@@ -21,7 +21,6 @@ import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.comment.CommentManagerUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -62,7 +61,6 @@ import java.util.function.BiConsumer;
 
 import javax.portlet.MutableRenderParameters;
 import javax.portlet.MutableResourceParameters;
-import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletModeException;
 import javax.portlet.PortletSecurityException;
@@ -132,7 +130,7 @@ public class BlogEntriesDisplayContextTest {
 			_addBlogEntry("alpha_" + i);
 		}
 
-		SearchContainer searchContainer = _getSearchContainer(
+		SearchContainer<BlogsEntry> searchContainer = _getSearchContainer(
 			_getMockHttpServletRequest());
 
 		Assert.assertEquals(
@@ -157,7 +155,7 @@ public class BlogEntriesDisplayContextTest {
 			new IdentityServiceContextFunction(
 				ServiceContextTestUtil.getServiceContext()));
 
-		SearchContainer searchContainer = _getSearchContainer(
+		SearchContainer<BlogsEntry> searchContainer = _getSearchContainer(
 			_getMockHttpServletRequestWithSearch(commentBody));
 
 		Assert.assertEquals(1, searchContainer.getTotal());
@@ -173,7 +171,7 @@ public class BlogEntriesDisplayContextTest {
 			_addBlogEntry("alpha_" + i);
 		}
 
-		SearchContainer searchContainer = _getSearchContainer(
+		SearchContainer<BlogsEntry> searchContainer = _getSearchContainer(
 			_getMockHttpServletRequestWithSearch("alpha"));
 
 		Assert.assertEquals(
@@ -198,7 +196,7 @@ public class BlogEntriesDisplayContextTest {
 	}
 
 	private MockHttpServletRequest _getMockHttpServletRequest()
-		throws PortalException {
+		throws Exception {
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
@@ -211,7 +209,7 @@ public class BlogEntriesDisplayContextTest {
 
 	private MockHttpServletRequest _getMockHttpServletRequestWithSearch(
 			String keywords)
-		throws PortalException {
+		throws Exception {
 
 		MockHttpServletRequest mockHttpServletRequest =
 			_getMockHttpServletRequest();
@@ -223,9 +221,9 @@ public class BlogEntriesDisplayContextTest {
 		return mockHttpServletRequest;
 	}
 
-	private SearchContainer _getSearchContainer(
+	private SearchContainer<BlogsEntry> _getSearchContainer(
 			MockHttpServletRequest mockHttpServletRequest)
-		throws PortletException {
+		throws Exception {
 
 		MVCRenderCommand mvcRenderCommand = _serviceTracker.getService();
 
@@ -244,7 +242,7 @@ public class BlogEntriesDisplayContextTest {
 			null);
 	}
 
-	private ThemeDisplay _getThemeDisplay() throws PortalException {
+	private ThemeDisplay _getThemeDisplay() throws Exception {
 		ThemeDisplay themeDisplay = new ThemeDisplay();
 
 		themeDisplay.setCompany(_company);

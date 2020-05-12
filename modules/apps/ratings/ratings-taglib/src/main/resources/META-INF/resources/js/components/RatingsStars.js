@@ -19,7 +19,6 @@ import {useIsMounted} from 'frontend-js-react-web';
 import PropTypes from 'prop-types';
 import React, {useCallback, useState} from 'react';
 
-import isNumber from '../utils/isNumber';
 import Lang from '../utils/lang';
 
 const SCORE_UNVOTE = -1;
@@ -66,10 +65,9 @@ const RatingsStars = ({
 
 	const handleOnClick = (index) => {
 		let value, label;
+		const starScore = starScores[index];
 
-		if (index) {
-			const starScore = starScores[index];
-
+		if (starScore) {
 			value = starScore.value;
 			label = starScore.label;
 		}
@@ -89,9 +87,9 @@ const RatingsStars = ({
 				({averageScore, score, totalEntries} = {}) => {
 					if (
 						isMounted() &&
-						isNumber(averageScore) &&
-						isNumber(score) &&
-						isNumber(totalEntries)
+						averageScore !== undefined &&
+						score !== undefined &&
+						totalEntries !== undefined
 					) {
 						setTotalEntries(totalEntries);
 						setAverageScore(formatAverageScore(averageScore));

@@ -80,7 +80,7 @@ definition {
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property environment.acceptance = "true";
 
-		Navigator.openSpecificURL(url = "http://www.standards-schmandards.com/exhibits/wysiwyg/sampledoc.htm");
+		Open(locator1 = "http://www.standards-schmandards.com/exhibits/wysiwyg/sampledoc.htm");
 
 		SelectFieldText(locator1 = "//body");
 
@@ -111,7 +111,12 @@ definition {
 
 		WebContentNavigator.gotoPreviewEntryCP(webContentTitle = "Web Content Title");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		AssertTextEquals.assertPartialText(
 			locator1 = "//div[@class='portlet-body']/div[contains(@class,'mt-2')]",
@@ -151,7 +156,12 @@ definition {
 
 		WebContentNavigator.gotoPreviewEntryCP(webContentTitle = "Web Content Title");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LiferayEvent.waitForLiferayEvent(
+			attributeName = "src",
+			attributeValue = "dialog-iframe-popup",
+			eventName = "modalIframeLoaded");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		AssertElementPresent(locator1 = "//img[contains(@src,'Document_1.jpg')]");
 	}

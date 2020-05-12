@@ -16,8 +16,10 @@ package com.liferay.dynamic.data.mapping.form.report.web.internal.display.contex
 
 import com.liferay.dynamic.data.mapping.form.report.web.internal.portlet.DDMFormReportPortlet;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceReport;
-import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordLocalService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.DateUtil;
@@ -25,7 +27,6 @@ import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -38,13 +39,9 @@ import javax.portlet.RenderRequest;
 public class DDMFormReportDisplayContext {
 
 	public DDMFormReportDisplayContext(
-		long ddmFormInstanceId,
-		DDMFormInstanceRecordLocalService ddmFormInstanceRecordLocalService,
 		DDMFormInstanceReport ddmFormInstanceReport,
 		RenderRequest renderRequest) {
 
-		_ddmFormInstanceId = ddmFormInstanceId;
-		_ddmFormInstanceRecordLocalService = ddmFormInstanceRecordLocalService;
 		_ddmFormInstanceReport = ddmFormInstanceReport;
 		_renderRequest = renderRequest;
 	}
@@ -91,14 +88,17 @@ public class DDMFormReportDisplayContext {
 			resourceBundle, languageKey, relativeTimeDescription, false);
 	}
 
-	public int getTotalItems() {
-		return _ddmFormInstanceRecordLocalService.getFormInstanceRecordsCount(
-			_ddmFormInstanceId, WorkflowConstants.STATUS_APPROVED);
+	public int getTotalItems() throws PortalException {
+		if (_ddmFormInstanceReport == null) {
+			return 0;
+		}
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			_ddmFormInstanceReport.getData());
+
+		return jsonObject.getInt("totalItems");
 	}
 
-	private final long _ddmFormInstanceId;
-	private final DDMFormInstanceRecordLocalService
-		_ddmFormInstanceRecordLocalService;
 	private final DDMFormInstanceReport _ddmFormInstanceReport;
 	private final RenderRequest _renderRequest;
 

@@ -90,28 +90,28 @@ describe('RatingsStars', () => {
 			fetch.resetMocks();
 		});
 
-		describe('and the user votes 2/5 stars', () => {
+		describe('and the user votes 1/5 stars', () => {
 			let starsDropdownToggle;
 			let starsButtons;
 
 			beforeEach(() => {
 				starsButtons = renderComponent({
-					userScore: 0.4,
+					userScore: 0.2,
 				}).getAllByRole('button');
 				starsDropdownToggle = starsButtons[0];
 
 				act(() => {
-					fireEvent.click(starsButtons[2]);
+					fireEvent.click(starsButtons[1]);
 				});
 			});
 
 			it('increases the user score', () => {
-				expect(starsDropdownToggle.value).toBe('2');
+				expect(starsDropdownToggle.value).toBe('1');
 			});
 
-			it('has voted title', () => {
+			it('has voted singular title', () => {
 				expect(starsDropdownToggle.title).toBe(
-					'you-have-rated-this-x-stars-out-of-x'
+					'you-have-rated-this-x-star-out-of-x'
 				);
 			});
 
@@ -128,6 +128,12 @@ describe('RatingsStars', () => {
 
 				it('increase the user score', () => {
 					expect(starsDropdownToggle.value).toBe('5');
+				});
+
+				it('has voted pural title', () => {
+					expect(starsDropdownToggle.title).toBe(
+						'you-have-rated-this-x-stars-out-of-x'
+					);
 				});
 			});
 
@@ -219,7 +225,7 @@ describe('RatingsStars', () => {
 			});
 
 			it('updates the average score of 2 votes', () => {
-				expect(result.queryByText(`2.5 (2 votes)`)).toBeTruthy();
+				expect(result.queryByText('2.5 (2 votes)')).toBeTruthy();
 			});
 
 			it('updates the user score with the one from the server', () => {
@@ -246,7 +252,7 @@ describe('RatingsStars', () => {
 				});
 
 				it('updates the average score of 1 vote', async () => {
-					expect(result.queryByText(`5.0 (1 vote)`)).toBeTruthy();
+					expect(result.queryByText('5.0 (1 vote)')).toBeTruthy();
 				});
 			});
 
