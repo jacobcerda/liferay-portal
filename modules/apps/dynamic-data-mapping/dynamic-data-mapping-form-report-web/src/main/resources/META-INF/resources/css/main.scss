@@ -30,22 +30,39 @@ body,
 			opacity: 0.4;
 		}
 
+		.empty-message {
+			width: 100%;
+
+			h1 {
+				color: #272833;
+				font-size: 18px;
+			}
+
+			p {
+				color: #6b6c7e;
+				font-size: 14px;
+			}
+		}
+
 		.legend-container {
 			width: 50%;
 			ul {
 				font-size: 14px;
+
 				li {
 					display: flex;
 					padding-bottom: 10px;
+
 					svg {
 						width: 6%;
 					}
-					text {
+
+					p {
+						margin-bottom: 0;
 						max-width: 94%;
 						min-width: auto;
 						padding-left: 8px;
 						position: relative;
-						top: -1px;
 					}
 				}
 

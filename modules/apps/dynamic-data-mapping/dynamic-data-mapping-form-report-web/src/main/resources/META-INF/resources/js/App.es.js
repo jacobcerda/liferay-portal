@@ -14,27 +14,23 @@
 
 import React from 'react';
 
-import Card from './components/Card.es';
-import PieChart from './components/PieChart.es';
+import Card from './components/card/Card.es';
+import PieChart from './components/chart/pie/PieChart.es';
+import toDataArray, {sumTotalEntries} from './utils/data.es';
 
-export default ({data}) => {
-	const toArray = (values) =>
-		Object.entries(values).map(([label, count]) => ({count, label}));
+const chartFactory = (type, values, totalEntries) => {
+	if (type === 'radio') {
+		return (
+			<PieChart data={toDataArray(values)} totalEntries={totalEntries} />
+		);
+	}
 
-	const chartFactory = (type, values, totalEntries) => {
-		if (type === 'radio') {
-			return (
-				<PieChart data={toArray(values)} totalEntries={totalEntries} />
-			);
-		}
+	return null;
+};
 
-		return null;
-	};
-
-	const sumTotalEntries = (values) =>
-		Object.values(values).reduce((acc, value) => acc + value, 0);
-
-	return Object.entries(data).map(([fieldName, {type, values}], index) => {
+export default ({data, fields}) =>
+	fields.map(({name, type}, index) => {
+		const {values = {}} = data[name] || {};
 		const totalEntries = sumTotalEntries(values);
 		const chart = chartFactory(type, values, totalEntries);
 
@@ -44,14 +40,12 @@ export default ({data}) => {
 
 		return (
 			<Card
-				fieldName={fieldName}
+				fieldName={name}
 				key={index}
 				totalEntries={totalEntries}
 				type={type}
-				values={values}
 			>
 				{chart}
 			</Card>
 		);
 	});
-};

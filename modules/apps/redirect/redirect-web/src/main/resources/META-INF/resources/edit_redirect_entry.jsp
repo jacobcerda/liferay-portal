@@ -53,6 +53,8 @@ else {
 	</c:if>
 
 	<liferay-frontend:edit-form-body>
+		<liferay-ui:error exception="<%= CircularRedirectEntryException.DestinationURLMustNotBeEqualToSourceURL.class %>" focusField="destinationURL" message="destination-url-cannot-be-the-same-as-source-url" />
+		<liferay-ui:error exception="<%= CircularRedirectEntryException.MustNotFormALoopWithAnotherRedirectEntry.class %>" focusField="sourceURL" message="please-change-the-source-or-destination-url-to-avoid-redirect-loop" />
 		<liferay-ui:error exception="<%= DuplicateRedirectEntrySourceURLException.class %>" focusField="sourceURL" message="there-is-already-a-redirect-set-for-the-same-source-url" />
 		<liferay-ui:error exception="<%= RequiredRedirectEntryDestinationURLException.class %>" focusField="destinationURL" message="the-destination-url-must-be-specified" />
 		<liferay-ui:error exception="<%= RequiredRedirectEntrySourceURLException.class %>" focusField="sourceURL" message="the-source-url-must-be-specified" />
@@ -82,7 +84,7 @@ else {
 		Map<String, Object> data = HashMapBuilder.<String, Object>put(
 			"autofocus", autoFocusDestination
 		).put(
-			"initialDestinationUrl", (redirectEntry != null) ? redirectEntry.getDestinationURL() : StringPool.BLANK
+			"initialDestinationUrl", (redirectEntry != null) ? redirectEntry.getDestinationURL() : ParamUtil.getString(request, "destinationURL")
 		).put(
 			"namespace", liferayPortletResponse.getNamespace()
 		).build();
@@ -127,12 +129,12 @@ else {
 	/>
 </div>
 
-<portlet:actionURL name="/redirect/check_redirect_entry_chain" var="checkRedirectEntryChainURL" />
+<portlet:resourceURL id="/redirect/get_redirect_entry_chain_cause" var="getRedirectEntryChainCauseURL" />
 
 <liferay-frontend:component
 	context='<%=
 		HashMapBuilder.<String, Object>put(
-			"checkRedirectEntryChainURL", checkRedirectEntryChainURL
+			"getRedirectEntryChainCauseURL", getRedirectEntryChainCauseURL
 		).build()
 	%>'
 	module="js/editRedirectEntry"

@@ -56,7 +56,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 
 <c:if test="<%= workflowDefinition != null %>">
 	<liferay-frontend:info-bar>
-		<div class="container-fluid-1280">
+		<clay:container>
 			<div class="info-bar-item">
 				<c:choose>
 					<c:when test="<%= active %>">
@@ -86,7 +86,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 					</c:otherwise>
 				</c:choose>
 			</span>
-		</div>
+		</clay:container>
 
 		<liferay-frontend:info-bar-buttons>
 			<liferay-frontend:info-bar-sidenav-toggler-button
@@ -104,13 +104,13 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 			<div class="sidebar sidebar-light">
 				<div class="tbar-visible-xs">
 					<nav class="component-tbar tbar">
-						<div class="container-fluid">
+						<clay:container>
 							<ul class="tbar-nav">
 								<li class="tbar-item">
 									<aui:icon cssClass="component-action sidenav-close" image="times" markupView="lexicon" url="javascript:;" />
 								</li>
 							</ul>
-						</div>
+						</clay:container>
 					</nav>
 				</div>
 
@@ -190,7 +190,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 		</div>
 	</c:if>
 
-	<div class="container-fluid-1280">
+	<clay:container>
 		<div class="sidenav-content">
 			<aui:form method="post" name="fm">
 				<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
@@ -280,7 +280,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 				</aui:button-row>
 			</aui:form>
 		</div>
-	</div>
+	</clay:container>
 </div>
 
 <div class="hide" id="<%= randomNamespace %>titleInputLocalized">
@@ -291,6 +291,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 			<aui:input name="name" type="hidden" value="<%= PortalUUIDUtil.generate() %>" />
 			<aui:input name="content" type="hidden" value="<%= workflowDefinition.getContent() %>" />
 			<aui:input name="defaultDuplicationTitle" type="hidden" value="<%= duplicateTitle %>" />
+			<aui:input name="duplicatedDefinitionName" type="hidden" value="<%= workflowDefinition.getName() %>" />
 			<aui:input name="duplicatedDefinitionTitle" type="hidden" value="<%= workflowDefinition.getTitle(LanguageUtil.getLanguageId(request)) %>" />
 
 			<aui:fieldset>

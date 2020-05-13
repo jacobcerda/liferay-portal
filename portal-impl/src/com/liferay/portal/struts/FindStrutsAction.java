@@ -90,9 +90,29 @@ public abstract class FindStrutsAction implements StrutsAction {
 			Layout layout = _setTargetLayout(
 				httpServletRequest, groupId, result.getPlid());
 
-			LayoutPermissionUtil.check(
-				themeDisplay.getPermissionChecker(), layout, true,
-				ActionKeys.VIEW);
+			if (!LayoutPermissionUtil.contains(
+					themeDisplay.getPermissionChecker(), layout, true,
+					ActionKeys.VIEW)) {
+
+				if (!themeDisplay.isSignedIn() && result.isSignInRequired()) {
+					String currentCompleteURL =
+						PortalUtil.getCurrentCompleteURL(httpServletRequest);
+
+					String redirect =
+						PortalUtil.getPathMain() + "/portal/login?redirect=" +
+							currentCompleteURL;
+
+					redirect = HttpUtil.encodeParameters(redirect);
+
+					httpServletResponse.sendRedirect(redirect);
+
+					return null;
+				}
+
+				throw new PrincipalException.MustHavePermission(
+					themeDisplay.getPermissionChecker(), Layout.class.getName(),
+					layout.getLayoutId(), ActionKeys.VIEW);
+			}
 
 			String portletId = result.getPortletId();
 
