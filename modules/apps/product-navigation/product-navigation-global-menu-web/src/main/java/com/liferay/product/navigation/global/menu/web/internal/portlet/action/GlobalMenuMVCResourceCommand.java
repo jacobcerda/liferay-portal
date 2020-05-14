@@ -19,22 +19,34 @@ import com.liferay.application.list.PanelAppRegistry;
 import com.liferay.application.list.PanelCategory;
 import com.liferay.application.list.PanelCategoryRegistry;
 import com.liferay.application.list.constants.PanelCategoryKeys;
+import com.liferay.item.selector.ItemSelector;
+import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
+import com.liferay.item.selector.criteria.group.criterion.GroupItemSelectorCriterion;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
+import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.global.menu.web.internal.constants.ProductNavigationGlobalMenuPortletKeys;
+import com.liferay.site.util.GroupURLProvider;
+import com.liferay.site.util.RecentGroupManager;
 
 import java.util.List;
+import java.util.ResourceBundle;
 
+import javax.portlet.PortletURL;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
@@ -61,15 +73,9 @@ public class GlobalMenuMVCResourceCommand extends BaseMVCResourceCommand {
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-			resourceRequest);
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)resourceRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		JSONPortletResponseUtil.writeJSON(
 			resourceRequest, resourceResponse,
-			_getPanelCategoriesJSONArray(httpServletRequest, themeDisplay));
+			_getGlobalMenuContextJSONObject(resourceRequest, resourceResponse));
 	}
 
 	private JSONArray _getChildPanelCategoriesJSONArray(
@@ -107,6 +113,29 @@ public class GlobalMenuMVCResourceCommand extends BaseMVCResourceCommand {
 		}
 
 		return childPanelCategoriesJSONArray;
+	}
+
+	private JSONObject _getGlobalMenuContextJSONObject(
+			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
+		throws PortalException {
+
+		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
+			resourceRequest);
+		ThemeDisplay themeDisplay = (ThemeDisplay)resourceRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		return JSONUtil.put(
+			"items",
+			_getPanelCategoriesJSONArray(httpServletRequest, themeDisplay)
+		).put(
+			"portletNamespace", resourceResponse.getNamespace()
+		).put(
+			"recentSites",
+			_getRecentSitesJSONArray(
+				httpServletRequest, resourceRequest, themeDisplay)
+		).put(
+			"viewAllURL", _getViewAllURL(resourceRequest, resourceResponse)
+		);
 	}
 
 	private JSONArray _getPanelAppsJSONArray(
@@ -172,6 +201,60 @@ public class GlobalMenuMVCResourceCommand extends BaseMVCResourceCommand {
 		return panelCategoriesJSONArray;
 	}
 
+	private JSONArray _getRecentSitesJSONArray(
+		HttpServletRequest httpServletRequest, ResourceRequest resourceRequest,
+		ThemeDisplay themeDisplay) {
+
+		JSONArray recentSitesJSONArray = JSONFactoryUtil.createJSONArray();
+
+		List<Group> recentGroups = _recentGroupManager.getRecentGroups(
+			httpServletRequest);
+
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			themeDisplay.getLocale(), getClass());
+
+		for (Group group : recentGroups) {
+			recentSitesJSONArray.put(
+				JSONUtil.put(
+					"key", group.getGroupKey()
+				).put(
+					"label",
+					LanguageUtil.get(
+						resourceBundle, group.getScopeLabel(themeDisplay))
+				).put(
+					"logoURL", group.getLogoURL(themeDisplay, true)
+				).put(
+					"url", _groupURLProvider.getGroupURL(group, resourceRequest)
+				));
+		}
+
+		return recentSitesJSONArray;
+	}
+
+	private String _getViewAllURL(
+		ResourceRequest resourceRequest, ResourceResponse resourceResponse) {
+
+		GroupItemSelectorCriterion groupItemSelectorCriterion =
+			new GroupItemSelectorCriterion();
+
+		groupItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
+			new URLItemSelectorReturnType());
+		groupItemSelectorCriterion.setIncludeAllVisibleGroups(true);
+
+		PortletURL itemSelectorURL = _itemSelector.getItemSelectorURL(
+			RequestBackedPortletURLFactoryUtil.create(resourceRequest),
+			resourceResponse.getNamespace() + "selectSite",
+			groupItemSelectorCriterion);
+
+		return itemSelectorURL.toString();
+	}
+
+	@Reference
+	private GroupURLProvider _groupURLProvider;
+
+	@Reference
+	private ItemSelector _itemSelector;
+
 	@Reference
 	private PanelAppRegistry _panelAppRegistry;
 
@@ -183,5 +266,8 @@ public class GlobalMenuMVCResourceCommand extends BaseMVCResourceCommand {
 
 	@Reference
 	private PortletLocalService _portletLocalService;
+
+	@Reference
+	private RecentGroupManager _recentGroupManager;
 
 }

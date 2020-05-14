@@ -12,7 +12,7 @@
  * details.
  */
 
-import {ClayButtonWithIcon} from '@clayui/button';
+import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayModal, {useModal} from '@clayui/modal';
 import ClayTabs from '@clayui/tabs';
 import {fetch} from 'frontend-js-web';
@@ -33,16 +33,82 @@ const Column = ({panelApps}) => {
 	);
 };
 
-const Content = ({childCategories}) => {
+const Content = ({
+	childCategories,
+	portletNamespace,
+	recentSites,
+	viewAllURL,
+}) => {
 	return (
 		<div className="row">
 			{childCategories.map(({key, label, panelApps}) => (
-				<div className="col" key={key}>
-					<h5 className="text-secondary text-uppercase">{label}</h5>
+				<div className="col p-4" key={key}>
+					<h2 className="h5 text-secondary text-uppercase">
+						{label}
+					</h2>
 
 					<Column panelApps={panelApps} />
 				</div>
 			))}
+
+			<div className="bg-lighter col p-4 rounded-sm" key="sites">
+				<h2 className="h5 mb-5 text-secondary text-uppercase">
+					{Liferay.Language.get('sites')}
+				</h2>
+
+				<p className="h6 mb-0 text-secondary text-uppercase">
+					{Liferay.Language.get('recently-visited')}
+				</p>
+
+				<ul className="list-unstyled mt-3" role="list">
+					{recentSites.map(({key, label, logoURL, url}) => (
+						<li className="mb-2" key={key}>
+							<div className="autofit-row autofit-row-center">
+								<div className="autofit-col mr-2">
+									<div className="sticker sticker-secondary">
+										<img
+											className="sticker-img"
+											src={logoURL}
+										/>
+									</div>
+								</div>
+
+								<div className="autofit-col autofit-col-expand">
+									<a className="text-secondary" href={url}>
+										{label}
+									</a>
+								</div>
+							</div>
+						</li>
+					))}
+				</ul>
+
+				<ClayButton
+					displayType="link"
+					onClick={() => {
+						Liferay.Util.selectEntity(
+							{
+								dialog: {
+									constrain: true,
+									destroyOnHide: true,
+									modal: true,
+								},
+								eventName: `${portletNamespace}selectSite`,
+								id: `${portletNamespace}selectSite`,
+								title: Liferay.Language.get(
+									'select-site-or-asset-library'
+								),
+								uri: viewAllURL,
+							},
+							(event) => {
+								location.href = event.url;
+							}
+						);
+					}}
+				>
+					{Liferay.Language.get('view-all')}
+				</ClayButton>
+			</div>
 		</div>
 	);
 };
@@ -54,14 +120,24 @@ function GlobalMenu({panelAppsURL}) {
 	});
 
 	const [activeTab, setActiveTab] = useState(0);
-	const [items, setItems] = useState([]);
+	const [context, setContext] = useState({});
+
 	const preloadPromise = useRef();
+
+	const {items = [], portletNamespace, recentSites, viewAllURL} = context;
 
 	function preloadItems() {
 		if (!preloadPromise.current) {
 			preloadPromise.current = fetch(panelAppsURL)
 				.then((response) => response.json())
-				.then((items) => setItems(items));
+				.then(({items, portletNamespace, recentSites, viewAllURL}) => {
+					setContext({
+						items,
+						portletNamespace,
+						recentSites,
+						viewAllURL,
+					});
+				});
 		}
 	}
 
@@ -74,6 +150,7 @@ function GlobalMenu({panelAppsURL}) {
 							{items.map(({key, label}, index) => (
 								<ClayTabs.Item
 									active={activeTab === index}
+									id={`${portletNamespace}tab_${index}`}
 									key={key}
 									onClick={() => setActiveTab(index)}
 								>
@@ -86,11 +163,14 @@ function GlobalMenu({panelAppsURL}) {
 							<ClayTabs.Content activeIndex={activeTab}>
 								{items.map(({childCategories}, index) => (
 									<ClayTabs.TabPane
-										aria-labelledby={`tab-${index}`}
+										aria-labelledby={`${portletNamespace}tab_${index}`}
 										key={`tabPane-${index}`}
 									>
 										<Content
 											childCategories={childCategories}
+											portletNamespace={portletNamespace}
+											recentSites={recentSites}
+											viewAllURL={viewAllURL}
 										/>
 									</ClayTabs.TabPane>
 								))}

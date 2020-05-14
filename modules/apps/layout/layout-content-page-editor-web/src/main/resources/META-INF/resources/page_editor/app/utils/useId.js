@@ -12,22 +12,12 @@
  * details.
  */
 
-import {DEPLOYMENT_TYPES} from './constants.es';
+import {useMemo} from 'react';
 
-const concatTypes = (types) => {
-	return types.reduce((acc, cur, index) => {
-		if (index < types.length - 2) {
-			return `${acc + DEPLOYMENT_TYPES[cur]}, `;
-		}
+import {config} from '../config/index';
 
-		if (index == types.length - 2) {
-			return `${acc + DEPLOYMENT_TYPES[cur]} ${Liferay.Language.get(
-				'and'
-			).toLowerCase()} `;
-		}
+let nextId = 0;
 
-		return acc + DEPLOYMENT_TYPES[cur];
-	}, '');
+export const useId = () => {
+	return useMemo(() => `${config.portletNamespace}_useId_${nextId++}`, []);
 };
-
-export {concatTypes};
