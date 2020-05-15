@@ -14,6 +14,7 @@
 
 package com.liferay.layout.util.structure;
 
+import com.liferay.layout.responsive.ResponsiveLayoutStructureUtil;
 import com.liferay.layout.responsive.ViewportSize;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
 import com.liferay.petra.lang.HashUtil;
@@ -69,7 +70,7 @@ public class RowLayoutStructureItem extends LayoutStructureItem {
 		JSONObject jsonObject = JSONUtil.put(
 			"gutters", _gutters
 		).put(
-			"modulesPerRow", _modulesPerRow
+			"modulesPerRow", getModulesPerRow()
 		).put(
 			"numberOfColumns", _numberOfColumns
 		).put(
@@ -83,21 +84,23 @@ public class RowLayoutStructureItem extends LayoutStructureItem {
 				continue;
 			}
 
-			JSONObject configurationJSONObject =
-				_viewportSizeConfigurations.getOrDefault(
-					viewportSize.getViewportSizeId(),
-					JSONFactoryUtil.createJSONObject());
-
 			jsonObject.put(
 				viewportSize.getViewportSizeId(),
 				JSONUtil.put(
 					"modulesPerRow",
-					configurationJSONObject.get("modulesPerRow")
+					ResponsiveLayoutStructureUtil.getResponsivePropertyValue(
+						viewportSize, _viewportSizeConfigurations,
+						"modulesPerRow", getModulesPerRow())
 				).put(
-					"reverseOrder", configurationJSONObject.get("reverseOrder")
+					"reverseOrder",
+					ResponsiveLayoutStructureUtil.getResponsivePropertyValue(
+						viewportSize, _viewportSizeConfigurations,
+						"reverseOrder", isReverseOrder())
 				).put(
 					"verticalAlignment",
-					configurationJSONObject.get("verticalAlignment")
+					ResponsiveLayoutStructureUtil.getResponsivePropertyValue(
+						viewportSize, _viewportSizeConfigurations,
+						"verticalAlignment", getVerticalAlignment())
 				));
 		}
 
@@ -110,6 +113,10 @@ public class RowLayoutStructureItem extends LayoutStructureItem {
 	}
 
 	public int getModulesPerRow() {
+		if (_modulesPerRow == null) {
+			return _numberOfColumns;
+		}
+
 		return _modulesPerRow;
 	}
 
@@ -225,7 +232,7 @@ public class RowLayoutStructureItem extends LayoutStructureItem {
 	}
 
 	private boolean _gutters = true;
-	private int _modulesPerRow = 3;
+	private Integer _modulesPerRow;
 	private int _numberOfColumns;
 	private boolean _reverseOrder;
 	private String _verticalAlignment = "top";

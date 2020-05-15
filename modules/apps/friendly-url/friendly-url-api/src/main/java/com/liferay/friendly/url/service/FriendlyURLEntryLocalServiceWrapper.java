@@ -163,6 +163,15 @@ public class FriendlyURLEntryLocalServiceWrapper
 	}
 
 	@Override
+	public void deleteFriendlyURLLocalizationEntry(
+			long friendlyURLEntryId, String languageId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_friendlyURLEntryLocalService.deleteFriendlyURLLocalizationEntry(
+			friendlyURLEntryId, languageId);
+	}
+
+	@Override
 	public void deleteGroupFriendlyURLEntries(long groupId, long classNameId) {
 		_friendlyURLEntryLocalService.deleteGroupFriendlyURLEntries(
 			groupId, classNameId);
@@ -470,6 +479,21 @@ public class FriendlyURLEntryLocalServiceWrapper
 
 		return _friendlyURLEntryLocalService.getFriendlyURLEntryLocalizations(
 			friendlyURLEntryId);
+	}
+
+	@Override
+	public java.util.List
+		<com.liferay.friendly.url.model.FriendlyURLEntryLocalization>
+			getFriendlyURLEntryLocalizations(
+				long groupId, long classNameId, long classPK, String languageId,
+				int start, int end,
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.friendly.url.model.
+						FriendlyURLEntryLocalization> orderByComparator) {
+
+		return _friendlyURLEntryLocalService.getFriendlyURLEntryLocalizations(
+			groupId, classNameId, classPK, languageId, start, end,
+			orderByComparator);
 	}
 
 	@Override

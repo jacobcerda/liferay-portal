@@ -16,7 +16,7 @@ import ClayList from '@clayui/list';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import ClayModal from '@clayui/modal';
 import {useIsMounted} from 'frontend-js-react-web';
-import {fetch} from 'frontend-js-web';
+import {fetch, openToast} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 
@@ -24,9 +24,11 @@ import LanguageSelector from './LanguageSelector';
 
 const FriendlyURLHistoryModal = ({
 	defaultLanguageId,
-	friendlyURLEntryLocalizationslURL,
+	deleteFriendlyURLEntryLocalizationURL,
+	friendlyURLEntryLocalizationsURL,
 	initialLanguageId,
 	observer,
+	portletNamespace,
 }) => {
 	const [languageId, setLanguageId] = useState();
 	const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ const FriendlyURLHistoryModal = ({
 	const isMounted = useIsMounted();
 
 	useEffect(() => {
-		fetch(friendlyURLEntryLocalizationslURL)
+		fetch(friendlyURLEntryLocalizationsURL)
 			.then((response) => response.json())
 			.then((response) => {
 				if (isMounted()) {
@@ -51,7 +53,7 @@ const FriendlyURLHistoryModal = ({
 					console.error(error);
 				}
 			});
-	}, [friendlyURLEntryLocalizationslURL, isMounted]);
+	}, [friendlyURLEntryLocalizationsURL, isMounted]);
 
 	useEffect(() => {
 		if (loading) {
@@ -87,6 +89,59 @@ const FriendlyURLHistoryModal = ({
 			setLoading(false);
 		}
 	}, [friendlyURLEntryLocalizations, loading, languageId]);
+
+	const handleDeleteFriendlyUrl = (deleteFriendlyURLEntryId) => {
+		const formData = new FormData();
+
+		formData.append(
+			`${portletNamespace}friendlyURLEntryId`,
+			deleteFriendlyURLEntryId
+		);
+
+		formData.append(`${portletNamespace}languageId`, languageId);
+
+		fetch(deleteFriendlyURLEntryLocalizationURL, {
+			body: formData,
+			method: 'POST',
+		})
+			.then((response) => response.json())
+			.then((response) => {
+				if (response.success) {
+					setFriendlyURLEntryLocalizations(
+						(friendlyURLEntryLocalizations) => {
+							friendlyURLEntryLocalizations[
+								languageId
+							].history = friendlyURLEntryLocalizations[
+								languageId
+							].history.filter(
+								({friendlyURLEntryId}) =>
+									friendlyURLEntryId !=
+									deleteFriendlyURLEntryId
+							);
+
+							return {...friendlyURLEntryLocalizations};
+						}
+					);
+				}
+				else {
+					showToastError();
+				}
+			})
+			.catch((error) => {
+				if (process.env.NODE_ENV === 'development') {
+					console.error(error);
+				}
+				showToastError();
+			});
+	};
+
+	const showToastError = () => {
+		openToast({
+			message: Liferay.Language.get('an-unexpected-error-occurred'),
+			title: Liferay.Language.get('error'),
+			type: 'danger',
+		});
+	};
 
 	return (
 		<ClayModal
@@ -151,10 +206,24 @@ const FriendlyURLHistoryModal = ({
 														{urlTitle}
 													</ClayList.ItemText>
 												</ClayList.ItemField>
-												<ClayList.ItemField className="d-none">
+												<ClayList.ItemField>
 													<ClayList.QuickActionMenu>
-														<ClayList.QuickActionMenu.Item symbol="reload" />
-														<ClayList.QuickActionMenu.Item symbol="times-circle" />
+														<ClayList.QuickActionMenu.Item
+															className="d-none"
+															symbol="reload"
+														/>
+														<ClayList.QuickActionMenu.Item
+															className="lfr-portal-tooltip"
+															data-title={Liferay.Language.get(
+																'forget-url'
+															)}
+															onClick={() => {
+																handleDeleteFriendlyUrl(
+																	friendlyURLEntryId
+																);
+															}}
+															symbol="times-circle"
+														/>
 													</ClayList.QuickActionMenu>
 												</ClayList.ItemField>
 											</ClayList.Item>
@@ -172,8 +241,10 @@ const FriendlyURLHistoryModal = ({
 
 FriendlyURLHistoryModal.propTypes = {
 	defaultLanguageId: PropTypes.string.isRequired,
-	friendlyURLEntryLocalizationslURL: PropTypes.string.isRequired,
+	deleteFriendlyURLEntryLocalizationURL: PropTypes.string.isRequired,
+	friendlyURLEntryLocalizationsURL: PropTypes.string.isRequired,
 	observer: PropTypes.object.isRequired,
+	portletNamespace: PropTypes.string.isRequired,
 };
 
 export default FriendlyURLHistoryModal;

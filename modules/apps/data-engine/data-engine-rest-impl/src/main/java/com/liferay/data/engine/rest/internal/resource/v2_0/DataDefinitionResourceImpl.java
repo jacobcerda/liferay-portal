@@ -546,7 +546,11 @@ public class DataDefinitionResourceImpl
 
 		_addDataDefinitionFieldLinks(
 			dataDefinitionId, ddmForm.getDDMFormFields(),
-			dataDefinition.getSiteId());
+			Optional.ofNullable(
+				dataDefinition.getSiteId()
+			).orElse(
+				getPermissionCheckerGroupId(dataDefinitionId)
+			));
 
 		DDMFormSerializerSerializeRequest.Builder builder =
 			DDMFormSerializerSerializeRequest.Builder.newBuilder(ddmForm);

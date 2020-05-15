@@ -17,7 +17,7 @@ import ClayIcon from '@clayui/icon';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import React from 'react';
 
-import EmptyState from './EmptyState.es';
+import EmptyState from '../empty-state/EmptyState.es';
 
 export default ({children, fieldName, totalEntries, type}) => (
 	<div className="col-md-8">
@@ -57,7 +57,15 @@ export default ({children, fieldName, totalEntries, type}) => (
 					</ClayCard.AspectRatio>
 
 					<ClayCard.Body>
-						{totalEntries > 0 ? children : <EmptyState />}
+						{totalEntries > 0 ? (
+							children
+						) : (
+							<EmptyState
+								description={Liferay.Language.get(
+									'entries-submitted-with-this-field-filled-will-show-up-here'
+								)}
+							/>
+						)}
 					</ClayCard.Body>
 				</ClayCard>
 			</div>

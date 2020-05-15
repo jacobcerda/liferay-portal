@@ -15,10 +15,11 @@
 import React from 'react';
 
 import App from './App.es';
+import EmptyState from './components/empty-state/EmptyState.es';
 
 export default ({data, fields}) => {
-	if (!data) {
-		return null;
+	if (!data || data.length === 0) {
+		return <EmptyState />;
 	}
 
 	return (

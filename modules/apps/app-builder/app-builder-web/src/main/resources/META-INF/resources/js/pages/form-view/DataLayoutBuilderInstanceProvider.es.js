@@ -22,15 +22,37 @@ import useDeleteDefinitionField from './useDeleteDefinitionField.es';
 import useDeleteDefinitionFieldModal from './useDeleteDefinitionFieldModal.es';
 
 export default ({children, dataLayoutBuilder}) => {
-	const [{dataDefinition, dataLayout}, dispatch] = useContext(
-		FormViewContext
-	);
+	const [
+		{dataDefinition, dataLayout, editingLanguageId, focusedField},
+		dispatch,
+	] = useContext(FormViewContext);
 	const deleteDefinitionField = useDeleteDefinitionField({dataLayoutBuilder});
 	const onDeleteDefinitionField = useDeleteDefinitionFieldModal(
 		(fieldName) => {
 			deleteDefinitionField(fieldName);
 		}
 	);
+
+	useEffect(() => {
+		const provider = dataLayoutBuilder.getLayoutProvider();
+
+		provider.props = {
+			...provider.props,
+			availableLanguageIds: [
+				...new Set([
+					...provider.props.availableLanguageIds,
+					editingLanguageId,
+				]),
+			],
+			editingLanguageId,
+		};
+
+		if (Object.keys(focusedField).length) {
+			provider.getEvents().fieldClicked(focusedField);
+		}
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [dataLayoutBuilder, dispatch, editingLanguageId]);
 
 	useEffect(() => {
 		const provider = dataLayoutBuilder.getLayoutProvider();

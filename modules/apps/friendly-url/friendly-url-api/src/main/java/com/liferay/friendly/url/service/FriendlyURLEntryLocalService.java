@@ -144,6 +144,10 @@ public interface FriendlyURLEntryLocalService
 	public void deleteFriendlyURLEntry(
 		long groupId, long classNameId, long classPK);
 
+	public void deleteFriendlyURLLocalizationEntry(
+			long friendlyURLEntryId, String languageId)
+		throws PortalException;
+
 	public void deleteGroupFriendlyURLEntries(long groupId, long classNameId);
 
 	/**
@@ -343,6 +347,12 @@ public interface FriendlyURLEntryLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FriendlyURLEntryLocalization> getFriendlyURLEntryLocalizations(
 		long friendlyURLEntryId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FriendlyURLEntryLocalization> getFriendlyURLEntryLocalizations(
+		long groupId, long classNameId, long classPK, String languageId,
+		int start, int end,
+		OrderByComparator<FriendlyURLEntryLocalization> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();

@@ -16,6 +16,7 @@ import React from 'react';
 
 import Card from './components/card/Card.es';
 import PieChart from './components/chart/pie/PieChart.es';
+import EmptyState from './components/empty-state/EmptyState.es';
 import toDataArray, {sumTotalEntries} from './utils/data.es';
 
 const chartFactory = (type, values, totalEntries) => {
@@ -28,14 +29,19 @@ const chartFactory = (type, values, totalEntries) => {
 	return null;
 };
 
-export default ({data, fields}) =>
-	fields.map(({name, type}, index) => {
+export default ({data, fields}) => {
+	let hasCards = false;
+
+	const cards = fields.map(({name, type}, index) => {
 		const {values = {}} = data[name] || {};
 		const totalEntries = sumTotalEntries(values);
 		const chart = chartFactory(type, values, totalEntries);
 
 		if (chart === null) {
 			return null;
+		}
+		else {
+			hasCards = true;
 		}
 
 		return (
@@ -49,3 +55,10 @@ export default ({data, fields}) =>
 			</Card>
 		);
 	});
+
+	if (!hasCards) {
+		return <EmptyState />;
+	}
+
+	return cards;
+};

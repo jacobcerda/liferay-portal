@@ -3339,6 +3339,141 @@ ${tomcat-gc-log}
 		</sequential>
 	</macrodef>
 
+	<macrodef name="set-app-server-version-number">
+		<attribute name="app.server.type" />
+		<attribute name="app.server.version" />
+		<attribute default="" name="app.server.version.build" />
+
+		<sequential>
+			<if>
+				<equals arg1="@{app.server.type}" arg2="jboss" />
+				<then>
+					<var name="app.server.dir" value="${app.server.parent.dir}/jboss-eap-@{app.server.version}" />
+					<var name="app.server.zip.name" value="@{app.server.type}-eap-@{app.server.version}.zip" />
+
+					<var name="app.server.bin.dir" value="${app.server.dir}/bin" />
+					<var name="app.server.classes.portal.dir" value="${app.server.dir}/standalone/deployments/ROOT.war/WEB-INF/classes/" />
+					<var name="app.server.lib.global.dir" value="${app.server.dir}/modules/com/liferay/portal/main" />
+					<var name="app.server.lib.portal.dir" value="${app.server.dir}/standalone/deployments/ROOT.war/WEB-INF/lib/" />
+					<var name="app.server.zip.url" value="http://developers.redhat.com/download-manager/file/${app.server.zip.name}" />
+				</then>
+			</if>
+
+			<if>
+				<equals arg1="@{app.server.type}" arg2="tcserver" />
+				<then>
+					<var name="app.server.dir" value="${app.server.parent.dir}/tc-server-@{app.server.version}" />
+					<var name="app.server.zip.name" value="apache-tomcat-@{app.server.version}.zip" />
+
+					<var name="app.server.bin.dir" value="${app.server.dir}/instances/liferay/bin" />
+					<var name="app.server.classes.portal.dir" value="${app.server.dir}/webapps/ROOT/WEB-INF/classes" />
+					<var name="app.server.lib.global.dir" value="${app.server.dir}/lib/ext" />
+					<var name="app.server.lib.portal.dir" value="${app.server.dir}/webapps/ROOT/WEB-INF/lib/" />
+					<var name="app.server.zip.url" value="http://archive.apache.org/dist/tomcat/tomcat-9/v@{app.server.version}/bin/${app.server.zip.name}" />
+				</then>
+			</if>
+
+			<if>
+				<equals arg1="@{app.server.type}" arg2="tomcat" />
+				<then>
+					<var name="app.server.dir" value="${app.server.parent.dir}/tomcat-@{app.server.version}" />
+					<var name="app.server.zip.name" value="@{app.server.type}-@{app.server.version}.Final.zip" />
+
+					<var name="app.server.bin.dir" value="${app.server.dir}/bin" />
+					<var name="app.server.classes.portal.dir" value="${app.server.dir}/standalone/deployments/ROOT.war/WEB-INF/classes/" />
+					<var name="app.server.lib.global.dir" value="${app.server.dir}/modules/com/liferay/portal/main" />
+					<var name="app.server.lib.portal.dir" value="${app.server.dir}/standalone/deployments/ROOT.war/WEB-INF/lib/" />
+
+					<propertyregex
+						input="@{app.server.version}"
+						override="true"
+						property="app.server.tomcat.major.version"
+						regexp="(\d+)\..*"
+						replace="\1"
+					/>
+
+					<var name="app.server.zip.url" value="http://archive.apache.org/dist/tomcat/tomcat-${app.server.tomcat.major.version}/v@{app.server.version}/bin/${app.server.zip.name}" />
+				</then>
+			</if>
+
+			<if>
+				<equals arg1="@{app.server.type}" arg2="weblogic" />
+				<then>
+					<var name="app.server.dir" value="${app.server.parent.dir}/weblogic-@{app.server.version}" />
+					<var name="app.server.zip.name" value="fmw_@{app.server.version}.3.0_wls_quick_Disk1_1of1.zip" />
+
+					<var name="app.server.bin.dir" value="${app.server.dir}/domains/liferay/bin" />
+					<var name="app.server.classes.portal.dir" value="${app.server.dir}/domains/liferay/autodeploy/ROOT/WEB-INF/classes" />
+					<var name="app.server.lib.global.dir" value="${app.server.dir}/domains/liferay/lib" />
+					<var name="app.server.lib.portal.dir" value="${app.server.dir}/domains/liferay/autodeploy/ROOT/WEB-INF/lib/" />
+
+					<propertyregex
+						input="@{app.server.version}"
+						override="true"
+						property="app.server.weblogic.major.version"
+						regexp="(\d+)\..*"
+						replace="\1"
+					/>
+
+					<var name="app.server.zip.url" value="http://download.oracle.com/otn/nt/middleware/${app.server.weblogic.major.version}c/@{app.server.version.build}/${app.server.zip.name}" />
+				</then>
+			</if>
+
+			<if>
+				<equals arg1="@{app.server.type}" arg2="websphere" />
+				<then>
+					<var name="app.server.dir" value="${app.server.parent.dir}/websphere-@{app.server.version}" />
+					<var name="app.server.zip.name" value="websphere-@{app.server.version}.zip" />
+
+					<var name="app.server.bin.dir" value="${app.server.dir}/bin" />
+					<var name="app.server.classes.portal.dir" value="${app.server.dir}/standalone/deployments/ROOT.war/WEB-INF/classes/" />
+					<var name="app.server.lib.global.dir" value="${app.server.dir}/modules/com/liferay/portal/main" />
+					<var name="app.server.lib.portal.dir" value="${app.server.dir}/standalone/deployments/ROOT.war/WEB-INF/lib/" />
+				</then>
+			</if>
+
+			<if>
+				<equals arg1="@{app.server.type}" arg2="wildfly" />
+				<then>
+					<var name="app.server.dir" value="${app.server.parent.dir}/wildfly-@{app.server.version}" />
+					<var name="app.server.zip.name" value="wildfly-@{app.server.version}.Final.zip" />
+
+					<var name="app.server.bin.dir" value="${app.server.dir}/bin" />
+					<var name="app.server.classes.portal.dir" value="${app.server.dir}/standalone/deployments/ROOT.war/WEB-INF/classes" />
+					<var name="app.server.lib.global.dir" value="${app.server.dir}/modules/com/liferay/portal/main" />
+					<var name="app.server.lib.portal.dir" value="${app.server.dir}/standalone/deployments/ROOT.war/WEB-INF/lib/" />
+					<var name="app.server.zip.url" value="http://download.jboss.org/wildfly/@{app.server.version}.Final/${app.server.zip.name}" />
+				</then>
+			</if>
+
+			<echo append="true" file="app.server.${user.name}.properties">
+				app.server.@{app.server.type}.dir=${app.server.dir}
+				app.server.@{app.server.type}.bin.dir=${app.server.bin.dir}
+				app.server.@{app.server.type}.classes.portal.dir=${app.server.classes.portal.dir}
+				app.server.@{app.server.type}.lib.global.dir=${app.server.lib.global.dir}
+				app.server.@{app.server.type}.lib.portal.dir=${app.server.lib.portal.dir}
+				app.server.@{app.server.type}.version=@{app.server.version}
+			</echo>
+
+			<if>
+				<equals arg1="@{app.server.type}" arg2="websphere" />
+				<then>
+					<echo append="true" file="app.server.${user.name}.properties">
+						app.server.@{app.server.type}.custom.zip.name=${app.server.zip.name}
+					</echo>
+				</then>
+				<else>
+					<echo append="true" file="app.server.${user.name}.properties">
+						app.server.@{app.server.type}.zip.name=${app.server.zip.name}
+						app.server.@{app.server.type}.zip.url=${app.server.zip.url}
+					</echo>
+				</else>
+			</if>
+
+			<print-file file.name="app.server.${user.name}.properties" />
+		</sequential>
+	</macrodef>
+
 	<macrodef name="set-portal-impl-portal-test-ext-properties">
 		<sequential>
 			<generate-jdbc-properties properties.file="portal-impl/test/portal-test-ext.properties">
