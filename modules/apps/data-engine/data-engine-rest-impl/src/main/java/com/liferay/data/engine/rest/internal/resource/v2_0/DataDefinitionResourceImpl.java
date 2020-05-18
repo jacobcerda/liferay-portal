@@ -16,6 +16,7 @@ package com.liferay.data.engine.rest.internal.resource.v2_0;
 
 import com.liferay.data.engine.content.type.DataDefinitionContentType;
 import com.liferay.data.engine.field.type.util.LocalizedValueUtil;
+import com.liferay.data.engine.model.DEDataDefinitionFieldLink;
 import com.liferay.data.engine.model.DEDataListView;
 import com.liferay.data.engine.nativeobject.DataEngineNativeObject;
 import com.liferay.data.engine.nativeobject.DataEngineNativeObjectField;
@@ -95,6 +96,7 @@ import com.liferay.portal.kernel.util.AggregateResourceBundle;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -117,6 +119,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -154,11 +157,39 @@ public class DataDefinitionResourceImpl
 		_ddlRecordSetLocalService.deleteDDMStructureRecordSets(
 			dataDefinitionId);
 
-		_deDataDefinitionFieldLinkLocalService.deleteDEDataDefinitionFieldLinks(
-			dataDefinitionId);
+		for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
+				_deDataDefinitionFieldLinkLocalService.
+					getDEDataDefinitionFieldLinks(dataDefinitionId)) {
 
-		_deDataDefinitionFieldLinkLocalService.deleteDEDataDefinitionFieldLinks(
-			_portal.getClassNameId(DDMStructure.class), dataDefinitionId);
+			_deDataDefinitionFieldLinkLocalService.
+				deleteDEDataDefinitionFieldLink(deDataDefinitionFieldLink);
+
+			if (deDataDefinitionFieldLink.getClassNameId() !=
+					_portal.getClassNameId(DDMStructure.class)) {
+
+				continue;
+			}
+
+			DataDefinition dataDefinition = _toDataDefinition(
+				_ddmStructureLocalService.getStructure(
+					deDataDefinitionFieldLink.getClassPK()));
+
+			_removeFieldsFromDataLayoutsAndDataListViews(
+				dataDefinition, deDataDefinitionFieldLink.getClassPK(),
+				new String[] {deDataDefinitionFieldLink.getFieldName()});
+
+			dataDefinition.setDataDefinitionFields(
+				ArrayUtil.filter(
+					dataDefinition.getDataDefinitionFields(),
+					dataDefinitionField -> !StringUtil.equals(
+						dataDefinitionField.getName(),
+						deDataDefinitionFieldLink.getFieldName())));
+
+			_updateDataDefinition(
+				dataDefinition, dataDefinition.getId(),
+				DataDefinitionUtil.toDDMForm(
+					dataDefinition, _ddmFormFieldTypeServicesTracker));
+		}
 
 		_deDataListViewLocalService.deleteDEDataListViews(dataDefinitionId);
 
@@ -322,9 +353,10 @@ public class DataDefinitionResourceImpl
 				DataDefinition dataDefinition = null;
 
 				try {
-					getSiteDataDefinitionByContentTypeByDataDefinitionKey(
-						siteId, "native-object",
-						dataEngineNativeObject.getClassName());
+					dataDefinition =
+						getSiteDataDefinitionByContentTypeByDataDefinitionKey(
+							siteId, "native-object",
+							dataEngineNativeObject.getClassName());
 				}
 				catch (Exception exception) {
 					if (!(exception instanceof NoSuchStructureException) &&
@@ -339,22 +371,40 @@ public class DataDefinitionResourceImpl
 							availableLanguageIds = new String[] {
 								contextAcceptLanguage.getPreferredLanguageId()
 							};
-							dataDefinitionFields = _toDataDefinitionFields(
-								dataEngineNativeObject);
 							dataDefinitionKey =
 								dataEngineNativeObject.getClassName();
-							name = HashMapBuilder.<String, Object>put(
-								contextAcceptLanguage.getPreferredLanguageId(),
-								dataEngineNativeObject.getName()
-							).build();
 							storageType = "json";
 						}
 					};
 				}
 
-				if (dataDefinition != null) {
+				dataDefinition.setDataDefinitionFields(
+					_toDataDefinitionFields(
+						Optional.ofNullable(
+							dataDefinition.getDataDefinitionFields()
+						).orElse(
+							new DataDefinitionField[0]
+						),
+						dataEngineNativeObject.
+							getDataEngineNativeObjectFields()));
+				dataDefinition.setName(
+					HashMapBuilder.<String, Object>putAll(
+						Optional.ofNullable(
+							dataDefinition.getName()
+						).orElse(
+							new HashMap<>()
+						)
+					).put(
+						contextAcceptLanguage.getPreferredLanguageId(),
+						dataEngineNativeObject.getName()
+					).build());
+
+				if (Validator.isNull(dataDefinition.getId())) {
 					postDataDefinitionByContentType(
 						"native-object", dataDefinition);
+				}
+				else {
+					putDataDefinition(dataDefinition.getId(), dataDefinition);
 				}
 			}
 		}
@@ -539,7 +589,9 @@ public class DataDefinitionResourceImpl
 
 		_validate(dataDefinition, ddmForm);
 
-		_updateFieldNames(dataDefinitionId, dataDefinition);
+		_removeFieldsFromDataLayoutsAndDataListViews(
+			dataDefinition, dataDefinitionId,
+			_getRemovedFieldNames(dataDefinition, dataDefinitionId));
 
 		_deDataDefinitionFieldLinkLocalService.deleteDEDataDefinitionFieldLinks(
 			_portal.getClassNameId(DDMStructure.class), dataDefinitionId);
@@ -552,23 +604,7 @@ public class DataDefinitionResourceImpl
 				getPermissionCheckerGroupId(dataDefinitionId)
 			));
 
-		DDMFormSerializerSerializeRequest.Builder builder =
-			DDMFormSerializerSerializeRequest.Builder.newBuilder(ddmForm);
-
-		DDMFormSerializerSerializeResponse ddmFormSerializerSerializeResponse =
-			_ddmFormSerializer.serialize(builder.build());
-
-		return DataDefinitionUtil.toDataDefinition(
-			_ddmFormFieldTypeServicesTracker,
-			_ddmStructureLocalService.updateStructure(
-				PrincipalThreadLocal.getUserId(), dataDefinitionId,
-				DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID,
-				LocalizedValueUtil.toLocaleStringMap(dataDefinition.getName()),
-				LocalizedValueUtil.toLocaleStringMap(
-					dataDefinition.getDescription()),
-				ddmFormSerializerSerializeResponse.getContent(),
-				new ServiceContext()),
-			_spiDDMFormRuleConverter);
+		return _updateDataDefinition(dataDefinition, dataDefinitionId, ddmForm);
 	}
 
 	@Override
@@ -727,16 +763,31 @@ public class DataDefinitionResourceImpl
 		return dataLayout.getId();
 	}
 
-	private String _getFieldType(int sqlType) {
-		if ((sqlType == Types.BIGINT) || (sqlType == Types.DECIMAL) ||
-			(sqlType == Types.DOUBLE) || (sqlType == Types.FLOAT) ||
-			(sqlType == Types.INTEGER) || (sqlType == Types.NUMERIC) ||
-			(sqlType == Types.TINYINT)) {
-
-			return "number";
+	private String _getFieldType(String customType, int sqlType) {
+		if (ArrayUtil.contains(_BASIC_FIELD_TYPES, customType)) {
+			return customType;
 		}
 
-		return "text";
+		String type = "text";
+
+		if (sqlType == Types.ARRAY) {
+			type = "select";
+		}
+		else if (sqlType == Types.BOOLEAN) {
+			type = "radio";
+		}
+		else if ((sqlType == Types.BIGINT) || (sqlType == Types.DECIMAL) ||
+				 (sqlType == Types.DOUBLE) || (sqlType == Types.FLOAT) ||
+				 (sqlType == Types.INTEGER) || (sqlType == Types.NUMERIC) ||
+				 (sqlType == Types.TINYINT)) {
+
+			type = "numeric";
+		}
+		else if (sqlType == Types.DATE) {
+			type = "date";
+		}
+
+		return type;
 	}
 
 	private JSONObject _getFieldTypeMetadataJSONObject(
@@ -797,23 +848,24 @@ public class DataDefinitionResourceImpl
 	}
 
 	private String[] _getRemovedFieldNames(
-			DataDefinition dataDefinition, DDMStructure ddmStructure)
+			DataDefinition dataDefinition, long dataDefinitionId)
 		throws Exception {
 
 		DataDefinition existingDataDefinition =
 			DataDefinitionUtil.toDataDefinition(
-				_ddmFormFieldTypeServicesTracker, ddmStructure,
+				_ddmFormFieldTypeServicesTracker,
+				_ddmStructureLocalService.getStructure(dataDefinitionId),
 				_spiDDMFormRuleConverter);
 
-		return _removeFieldNames(
+		return ArrayUtil.filter(
 			transform(
 				existingDataDefinition.getDataDefinitionFields(),
-				dataDefinitionField -> dataDefinitionField.getName(),
-				String.class),
-			transform(
-				dataDefinition.getDataDefinitionFields(),
-				dataDefinitionField -> dataDefinitionField.getName(),
-				String.class));
+				DataDefinitionField::getName, String.class),
+			fieldName -> !ArrayUtil.contains(
+				transform(
+					dataDefinition.getDataDefinitionFields(),
+					DataDefinitionField::getName, String.class),
+				fieldName));
 	}
 
 	private ResourceBundle _getResourceBundle(
@@ -831,12 +883,135 @@ public class DataDefinitionResourceImpl
 			_portal.getResourceBundle(locale));
 	}
 
-	private String[] _removeFieldNames(
-		String[] currentFieldNames, String[] removedFieldNames) {
+	private void _removeFieldsFromDataLayout(
+		DataLayout dataLayout, String[] fieldNames) {
 
-		return ArrayUtil.filter(
-			currentFieldNames,
-			fieldName -> !ArrayUtil.contains(removedFieldNames, fieldName));
+		Stream<DataLayoutPage> dataLayoutPages = Arrays.stream(
+			dataLayout.getDataLayoutPages());
+
+		dataLayoutPages.forEach(
+			dataLayoutPage -> {
+				Stream<DataLayoutRow> dataLayoutRows = Arrays.stream(
+					dataLayoutPage.getDataLayoutRows());
+
+				dataLayoutRows.forEach(
+					dataLayoutRow -> {
+						Stream<DataLayoutColumn> dataLayoutColumns =
+							Arrays.stream(dataLayoutRow.getDataLayoutColumns());
+
+						dataLayoutColumns.forEach(
+							dataLayoutColumn -> dataLayoutColumn.setFieldNames(
+								ArrayUtil.filter(
+									dataLayoutColumn.getFieldNames(),
+									fieldName -> !ArrayUtil.contains(
+										fieldNames, fieldName))));
+
+						dataLayoutRow.setDataLayoutColumns(
+							ArrayUtil.filter(
+								dataLayoutRow.getDataLayoutColumns(),
+								column -> !ArrayUtil.isEmpty(
+									column.getFieldNames())));
+					});
+
+				dataLayoutPage.setDataLayoutRows(
+					ArrayUtil.filter(
+						dataLayoutPage.getDataLayoutRows(),
+						row -> !ArrayUtil.isEmpty(row.getDataLayoutColumns())));
+			});
+	}
+
+	private void _removeFieldsFromDataLayouts(
+			DataDefinition dataDefinition, Set<Long> ddmStructureLayoutIds,
+			String[] fieldNames)
+		throws Exception {
+
+		for (Long ddmStructureLayoutId : ddmStructureLayoutIds) {
+			DDMStructureLayout ddmStructureLayout =
+				_ddmStructureLayoutLocalService.getStructureLayout(
+					ddmStructureLayoutId);
+
+			DataLayout dataLayout = DataLayoutUtil.toDataLayout(
+				ddmStructureLayout.getDDMFormLayout(),
+				_spiDDMFormRuleConverter);
+
+			_removeFieldsFromDataLayout(dataLayout, fieldNames);
+
+			DDMFormLayout ddmFormLayout = DataLayoutUtil.toDDMFormLayout(
+				dataLayout,
+				DataDefinitionUtil.toDDMForm(
+					dataDefinition, _ddmFormFieldTypeServicesTracker),
+				_ddmFormRuleDeserializer);
+
+			DDMFormLayoutSerializerSerializeRequest.Builder builder =
+				DDMFormLayoutSerializerSerializeRequest.Builder.newBuilder(
+					ddmFormLayout);
+
+			DDMFormLayoutSerializerSerializeResponse
+				ddmFormLayoutSerializerSerializeResponse =
+					_ddmFormLayoutSerializer.serialize(builder.build());
+
+			ddmStructureLayout.setDefinition(
+				ddmFormLayoutSerializerSerializeResponse.getContent());
+
+			_ddmStructureLayoutLocalService.updateDDMStructureLayout(
+				ddmStructureLayout);
+		}
+	}
+
+	private void _removeFieldsFromDataLayoutsAndDataListViews(
+			DataDefinition dataDefinition, long dataDefinitionId,
+			String[] fieldNames)
+		throws Exception {
+
+		Set<Long> ddmStructureLayoutIds = new HashSet<>();
+		Set<Long> deDataListViewIds = new HashSet<>();
+
+		ddmStructureLayoutIds.addAll(
+			transform(
+				_deDataDefinitionFieldLinkLocalService.
+					getDEDataDefinitionFieldLinks(
+						_portal.getClassNameId(DDMStructureLayout.class),
+						dataDefinitionId, fieldNames),
+				DEDataDefinitionFieldLink::getClassPK));
+		deDataListViewIds.addAll(
+			transform(
+				_deDataDefinitionFieldLinkLocalService.
+					getDEDataDefinitionFieldLinks(
+						_portal.getClassNameId(DEDataListView.class),
+						dataDefinitionId, fieldNames),
+				DEDataDefinitionFieldLink::getClassPK));
+
+		_deDataDefinitionFieldLinkLocalService.deleteDEDataDefinitionFieldLinks(
+			_portal.getClassNameId(DDMStructureLayout.class), dataDefinitionId,
+			fieldNames);
+		_deDataDefinitionFieldLinkLocalService.deleteDEDataDefinitionFieldLinks(
+			_portal.getClassNameId(DEDataListView.class), dataDefinitionId,
+			fieldNames);
+
+		_removeFieldsFromDataLayouts(
+			dataDefinition, ddmStructureLayoutIds, fieldNames);
+		_removeFieldsFromDataListViews(deDataListViewIds, fieldNames);
+	}
+
+	private void _removeFieldsFromDataListViews(
+			Set<Long> deDataListViewIds, String[] removedFieldNames)
+		throws Exception {
+
+		for (Long deDataListViewId : deDataListViewIds) {
+			DEDataListView deDataListView =
+				_deDataListViewLocalService.getDEDataListView(deDataListViewId);
+
+			deDataListView.setFieldNames(
+				Arrays.toString(
+					ArrayUtil.filter(
+						JSONUtil.toStringArray(
+							_jsonFactory.createJSONArray(
+								deDataListView.getFieldNames())),
+						fieldName -> !ArrayUtil.contains(
+							removedFieldNames, fieldName))));
+
+			_deDataListViewLocalService.updateDEDataListView(deDataListView);
+		}
 	}
 
 	private String _resolveModuleName(DDMFormFieldType ddmFormFieldType) {
@@ -874,31 +1049,51 @@ public class DataDefinitionResourceImpl
 	}
 
 	private DataDefinitionField[] _toDataDefinitionFields(
-		DataEngineNativeObject dataEngineNativeObject) {
+			DataDefinitionField[] dataDefinitionFields,
+			List<DataEngineNativeObjectField> dataEngineNativeObjectFields)
+		throws Exception {
 
-		List<DataDefinitionField> dataDefinitionFields = new ArrayList<>();
+		if (ListUtil.isEmpty(dataEngineNativeObjectFields)) {
+			return new DataDefinitionField[0];
+		}
+
+		List<DataDefinitionField> list = new ArrayList<>();
 
 		for (DataEngineNativeObjectField dataEngineNativeObjectField :
-				dataEngineNativeObject.getDataEngineNativeObjectFields()) {
+				dataEngineNativeObjectFields) {
 
 			Column column = dataEngineNativeObjectField.getColumn();
 
-			dataDefinitionFields.add(
+			DataDefinitionField dataDefinitionField = Stream.of(
+				dataDefinitionFields
+			).filter(
+				field -> Objects.equals(column.getName(), field.getName())
+			).findFirst(
+			).orElse(
 				new DataDefinitionField() {
 					{
 						customProperties = HashMapBuilder.<String, Object>put(
 							"native-field", "native-field"
 						).build();
-						fieldType = GetterUtil.getString(
-							dataEngineNativeObjectField.getCustomType(),
-							_getFieldType(column.getSQLType()));
+						label = HashMapBuilder.<String, Object>put(
+							contextAcceptLanguage.getPreferredLanguageId(),
+							column.getName()
+						).build();
 						name = column.getName();
-						required = !column.isNullAllowed();
 					}
-				});
+				}
+			);
+
+			dataDefinitionField.setFieldType(
+				_getFieldType(
+					dataEngineNativeObjectField.getCustomType(),
+					column.getSQLType()));
+			dataDefinitionField.setRequired(!column.isNullAllowed());
+
+			list.add(dataDefinitionField);
 		}
 
-		return dataDefinitionFields.toArray(new DataDefinitionField[0]);
+		return list.toArray(new DataDefinitionField[0]);
 	}
 
 	private DataDefinitionValidationException
@@ -1113,145 +1308,28 @@ public class DataDefinitionResourceImpl
 			ResourceBundleUtil.getString(resourceBundle, key), key);
 	}
 
-	private void _updateDataLayoutFieldNames(
-		DataLayout dataLayout, String[] removedFieldNames) {
-
-		Stream<DataLayoutPage> dataLayoutPages = Arrays.stream(
-			dataLayout.getDataLayoutPages());
-
-		dataLayoutPages.forEach(
-			dataLayoutPage -> {
-				Stream<DataLayoutRow> dataLayoutRows = Arrays.stream(
-					dataLayoutPage.getDataLayoutRows());
-
-				dataLayoutRows.forEach(
-					dataLayoutRow -> {
-						Stream<DataLayoutColumn> dataLayoutColumns =
-							Arrays.stream(dataLayoutRow.getDataLayoutColumns());
-
-						dataLayoutColumns.forEach(
-							dataLayoutColumn -> dataLayoutColumn.setFieldNames(
-								_removeFieldNames(
-									dataLayoutColumn.getFieldNames(),
-									removedFieldNames)));
-
-						dataLayoutRow.setDataLayoutColumns(
-							ArrayUtil.filter(
-								dataLayoutRow.getDataLayoutColumns(),
-								column -> !ArrayUtil.isEmpty(
-									column.getFieldNames())));
-					});
-
-				dataLayoutPage.setDataLayoutRows(
-					ArrayUtil.filter(
-						dataLayoutPage.getDataLayoutRows(),
-						row -> !ArrayUtil.isEmpty(row.getDataLayoutColumns())));
-			});
-	}
-
-	private void _updateDataLayouts(
-			DataDefinition dataDefinition, Set<Long> ddmStructureLayoutIds,
-			String[] removedFieldNames)
+	private DataDefinition _updateDataDefinition(
+			DataDefinition dataDefinition, Long dataDefinitionId,
+			DDMForm ddmForm)
 		throws Exception {
 
-		for (Long ddmStructureLayoutId : ddmStructureLayoutIds) {
-			DDMStructureLayout ddmStructureLayout =
-				_ddmStructureLayoutLocalService.getStructureLayout(
-					ddmStructureLayoutId);
+		DDMFormSerializerSerializeRequest.Builder builder =
+			DDMFormSerializerSerializeRequest.Builder.newBuilder(ddmForm);
 
-			DataLayout dataLayout = DataLayoutUtil.toDataLayout(
-				ddmStructureLayout.getDDMFormLayout(),
-				_spiDDMFormRuleConverter);
+		DDMFormSerializerSerializeResponse ddmFormSerializerSerializeResponse =
+			_ddmFormSerializer.serialize(builder.build());
 
-			_updateDataLayoutFieldNames(dataLayout, removedFieldNames);
-
-			DDMFormLayout ddmFormLayout = DataLayoutUtil.toDDMFormLayout(
-				dataLayout,
-				DataDefinitionUtil.toDDMForm(
-					dataDefinition, _ddmFormFieldTypeServicesTracker),
-				_ddmFormRuleDeserializer);
-
-			DDMFormLayoutSerializerSerializeRequest.Builder builder =
-				DDMFormLayoutSerializerSerializeRequest.Builder.newBuilder(
-					ddmFormLayout);
-
-			DDMFormLayoutSerializerSerializeResponse
-				ddmFormLayoutSerializerSerializeResponse =
-					_ddmFormLayoutSerializer.serialize(builder.build());
-
-			ddmStructureLayout.setDefinition(
-				ddmFormLayoutSerializerSerializeResponse.getContent());
-
-			_ddmStructureLayoutLocalService.updateDDMStructureLayout(
-				ddmStructureLayout);
-		}
-	}
-
-	private void _updateDataListViews(
-			Set<Long> deDataListViewIds, String[] removedFieldNames)
-		throws Exception {
-
-		for (Long deDataListViewId : deDataListViewIds) {
-			DEDataListView deDataListView =
-				_deDataListViewLocalService.getDEDataListView(deDataListViewId);
-
-			String[] fieldNames = JSONUtil.toStringArray(
-				_jsonFactory.createJSONArray(deDataListView.getFieldNames()));
-
-			deDataListView.setFieldNames(
-				Arrays.toString(
-					_removeFieldNames(fieldNames, removedFieldNames)));
-
-			_deDataListViewLocalService.updateDEDataListView(deDataListView);
-		}
-	}
-
-	private void _updateFieldNames(
-			Long dataDefinitionId, DataDefinition dataDefinition)
-		throws Exception {
-
-		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
-			dataDefinitionId);
-
-		String[] removedFieldNames = _getRemovedFieldNames(
-			dataDefinition, ddmStructure);
-
-		Set<Long> ddmStructureLayoutIds = new HashSet<>();
-		Set<Long> deDataListViewIds = new HashSet<>();
-
-		for (String removedFieldName : removedFieldNames) {
-			ddmStructureLayoutIds.addAll(
-				transform(
-					_deDataDefinitionFieldLinkLocalService.
-						getDEDataDefinitionFieldLinks(
-							_portal.getClassNameId(DDMStructureLayout.class),
-							ddmStructure.getStructureId(), removedFieldName),
-					deDataDefinitionFieldLink ->
-						deDataDefinitionFieldLink.getClassPK()));
-
-			deDataListViewIds.addAll(
-				transform(
-					_deDataDefinitionFieldLinkLocalService.
-						getDEDataDefinitionFieldLinks(
-							_portal.getClassNameId(DEDataListView.class),
-							ddmStructure.getStructureId(), removedFieldName),
-					deDataDefinitionFieldLink ->
-						deDataDefinitionFieldLink.getClassPK()));
-
-			_deDataDefinitionFieldLinkLocalService.
-				deleteDEDataDefinitionFieldLinks(
-					_portal.getClassNameId(DDMStructureLayout.class),
-					ddmStructure.getStructureId(), removedFieldName);
-
-			_deDataDefinitionFieldLinkLocalService.
-				deleteDEDataDefinitionFieldLinks(
-					_portal.getClassNameId(DEDataListView.class),
-					ddmStructure.getStructureId(), removedFieldName);
-		}
-
-		_updateDataLayouts(
-			dataDefinition, ddmStructureLayoutIds, removedFieldNames);
-		_updateDataListViews(deDataListViewIds, removedFieldNames);
+		return DataDefinitionUtil.toDataDefinition(
+			_ddmFormFieldTypeServicesTracker,
+			_ddmStructureLocalService.updateStructure(
+				PrincipalThreadLocal.getUserId(), dataDefinitionId,
+				DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID,
+				LocalizedValueUtil.toLocaleStringMap(dataDefinition.getName()),
+				LocalizedValueUtil.toLocaleStringMap(
+					dataDefinition.getDescription()),
+				ddmFormSerializerSerializeResponse.getContent(),
+				new ServiceContext()),
+			_spiDDMFormRuleConverter);
 	}
 
 	private void _validate(DataDefinition dataDefinition, DDMForm ddmForm) {
@@ -1289,6 +1367,10 @@ public class DataDefinitionResourceImpl
 			throw new DataDefinitionValidationException(exception);
 		}
 	}
+
+	private static final String[] _BASIC_FIELD_TYPES = {
+		"date", "numeric", "radio", "select", "text"
+	};
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DataDefinitionResourceImpl.class);

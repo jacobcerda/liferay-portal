@@ -28,6 +28,7 @@ import com.liferay.fragment.service.FragmentCollectionService;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.fragment.validator.FragmentEntryValidator;
+import com.liferay.headless.delivery.dto.v1_0.ContextReference;
 import com.liferay.headless.delivery.dto.v1_0.PageElement;
 import com.liferay.layout.page.template.admin.web.internal.headless.delivery.dto.v1_0.structure.importer.util.PortletConfigurationImporterHelper;
 import com.liferay.layout.page.template.admin.web.internal.headless.delivery.dto.v1_0.structure.importer.util.PortletPermissionsImporterHelper;
@@ -49,7 +50,6 @@ import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
@@ -63,6 +63,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,11 +81,12 @@ public class FragmentLayoutStructureItemImporter
 	@Override
 	public LayoutStructureItem addLayoutStructureItem(
 			Layout layout, LayoutStructure layoutStructure,
-			PageElement pageElement, String parentItemId, int position)
+			PageElement pageElement, String parentItemId, int position,
+			Set<String> warningMessages)
 		throws Exception {
 
 		FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
-			layout, pageElement, position);
+			layout, pageElement, position, warningMessages);
 
 		if (fragmentEntryLink == null) {
 			return null;
@@ -99,38 +101,9 @@ public class FragmentLayoutStructureItemImporter
 		return PageElement.Type.FRAGMENT;
 	}
 
-	@Override
-	public List<String> validateLayoutStructureItem(
-			long groupId, PageElement pageElement)
-		throws Exception {
-
-		Map<String, Object> definitionMap = getDefinitionMap(
-			pageElement.getDefinition());
-
-		if (definitionMap == null) {
-			return null;
-		}
-
-		Map<String, Object> fragmentDefinitionMap =
-			(Map<String, Object>)definitionMap.get("fragment");
-
-		String fragmentKey = (String)fragmentDefinitionMap.get("key");
-
-		if (Validator.isNull(fragmentKey)) {
-			return null;
-		}
-
-		FragmentEntry fragmentEntry = _getFragmentEntry(fragmentKey, groupId);
-
-		if (fragmentEntry != null) {
-			return null;
-		}
-
-		return ListUtil.fromArray(_getWarningMessage(groupId, fragmentKey));
-	}
-
 	private FragmentEntryLink _addFragmentEntryLink(
-			Layout layout, PageElement pageElement, int position)
+			Layout layout, PageElement pageElement, int position,
+			Set<String> warningMessages)
 		throws Exception {
 
 		Map<String, Object> definitionMap = getDefinitionMap(
@@ -153,6 +126,9 @@ public class FragmentLayoutStructureItemImporter
 			fragmentKey, layout.getGroupId());
 
 		if (fragmentEntry == null) {
+			warningMessages.add(
+				_getWarningMessage(layout.getGroupId(), fragmentKey));
+
 			return null;
 		}
 
@@ -227,7 +203,8 @@ public class FragmentLayoutStructureItemImporter
 			"widgetInstances");
 
 		if (widgetInstances != null) {
-			_processWidgetInstances(fragmentEntryLink, layout, widgetInstances);
+			_processWidgetInstances(
+				fragmentEntryLink, layout, warningMessages, widgetInstances);
 		}
 
 		return fragmentEntryLink;
@@ -484,63 +461,76 @@ public class FragmentLayoutStructureItemImporter
 	private void _processMapping(
 		JSONObject jsonObject, Map<String, Object> map) {
 
-		if (map != null) {
-			String collectionItemFieldKey = (String)map.get(
-				"collectionItemFieldKey");
+		if (map == null) {
+			return;
+		}
 
-			if (Validator.isNotNull(collectionItemFieldKey)) {
-				jsonObject.put("collectionFieldId", collectionItemFieldKey);
+		String fieldKey = (String)map.get("fieldKey");
 
-				return;
+		if (Validator.isNull(fieldKey)) {
+			return;
+		}
+
+		Map<String, Object> itemReferenceMap = (Map<String, Object>)map.get(
+			"itemReference");
+
+		if (itemReferenceMap == null) {
+			return;
+		}
+
+		String contextSource = (String)itemReferenceMap.get("contextSource");
+
+		if (Objects.equals(
+				ContextReference.ContextSource.COLLECTION_ITEM.getValue(),
+				contextSource)) {
+
+			jsonObject.put("collectionFieldId", fieldKey);
+
+			return;
+		}
+
+		if (Objects.equals(
+				ContextReference.ContextSource.DISPLAY_PAGE_ITEM.getValue(),
+				contextSource)) {
+
+			jsonObject.put("mappedField", fieldKey);
+
+			return;
+		}
+
+		jsonObject.put("fieldId", fieldKey);
+
+		String classNameId = null;
+
+		String className = (String)itemReferenceMap.get("className");
+
+		try {
+			classNameId = String.valueOf(_portal.getClassNameId(className));
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to process mapping because class name ID could " +
+						"not be obtained for class name " + className);
 			}
 
-			String fieldKey = (String)map.get("fieldKey");
+			return;
+		}
 
-			if (Validator.isNull(fieldKey)) {
-				return;
-			}
+		String classPK = String.valueOf(itemReferenceMap.get("classPK"));
 
-			String itemClassName = (String)map.get("itemClassName");
-			String itemClassPK = String.valueOf(map.get("itemClassPK"));
-
-			if (Validator.isNull(itemClassName) ||
-				Validator.isNull(itemClassPK)) {
-
-				jsonObject.put("mappedField", fieldKey);
-
-				return;
-			}
-
-			String classNameId = null;
-
-			try {
-				classNameId = String.valueOf(
-					_portal.getClassNameId(itemClassName));
-			}
-			catch (Exception exception) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Mapping could not be processed since no class name " +
-							"ID could be obtained for class name " +
-								itemClassName);
-				}
-
-				return;
-			}
-
+		if (Validator.isNotNull(classNameId) && Validator.isNotNull(classPK)) {
 			jsonObject.put(
 				"classNameId", classNameId
 			).put(
-				"classPK", itemClassPK
-			).put(
-				"fieldId", fieldKey
+				"classPK", classPK
 			);
 		}
 	}
 
 	private void _processWidgetInstances(
 			FragmentEntryLink fragmentEntryLink, Layout layout,
-			List<Object> widgetInstances)
+			Set<String> warningMessages, List<Object> widgetInstances)
 		throws Exception {
 
 		for (Object widgetInstance : widgetInstances) {
@@ -576,7 +566,7 @@ public class FragmentLayoutStructureItemImporter
 			_portletPermissionsImporterHelper.importPortletPermissions(
 				layout.getPlid(),
 				PortletIdCodec.encode(widgetName, widgetInstanceId),
-				widgetPermissionsMaps);
+				warningMessages, widgetPermissionsMaps);
 		}
 	}
 

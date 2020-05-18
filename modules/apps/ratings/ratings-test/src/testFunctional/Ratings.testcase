@@ -266,7 +266,9 @@ definition {
 			pageName = "Staging Test Page",
 			siteName = "Site Name");
 
-		LAR.exportPortlet(larFileName = "Wiki.portlet.lar");
+		LAR.exportPortlet(
+			larFileName = "Wiki.portlet.lar",
+			wikiPortlet = "true");
 
 		JSONGroup.addGroup(groupName = "Second Site");
 
@@ -282,7 +284,9 @@ definition {
 
 		Navigator.openSiteURL(siteName = "Second Site");
 
-		LAR.importPortlet(larFileName = "Wiki.portlet.lar");
+		LAR.importPortlet(
+			larFileName = "Wiki.portlet.lar",
+			wikiPortlet = "true");
 
 		Navigator.openSiteURL(siteName = "Second Site");
 
@@ -713,6 +717,8 @@ definition {
 	@description = "This ensures that the stars rating can be revoked."
 	@priority = "5"
 	test RevokeBlogsStarsRating {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		JSONLayout.addPublicLayout(
 			groupName = "Guest",
 			layoutName = "Blogs Page");

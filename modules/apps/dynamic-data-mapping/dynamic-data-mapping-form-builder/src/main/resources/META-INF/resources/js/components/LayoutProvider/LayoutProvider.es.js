@@ -111,6 +111,7 @@ class LayoutProvider extends Component {
 			ruleAdded: this._handleRuleAdded.bind(this),
 			ruleDeleted: this._handleRuleDeleted.bind(this),
 			ruleSaved: this._handleRuleSaved.bind(this),
+			ruleValidatorChanged: this._handleRuleValidatorChanged.bind(this),
 			sectionAdded: this._handleSectionAdded.bind(this),
 			sidebarFieldBlurred: this._handleSidebarFieldBlurred.bind(this),
 			successPageChanged: this._handleSuccessPageChanged.bind(this),
@@ -420,12 +421,14 @@ class LayoutProvider extends Component {
 		this.setState(handleLanguageIdDeleted(focusedField, pages, locale));
 	}
 
-	_handlePageAdded() {
+	_handlePageAdded({pageIndex}) {
 		const {pages} = this.state;
 
+		pages.splice(pageIndex + 1, 0, this.createNewPage());
+
 		this.setState({
-			activePage: pages.length,
-			pages: [...pages, this.createNewPage()],
+			activePage: pageIndex + 1,
+			pages,
 		});
 	}
 
@@ -438,9 +441,13 @@ class LayoutProvider extends Component {
 		});
 	}
 
-	_handlePageReset() {
+	_handlePageReset({pageIndex}) {
+		const {pages} = this.state;
+
+		pages.splice(pageIndex, 1, this.createNewPage());
+
 		this.setState({
-			pages: [this.createNewPage()],
+			pages,
 		});
 	}
 
@@ -495,6 +502,10 @@ class LayoutProvider extends Component {
 		});
 
 		this.emit('rulesModified');
+	}
+
+	_handleRuleValidatorChanged(invalidRule) {
+		this.emit('ruleValidatorChanged', invalidRule);
 	}
 
 	_handleRuleSaved(event) {
