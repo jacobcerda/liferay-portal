@@ -16,7 +16,7 @@
 
 <%@ include file="/init.jsp" %>
 
-<clay:container
+<clay:container-fluid
 	className="pt-3"
 >
 	<liferay-ui:search-container
@@ -30,9 +30,9 @@
 		>
 
 			<%
-			AssetRenderer assetRenderer = assetEntry.getAssetRenderer();
+			AssetRenderer<?> assetRenderer = assetEntry.getAssetRenderer();
 
-			AssetRendererFactory assetRendererFactory = assetRenderer.getAssetRendererFactory();
+			AssetRendererFactory<?> assetRendererFactory = assetRenderer.getAssetRendererFactory();
 			%>
 
 			<liferay-ui:search-container-column-text
@@ -50,7 +50,7 @@
 			markupView="lexicon"
 		/>
 	</liferay-ui:search-container>
-</clay:container>
+</clay:container-fluid>
 
 <aui:button-row>
 	<aui:button type="cancel" value="close" />

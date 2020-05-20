@@ -3,8 +3,6 @@ import com.liferay.gradle.util.StringUtil
 
 task cleanSidecar
 task deploySidecar(type: Copy)
-task deployTestSidecar(type: Copy)
-task deployTestSidecarDependencies
 
 String elasticsearchVersion = "7.3.0"
 String luceneVersion = "8.1.0"
@@ -14,7 +12,6 @@ String elasticsearchDownloadURL = "https://artifacts.elastic.co/downloads/elasti
 File elasticsearchDistributionFile = file("${buildDir}/${elasticsearchDownloadURL.drop(elasticsearchDownloadURL.lastIndexOf('/') + 1)}")
 
 File sidecarDeployDir = file("${project.'liferay.home'}/elasticsearch" + elasticsearchVersion.substring(0, 1))
-File sidecarTestDir = file("tmp/sidecar-elasticsearch")
 
 List<String> sidecarPluginURLs = [
 	"https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-icu/analysis-icu-${elasticsearchVersion}.zip",
@@ -213,49 +210,25 @@ deploySidecar {
 	}
 }
 
-deployTestSidecar {
-	dependsOn cleanSidecar
-
-	description = "Assembles the Elasticsearch sidecar and deploys it to build test directory."
-	group = "build"
-
-	destinationDir = sidecarTestDir
-
-	enabled = !destinationDir.exists()
-
-	ext {
-		autoClean = false
-	}
-
-	from {
-		file("${buildDir}/elasticsearch-" + elasticsearchVersion)
-	}
-
-	doFirst {
-		FileUtil.get(project, elasticsearchDownloadURL, elasticsearchDistributionFile, false, true)
-
-		project.copy {
-			fileMode = 0777
-			includeEmptyDirs = false
-
-			exclude "elasticsearch-${elasticsearchVersion}/modules/ingest-geoip/**"
-			include "elasticsearch-${elasticsearchVersion}/lib/**"
-			include "elasticsearch-${elasticsearchVersion}/modules/**"
-
-			into buildDir
-			from tarTree(elasticsearchDistributionFile)
-		}
-	}
-
-	doLast {
-		logger.lifecycle "Deployed Elasticsearch Sidecar: {}", destinationDir
+processResources {
+	into("plugins") {
+		from configurations.elasticsearchPlugins
 	}
 }
 
-deployTestSidecarDependencies {
-	dependsOn configurations.compileOnly
+test {
+	dependsOn {
+		configurations.compileOnly
 
-	doLast {
+		deploySidecar {
+			destinationDir = file("tmp/sidecar-elasticsearch")
+			enabled = true
+		}
+	}
+
+	forkEvery = 0
+
+	doFirst {
 		File libProcessExecutorDir = file("tmp/lib-process-executor")
 
 		if (!libProcessExecutorDir.exists()) {
@@ -273,20 +246,6 @@ deployTestSidecarDependencies {
 			from configurations.compileOnly
 		}
 	}
-}
-
-processResources {
-	into("plugins") {
-		from configurations.elasticsearchPlugins
-	}
-}
-
-test {
-	dependsOn deployTestSidecar
-
-	dependsOn deployTestSidecarDependencies
-
-	forkEvery = 0
 }
 
 _createPluginTasks(elasticsearchVersion, sidecarPluginURLs)
@@ -318,8 +277,6 @@ private void _createPluginTasks(String elasticsearchVersion, List<String> sideca
 		}
 
 		deploySidecar.dependsOn installPluginTask
-
-		deployTestSidecar.dependsOn installPluginTask
 
 		installPluginTask.mustRunAfter cleanSidecar
 	}

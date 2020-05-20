@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.model.ModelHintsConstants;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
-import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -54,6 +53,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.portlet.PortletPreferences;
 
@@ -194,13 +195,14 @@ public class PortletFragmentEntryProcessor implements FragmentEntryProcessor {
 					fragmentEntryLink.getNamespace(), id);
 			}
 			else if (processedPortletIds.contains(portletName) ||
-					 _checkPortletUsed(fragmentEntryLink, portletName)) {
+					 _checkNoninstanceablePortletUsed(
+						 fragmentEntryLink, portletName)) {
 
 				throw new FragmentEntryContentException(
 					LanguageUtil.get(
 						_resourceBundle,
-						"noninstanceable-widget-can-be-embedded-only-once-on-" +
-							"the-same-page"));
+						"noninstanceable-widgets-can-be-embedded-only-once-" +
+							"on-the-same-page"));
 			}
 
 			String defaultPreferences = StringPool.BLANK;
@@ -246,10 +248,8 @@ public class PortletFragmentEntryProcessor implements FragmentEntryProcessor {
 		_validateFragmentEntryHTMLDocument(document);
 	}
 
-	private boolean _checkPortletUsed(
-			FragmentEntryLink currentFragmentEntryLink,
-			String currentPortletName)
-		throws PortalException {
+	private boolean _checkNoninstanceablePortletUsed(
+		FragmentEntryLink currentFragmentEntryLink, String currentPortletName) {
 
 		List<FragmentEntryLink> fragmentEntryLinks =
 			_fragmentEntryLinkLocalService.getFragmentEntryLinks(
@@ -270,7 +270,16 @@ public class PortletFragmentEntryProcessor implements FragmentEntryProcessor {
 				_portletRegistry.getFragmentEntryLinkPortletIds(
 					fragmentEntryLink);
 
-			if (portletIds.contains(currentPortletName)) {
+			Stream<String> stream = portletIds.stream();
+
+			List<String> portletNames = stream.map(
+				portletId -> PortletIdCodec.decodePortletName(portletId)
+			).distinct(
+			).collect(
+				Collectors.toList()
+			);
+
+			if (portletNames.contains(currentPortletName)) {
 				return true;
 			}
 		}
@@ -530,9 +539,6 @@ public class PortletFragmentEntryProcessor implements FragmentEntryProcessor {
 
 	@Reference
 	private FragmentPortletRenderer _fragmentPortletRenderer;
-
-	@Reference
-	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private LayoutPageTemplateEntryLocalService

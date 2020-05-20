@@ -80,7 +80,7 @@ export default function ({children, ...props}) {
 	return canUpdate ? <Topper {...props}>{children}</Topper> : children;
 }
 
-function Topper({children, item, itemRef, layoutData}) {
+function Topper({children, item, itemElement, layoutData}) {
 	const dispatch = useDispatch();
 	const store = useSelector((state) => state);
 	const activeItemId = useActiveItemId();
@@ -157,24 +157,22 @@ function Topper({children, item, itemRef, layoutData}) {
 	}, []);
 
 	useEffect(() => {
-		if (itemRef && itemRef.current) {
+		if (itemElement) {
 			const itemTop =
-				itemRef.current.getBoundingClientRect().top - TOPPER_BAR_HEIGHT;
-			const controlMenuHeight = document
-				.getElementById('ControlMenu')
-				.getBoundingClientRect().height;
-			const managementToolbarHeight = document
-				.querySelector('.page-editor__toolbar')
-				.getBoundingClientRect().height;
+				itemElement.getBoundingClientRect().top - TOPPER_BAR_HEIGHT;
 
-			if (itemTop < controlMenuHeight + managementToolbarHeight) {
+			const controlMenuContainerHeight = document.querySelector(
+				'.control-menu-container'
+			).offsetHeight;
+
+			if (itemTop < controlMenuContainerHeight) {
 				setIsInset(true);
 			}
 			else {
 				setIsInset(false);
 			}
 		}
-	}, [itemRef, layoutData, windowScrollPosition]);
+	}, [itemElement, layoutData, windowScrollPosition]);
 
 	const dataAdvice =
 		isOverTarget && !canDropOverTarget
@@ -316,6 +314,7 @@ function Topper({children, item, itemRef, layoutData}) {
 
 Topper.propTypes = {
 	item: getLayoutDataItemPropTypes().isRequired,
+	itemElement: PropTypes.object,
 	layoutData: LayoutDataPropTypes.isRequired,
 };
 

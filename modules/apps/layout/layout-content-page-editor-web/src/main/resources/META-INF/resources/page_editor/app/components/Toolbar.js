@@ -47,7 +47,6 @@ function ToolbarBody() {
 	const store = useSelector((state) => state);
 
 	const {
-		layoutData,
 		network,
 		segmentsExperienceId,
 		segmentsExperimentStatus,
@@ -60,7 +59,7 @@ function ToolbarBody() {
 		const isConversionPage = config.pageType === PAGE_TYPES.conversion;
 
 		setEnableDiscard(network.lastFetch || config.draft || isConversionPage);
-	}, [layoutData, network.lastFetch]);
+	}, [network.lastFetch]);
 
 	const loading = useRef(() => {
 		Promise.all(
@@ -238,26 +237,29 @@ function ToolbarBody() {
 			<ul className="navbar-nav" onClick={deselectItem}>
 				<NetworkStatusBar {...network} />
 				{config.undoEnabled && <Undo onUndo={onUndo} />}
-				<li className="nav-item">
-					<form action={config.discardDraftURL} method="POST">
-						<input
-							name={`${config.portletNamespace}redirect`}
-							type="hidden"
-							value={config.discardDraftRedirectURL}
-						/>
 
-						<ClayButton
-							className="btn btn-secondary mr-3"
-							disabled={!enableDiscard}
-							displayType="secondary"
-							onClick={handleDiscardDraft}
-							small
-							type="submit"
-						>
-							{draftButtonLabel}
-						</ClayButton>
-					</form>
-				</li>
+				{!config.undoEnabled && (
+					<li className="nav-item">
+						<form action={config.discardDraftURL} method="POST">
+							<input
+								name={`${config.portletNamespace}redirect`}
+								type="hidden"
+								value={config.discardDraftRedirectURL}
+							/>
+
+							<ClayButton
+								className="btn btn-secondary mr-3"
+								disabled={!enableDiscard}
+								displayType="secondary"
+								onClick={handleDiscardDraft}
+								small
+								type="submit"
+							>
+								{draftButtonLabel}
+							</ClayButton>
+						</form>
+					</li>
+				)}
 				<li className="nav-item">
 					<form action={config.publishURL} method="POST">
 						<input
