@@ -60,17 +60,17 @@ definition {
 			depotName = "Test Depot Name",
 			portlet = "Memberships");
 
-		Site.assignUserAsMemberCP(
+		Depot.assignUserAsMember(
 			depotName = "Test Depot Name",
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		Site.assignSiteRoleCP(
+		Depot.assignAssetLibraryRole(
 			resourceName = "userfn userln",
 			roleTitle = "Asset Library Administrator");
 
-		Site.removeMemberCP(
+		Depot.removeMember(
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
@@ -89,8 +89,8 @@ definition {
 		UserNavigator.gotoRoles();
 
 		AssertElementNotPresent(
-			key_roleTitle = "Asset Library Administrator",
-			locator1 = "UsersAndOrganizationsEditUser#DEPOT_ROLES_TITLE",
+			key_depotRoleName = "Asset Library Administrator",
+			locator1 = "UsersAndOrganizationsEditUser#DEPOT_ROLES_TABLE_NAME",
 			value1 = "Asset Library Administrator");
 
 		User.logoutAndLoginPG(
@@ -107,10 +107,13 @@ definition {
 			locator1 = "LexiconCard#CARD_ELLIPSIS");
 
 		Click(
+			key_card = "Test Depot Name",
 			locator1 = "LexiconCard#CARD_TITLE",
 			value1 = "Test Depot Name");
 
-		AssertVisible(locator1 = "LexiconCard#CARD");
+		AssertVisible(
+			key_card = "Test Depot Name",
+			locator1 = "LexiconCard#CARD");
 	}
 
 	@description = "This ensures that the Asset Library Connected Site Members role does not appear in user roles even after it is automatically assigned to a connected site member. This test also covers permissions and makes sure the library asset can be updated by the role."
@@ -329,7 +332,7 @@ definition {
 			depotName = "Test Depot Name",
 			portlet = "Memberships");
 
-		Site.assignSiteRoleCP(
+		Depot.assignAssetLibraryRole(
 			resourceName = "userfn userln",
 			roleTitle = "AL Role Name");
 
@@ -447,7 +450,7 @@ definition {
 			depotName = "Test Depot Name",
 			portlet = "Memberships");
 
-		Site.assignSiteRoleCP(
+		Depot.assignAssetLibraryRole(
 			resourceName = "userfn userln",
 			roleTitle = "AL Role Name");
 
@@ -585,7 +588,7 @@ definition {
 			depotName = "Test Depot Name",
 			portlet = "Memberships");
 
-		Site.assignUserAsMemberCP(
+		Depot.assignUserAsMember(
 			depotName = "Test Depot Name",
 			userFirstName = "userfn",
 			userLastName = "userln",
@@ -603,7 +606,7 @@ definition {
 		User.logoutPG();
 
 		User.loginUserPG(
-			password = "password",
+			password = "test",
 			userEmailAddress = "user1@liferay.com");
 
 		DepotNavigator.openDepotAdmin();
