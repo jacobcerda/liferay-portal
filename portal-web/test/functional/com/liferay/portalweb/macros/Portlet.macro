@@ -1,5 +1,6 @@
 definition {
 
+
 	macro _clickAddPortlet {
 		var browserType = PropsUtil.get("browser.type");
 
@@ -15,6 +16,24 @@ definition {
 		Click(
 			locator1 = "ControlMenuAddPanel#ADD_PORTLET_LINK",
 			value1 = "Add");
+	}
+
+
+	@description = "Verify the Hello World Portlet is correct."
+	macro viewHeader{
+		var key_header = "${header}";
+		
+	    echo("my stuff");
+	    echo("${key_header} " + key_header.text);
+	    echo("${key_header} " + $(key_header) );
+        AssertTextEquals(
+            locator1 = "HelloWorld#PORTLET_TITLE",
+            value1 = "Hello World"
+        );
+		//AssertTextEquals(
+		//	locator1 = "Home#PORTLET_TITLE",
+		//	value1 = "$(header)"
+		//);
 	}
 
 	macro addDuplicatePG {
@@ -205,7 +224,7 @@ definition {
 			locator1 = "TextInput#PORTLET_TITLE",
 			value1 = "${portletTitleName} Custom");
 
-		Click.mouseDownMouseUp(locator1 = "Icon#OK");
+		Click(locator1 = "Icon#OK");
 	}
 
 	macro configureCustomTitleViaLookandfeelPG {
