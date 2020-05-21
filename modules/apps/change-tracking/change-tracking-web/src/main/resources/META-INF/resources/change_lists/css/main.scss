@@ -38,10 +38,14 @@
 
 .change-lists-diff-table-wrapper table {
 	border-collapse: collapse;
+	table-layout: fixed;
+	width: 100%;
+	word-wrap: break-word;
 
 	.change-lists-diff-td {
 		border-left: solid 1px #e7e7ed;
 		border-right: solid 1px #e7e7ed;
+		vertical-align: top;
 	}
 }
 
@@ -55,4 +59,33 @@
 
 #selectChangeListManagementToolbar nav:last-child {
 	margin-bottom: 0;
+}
+
+.view-tree-change-list-wrapper {
+	.breadcrumb {
+		margin-bottom: 0;
+	}
+
+	.panel-body {
+		margin-top: 16px;
+	}
+
+	.sheet {
+		margin-bottom: 16px;
+	}
+
+	.table {
+		.change-row-button {
+			background-color: inherit;
+			border: none;
+			padding: 0;
+			text-align: left;
+
+			&:active:focus,
+			&:focus {
+				box-shadow: none;
+				outline: none;
+			}
+		}
+	}
 }

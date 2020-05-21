@@ -84,6 +84,11 @@ public class JournalArticleCTDisplayRenderer
 	}
 
 	@Override
+	public String getTitle(Locale locale, JournalArticle journalArticle) {
+		return journalArticle.getTitle(locale);
+	}
+
+	@Override
 	public String getTypeName(Locale locale) {
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
 			locale, JournalArticleCTDisplayRenderer.class);
@@ -100,11 +105,16 @@ public class JournalArticleCTDisplayRenderer
 			JournalArticle journalArticle)
 		throws Exception {
 
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
 		httpServletRequest.setAttribute(
 			WebKeys.JOURNAL_ARTICLE_DISPLAY,
 			_journalContent.getDisplay(
 				journalArticle, "", "",
-				_language.getLanguageId(httpServletRequest), 1, null, null));
+				_language.getLanguageId(httpServletRequest), 1, null,
+				themeDisplay));
 
 		RequestDispatcher requestDispatcher =
 			_servletContext.getRequestDispatcher("/ct_display/render.jsp");

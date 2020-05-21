@@ -21,8 +21,8 @@ import {HashRouter as Router, Route, Switch} from 'react-router-dom';
 import {AppContextProvider} from './AppContext.es';
 import NavigationBar from './components/navigation-bar/NavigationBar.es';
 import ListCustomObjects from './pages/custom-object/ListCustomObjects.es';
-import ViewCustomObject from './pages/custom-object/ViewCustomObject.es';
 import ListNativeObjects from './pages/native-object/ListNativeObjects.es';
+import ViewObject from './pages/object/ViewObject.es';
 
 export const AppNavigationBar = () => (
 	<NavigationBar
@@ -60,8 +60,8 @@ export default (props) => (
 							/>
 
 							<Route
-								component={ViewCustomObject}
-								path="/custom-object/:dataDefinitionId(\d+)"
+								component={ViewObject}
+								path="/:objectType/:dataDefinitionId(\d+)"
 							/>
 						</Switch>
 					</div>

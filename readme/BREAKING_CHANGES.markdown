@@ -575,3 +575,46 @@ The change was made so users don't have to change the name for the default
 vocabulary in all languages.
 
 ---------------------------------------
+
+### Liferay.Poller Is No Longer Initialized by Default
+- **Date:** 2020-May-19
+- **JIRA Ticket:** [LPS-112942](https://issues.liferay.com/browse/LPS-112942)
+
+#### What changed?
+
+The global AUI `Liferay.Poller` utility is now deprecated and is no longer
+initialized by default.
+
+#### Who is affected?
+
+This affects any code that relies on `Liferay.Poller`; this is
+usually done via a call to `Liferay.Poller.init()` in a JSP.
+
+#### How should I update my code?
+
+There's no direct replacement for the `Liferay.Poller` utility.  If you
+need to initialize `Liferay.Poller`, do the following:
+
+```
+<%@ page import="com.liferay.petra.encryptor.Encryptor" %>
+
+<%-- For access to `company` and `themeDisplay`. --%>
+<liferay-theme:defineObjects>
+
+<aui:script use="liferay-poller">
+	<c:if test="<%= themeDisplay.isSignedIn() %>">
+		Liferay.Poller.init({
+			encryptedUserId:
+				'<%= Encryptor.encrypt(company.getKeyObj(), String.valueOf(themeDisplay.getUserId())) %>',
+		});
+	</c:if>
+</aui:script>
+```
+
+#### Why was this change made?
+
+The `Liferay.Poller` component was only used in the Chat application, which is
+archived. Skipping initialization by default streamlines page loads for the
+common case.
+
+---------------------------------------

@@ -99,11 +99,11 @@ public class UpdateConfigurationValuesMVCActionCommand
 				continue;
 			}
 
-			Iterator<String> keys =
+			Iterator<String> iterator =
 				defaultEditableFragmentEntryProcessorJSONObject.keys();
 
-			while (keys.hasNext()) {
-				String key = keys.next();
+			while (iterator.hasNext()) {
+				String key = iterator.next();
 
 				if (!editableFragmentEntryProcessorJSONObject.has(key)) {
 					editableFragmentEntryProcessorJSONObject.put(

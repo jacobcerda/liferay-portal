@@ -25,13 +25,10 @@ definition {
 		var userName = PropsUtil.get("sharepoint.oauth.user.name");
 		var userPassword = PropsUtil.get("sharepoint.oauth.user.password");
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "System Settings");
+		SystemSettings.openSystemSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
-			configurationCategory = "Collaboration",
+			configurationCategory = "Documents and Media",
 			configurationName = "Sharepoint OAuth2",
 			configurationScope = "System Scope");
 
@@ -82,7 +79,7 @@ definition {
 			locator1 = "TextArea#ANY",
 			value1 = "${configurationResource}");
 
-		Button.clickSave();
+		PortletEntry.save();
 
 		Navigator.openURL();
 
@@ -98,7 +95,7 @@ definition {
 		Type(
 			key_fieldLabel = "Name",
 			locator1 = "TextInput#GENERIC_TEXT_INPUT",
-			value1 = "${configurationName}");
+			value1 = "Collaboration Test Application");
 
 		DMRepository.addSharepoint(
 			dmRepositoryLibraryPath = "Documentos compartidos",
@@ -117,15 +114,15 @@ definition {
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
 		AssertClick(
-			key_dmRepositoryName = "${configurationName}",
+			key_dmRepositoryName = "Collaboration Test Application",
 			locator1 = "DocumentsAndMedia#REPOSITORY_FOLDER_NAME_DESCRIPTIVE_VIEW",
-			value1 = "${configurationName}");
+			value1 = "Collaboration Test Application");
 
 		MicrosoftLogin.accountSignIn(
 			userEmail = "${userName}",
 			userPassword = "${userPassword}");
 
-		MicrosoftLogin.confirmSharepointApp(dmRepositoryName = "${configurationName}");
+		MicrosoftLogin.confirmSharepointApp(dmRepositoryName = "Collaboration Test Application");
 
 		Navigator.openSpecificURL(url = "https://localhost:8443");
 
@@ -146,6 +143,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test CheckinDocument {
+		property test.name.skip.portal.instance = "SharepointREST#CheckinDocument";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMDocument.addCP(
@@ -200,6 +199,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test DeleteDocumentInSubfolder {
+		property test.name.skip.portal.instance = "SharepointREST#DeleteDocumentInSubfolder";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMFolder.addCP(dmFolderName = "DM Folder3 Name");
@@ -259,6 +260,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test DeleteSubfolder {
+		property test.name.skip.portal.instance = "SharepointREST#DeleteSubfolder";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMFolder.addCP(dmFolderName = "DM Folder Name");
@@ -282,6 +285,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test EditDocumentFile {
+		property test.name.skip.portal.instance = "SharepointREST#EditDocumentFile";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMDocument.addCP(
@@ -332,6 +337,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test MoveCheckedoutDocumentToFolder {
+		property test.name.skip.portal.instance = "SharepointREST#MoveCheckedoutDocumentToFolder";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMFolder.addCP(dmFolderName = "Sharepoint Subfolder");
@@ -400,6 +407,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test MoveDocumentToHome {
+		property test.name.skip.portal.instance = "SharepointREST#MoveDocumentToHome";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMDocument.addCP(
@@ -436,6 +445,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test SearchDocumentViaHome {
+		property test.name.skip.portal.instance = "SharepointREST#SearchDocumentViaHome";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMDocument.addCP(
@@ -459,6 +470,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test ViewDocumentAsGuest {
+		property test.name.skip.portal.instance = "SharepointREST#ViewDocumentAsGuest";
+
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
 			panel = "Site Administration",
@@ -509,6 +522,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test ViewEditedCheckedoutDocument {
+		property test.name.skip.portal.instance = "SharepointREST#ViewEditedCheckedoutDocument";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMDocument.addCP(
@@ -559,6 +574,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test ViewOriginalFileExtensionAfterUnsuccessfulExtensionChange {
+		property test.name.skip.portal.instance = "SharepointREST#ViewOriginalFileExtensionAfterUnsuccessfulExtensionChange";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMDocument.addCP(
@@ -596,6 +613,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test ViewOriginalFileExtensionAfterUnsuccessfulExtensionRemoval {
+		property test.name.skip.portal.instance = "SharepointREST#ViewOriginalFileExtensionAfterUnsuccessfulExtensionRemoval";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMDocument.addCP(
@@ -633,6 +652,8 @@ definition {
 	@ignore = "true"
 	@priority = "4"
 	test ViewRepository {
+		property test.name.skip.portal.instance = "SharepointREST#ViewRepository";
+
 		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
 
 		DMRepository.viewBreadcrumb(dmRepositoryName = "Collaboration Test Application");

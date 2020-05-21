@@ -54,7 +54,6 @@ import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -746,10 +745,10 @@ public class AssetPublisherExportImportPortletPreferencesProcessor
 		Portlet portlet = portletLocalService.getPortletById(
 			portletDataContext.getCompanyId(), portletId);
 
-		Enumeration<String> enu = portletPreferences.getNames();
+		Enumeration<String> enumeration = portletPreferences.getNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			String value = GetterUtil.getString(
 				portletPreferences.getValue(name, null));
@@ -1058,10 +1057,10 @@ public class AssetPublisherExportImportPortletPreferencesProcessor
 		String anyAssetTypeClassName = portletPreferences.getValue(
 			"anyAssetType", StringPool.BLANK);
 
-		Enumeration<String> enu = portletPreferences.getNames();
+		Enumeration<String> enumeration = portletPreferences.getNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			String value = GetterUtil.getString(
 				portletPreferences.getValue(name, null));
@@ -1300,7 +1299,7 @@ public class AssetPublisherExportImportPortletPreferencesProcessor
 	private String _getExportScopeId(
 			PortletDataContext portletDataContext,
 			Element groupIdMappingsElement, Layout layout, String value)
-		throws PortalException, PortletDataException {
+		throws Exception {
 
 		if (value.startsWith(AssetPublisherHelper.SCOPE_ID_LAYOUT_PREFIX)) {
 

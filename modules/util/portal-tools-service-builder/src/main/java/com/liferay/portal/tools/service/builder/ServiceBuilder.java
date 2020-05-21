@@ -120,7 +120,6 @@ import java.util.regex.Pattern;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.DocumentType;
 import org.dom4j.Element;
@@ -388,10 +387,10 @@ public class ServiceBuilder {
 			if (config.startsWith("classpath*:")) {
 				String name = config.substring("classpath*:".length());
 
-				Enumeration<URL> enu = classLoader.getResources(name);
+				Enumeration<URL> enumeration = classLoader.getResources(name);
 
-				while (enu.hasMoreElements()) {
-					URL url = enu.nextElement();
+				while (enumeration.hasMoreElements()) {
+					URL url = enumeration.nextElement();
 
 					InputStream inputStream = url.openStream();
 
@@ -401,11 +400,11 @@ public class ServiceBuilder {
 				}
 			}
 			else {
-				Enumeration<URL> urls = classLoader.getResources(config);
+				Enumeration<URL> enumeration = classLoader.getResources(config);
 
-				if (urls.hasMoreElements()) {
-					while (urls.hasMoreElements()) {
-						URL url = urls.nextElement();
+				if (enumeration.hasMoreElements()) {
+					while (enumeration.hasMoreElements()) {
+						URL url = enumeration.nextElement();
 
 						try (InputStream inputStream = url.openStream()) {
 							_readResourceActionModels(
@@ -4611,9 +4610,7 @@ public class ServiceBuilder {
 		return sb.toString();
 	}
 
-	private String _formatXml(String xml)
-		throws DocumentException, IOException {
-
+	private String _formatXml(String xml) throws Exception {
 		String doctype = null;
 
 		int x = xml.indexOf("<!DOCTYPE");

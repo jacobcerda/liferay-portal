@@ -67,14 +67,14 @@ public class ViewDiffMVCRenderCommand implements MVCRenderCommand {
 			HttpServletRequest httpServletRequest =
 				_portal.getHttpServletRequest(renderRequest);
 
-			String name = _ctDisplayRendererRegistry.getTypeName(
-				_portal.getLocale(httpServletRequest), ctEntry);
+			String name = _ctDisplayRendererRegistry.getTitle(
+				ctEntry, _portal.getLocale(httpServletRequest));
 
 			CTEntryDiffDisplay ctEntryDiffDisplay = new CTEntryDiffDisplay(
-				httpServletRequest,
-				_portal.getHttpServletResponse(renderResponse), ctCollection,
-				_ctDisplayRendererRegistry, ctEntry, _ctEntryLocalService,
-				_language, name);
+				ctCollection, _ctDisplayRendererRegistry, ctEntry,
+				_ctEntryLocalService, httpServletRequest,
+				_portal.getHttpServletResponse(renderResponse), _language,
+				name);
 
 			renderRequest.setAttribute(
 				CTWebKeys.CT_ENTRY_DIFF_DISPLAY, ctEntryDiffDisplay);

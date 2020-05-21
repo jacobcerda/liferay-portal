@@ -74,13 +74,22 @@ import org.apache.poi.EncryptedDocumentException;
 import org.apache.tika.Tika;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.extractor.EmbeddedDocumentExtractor;
+import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.txt.UniversalEncodingDetector;
+import org.apache.tika.sax.BodyContentHandler;
+import org.apache.tika.sax.WriteOutContentHandler;
 import org.apache.tools.ant.DirectoryScanner;
 
 import org.mozilla.intl.chardet.nsDetector;
 import org.mozilla.intl.chardet.nsPSMDetector;
+
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 /**
  * @author Brian Wing Shun Chan
@@ -406,24 +415,19 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 			tika.setMaxStringLength(maxStringLength);
 
-			TikaInputStream tikaInputStream = TikaInputStream.get(is);
-
-			String mimeType = tika.detect(tikaInputStream);
-
-			// See LPS-112649
-
-			if (mimeType.equals(ContentTypes.APPLICATION_ZIP)) {
-				return StringPool.BLANK;
-			}
-
 			boolean forkProcess = false;
 
-			if (PropsValues.TEXT_EXTRACTION_FORK_PROCESS_ENABLED &&
-				ArrayUtil.contains(
-					PropsValues.TEXT_EXTRACTION_FORK_PROCESS_MIME_TYPES,
-					mimeType)) {
+			TikaInputStream tikaInputStream = TikaInputStream.get(is);
 
-				forkProcess = true;
+			if (PropsValues.TEXT_EXTRACTION_FORK_PROCESS_ENABLED) {
+				String mimeType = tika.detect(tikaInputStream);
+
+				if (ArrayUtil.contains(
+						PropsValues.TEXT_EXTRACTION_FORK_PROCESS_MIME_TYPES,
+						mimeType)) {
+
+					forkProcess = true;
+				}
 			}
 
 			if (forkProcess) {
@@ -1115,7 +1119,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 	private static String _parseToString(
 			Tika tika, TikaInputStream tikaInputStream)
-		throws IOException, TikaException {
+		throws IOException, SAXException, TikaException {
 
 		UniversalEncodingDetector universalEncodingDetector =
 			new UniversalEncodingDetector();
@@ -1137,7 +1141,47 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 				"Content-Type", "text/plain; charset=" + contentEncoding);
 		}
 
-		return tika.parseToString(tikaInputStream, metadata);
+		WriteOutContentHandler writeOutContentHandler =
+			new WriteOutContentHandler(tika.getMaxStringLength());
+
+		try {
+			Parser parser = tika.getParser();
+
+			ParseContext parseContext = new ParseContext();
+
+			parseContext.set(Parser.class, parser);
+
+			parseContext.set(
+				EmbeddedDocumentExtractor.class,
+				new ParsingEmbeddedDocumentExtractor(parseContext) {
+
+					@Override
+					public void parseEmbedded(
+							InputStream stream, ContentHandler contentHandler,
+							Metadata metadata, boolean outputHtml)
+						throws IOException, SAXException {
+
+						String mimeType = tika.detect(stream);
+
+						if (mimeType.equals(ContentTypes.IMAGE_PNG)) {
+							return;
+						}
+
+						super.parseEmbedded(
+							stream, contentHandler, metadata, outputHtml);
+					}
+
+				});
+
+			parser.parse(
+				tikaInputStream, new BodyContentHandler(writeOutContentHandler),
+				metadata, parseContext);
+		}
+		finally {
+			tikaInputStream.close();
+		}
+
+		return writeOutContentHandler.toString();
 	}
 
 	private boolean _isEmptyTikaInputStream(TikaInputStream tikaInputStream)

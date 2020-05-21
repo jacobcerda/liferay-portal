@@ -200,7 +200,7 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 
 		SafeLdapContext safeLdapContext = null;
 
-		NamingEnumeration<SearchResult> enu = null;
+		NamingEnumeration<SearchResult> enumeration = null;
 
 		try {
 			LDAPServerConfiguration ldapServerConfiguration =
@@ -261,16 +261,16 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 				SearchControls.SUBTREE_SCOPE, 1, 0,
 				new String[] {userMappingsScreenName}, false, false);
 
-			enu = safeLdapContext.search(
+			enumeration = safeLdapContext.search(
 				LDAPUtil.getBaseDNSafeLdapName(ldapServerConfiguration),
 				authSearchSafeLdapFilterTemplate, searchControls);
 
-			if (enu.hasMoreElements()) {
+			if (enumeration.hasMoreElements()) {
 				if (_log.isDebugEnabled()) {
 					_log.debug("Search filter returned at least one result");
 				}
 
-				Binding binding = enu.nextElement();
+				Binding binding = enumeration.nextElement();
 
 				Attributes attributes = _safePortalLDAP.getUserAttributes(
 					ldapServerId, companyId, safeLdapContext,
@@ -296,8 +296,8 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 				"Problem accessing LDAP server " + exception.getMessage());
 		}
 		finally {
-			if (enu != null) {
-				enu.close();
+			if (enumeration != null) {
+				enumeration.close();
 			}
 
 			if (safeLdapContext != null) {

@@ -55,4 +55,14 @@ const COLORS = [
 	'#393a4a',
 ];
 
+const NAMED_COLORS = {
+	blue: 'rgba(75, 155, 255)',
+	blueDark: '#272833',
+	blueLight: 'rgba(75, 155, 255, 0.5)',
+	gray: '#cdced9',
+	white: '#ffffff',
+};
+
+export {NAMED_COLORS};
+
 export default (index) => COLORS[index % COLORS.length];

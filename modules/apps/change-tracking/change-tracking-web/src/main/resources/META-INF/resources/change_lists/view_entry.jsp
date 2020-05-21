@@ -19,11 +19,9 @@
 <clay:container-fluid>
 
 	<%
-	long ctEntryId = ParamUtil.getLong(request, "ctEntryId");
+	ViewEntryDisplayContext viewEntryDisplayContext = (ViewEntryDisplayContext)request.getAttribute(CTWebKeys.VIEW_ENTRY_DISPLAY_CONTEXT);
 
-	CTEntry ctEntry = CTEntryLocalServiceUtil.fetchCTEntry(ctEntryId);
-
-	ctDisplayRendererRegistry.renderCTEntry(request, response, ctEntry, ctEntry.getCtCollectionId());
+	viewEntryDisplayContext.renderEntry(request, response);
 	%>
 
 </clay:container-fluid>

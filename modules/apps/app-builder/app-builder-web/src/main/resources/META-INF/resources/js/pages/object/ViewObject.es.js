@@ -25,9 +25,14 @@ import ListFormViews from '../form-view/ListFormViews.es';
 import EditTableView from '../table-view/EditTableView.es';
 import ListTableViews from '../table-view/ListTableViews.es';
 
+const URL = {
+	'custom-object': '/',
+	'native-object': '/native-objects',
+};
+
 export default ({
 	match: {
-		params: {dataDefinitionId},
+		params: {dataDefinitionId, objectType},
 		path,
 	},
 }) => {
@@ -70,7 +75,7 @@ export default ({
 				path={path}
 				render={() => (
 					<>
-						<ControlMenu backURL="/" title={title} />
+						<ControlMenu backURL={URL[objectType]} title={title} />
 						<NavigationBar
 							tabs={[
 								{

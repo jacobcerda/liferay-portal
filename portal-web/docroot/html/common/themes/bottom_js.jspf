@@ -190,7 +190,7 @@ if (layout != null) {
 	</aui:script>
 </c:if>
 
-<aui:script use="liferay-menu,liferay-notice,liferay-poller">
+<aui:script use="liferay-menu,liferay-notice">
 	new Liferay.Menu();
 
 	var liferayNotices = Liferay.Data.notices;
@@ -199,14 +199,6 @@ if (layout != null) {
 		new Liferay.Notice(liferayNotices[i]);
 	}
 
-	<c:if test="<%= themeDisplay.isSignedIn() %>">
-		Liferay.Poller.init(
-			{
-				encryptedUserId: '<%= Encryptor.encrypt(company.getKeyObj(), String.valueOf(themeDisplay.getUserId())) %>',
-				supportsComet: <%= ServerDetector.isSupportsComet() %>
-			}
-		);
-	</c:if>
 </aui:script>
 
 <script type="text/javascript">
