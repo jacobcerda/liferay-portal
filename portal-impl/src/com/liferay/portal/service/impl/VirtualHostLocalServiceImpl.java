@@ -175,7 +175,11 @@ public class VirtualHostLocalServiceImpl
 
 			String languageId = hostnames.get(curHostname);
 
-			Locale locale = LocaleUtil.fromLanguageId(languageId);
+			Locale locale = LocaleUtil.fromLanguageId(languageId, true, false);
+
+			if (locale == null) {
+				locale = LocaleUtil.getSiteDefault();
+			}
 
 			if (!availableLocales.contains(locale)) {
 				ReflectionUtil.throwException(

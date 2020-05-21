@@ -18,6 +18,12 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--DEFINITION-->
+<tr>
+	<td>DEFINITION_TITLE</td>
+	<td>//input[(contains(@name,'KaleoDesignerPortlet_title')) and (contains(@type,'text'))]</td>
+	<td></td>
+</tr>
 <!--DEFINITION_TABLE-->
 <tr>
 	<td>DEFINITION_TABLE_TITLE</td>

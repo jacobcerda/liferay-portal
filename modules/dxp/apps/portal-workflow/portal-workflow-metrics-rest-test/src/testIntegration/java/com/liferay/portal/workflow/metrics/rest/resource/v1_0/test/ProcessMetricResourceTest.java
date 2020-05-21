@@ -18,6 +18,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -46,6 +47,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +55,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Rafael Praxedes
  */
+@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 public class ProcessMetricResourceTest
 	extends BaseProcessMetricResourceTestCase {
@@ -139,6 +142,7 @@ public class ProcessMetricResourceTest
 			});
 	}
 
+	@Ignore
 	@Override
 	@Test
 	public void testGetProcessMetricsPageWithSortString() throws Exception {

@@ -180,7 +180,15 @@ const Modal = ({
 		let eventHandler;
 
 		if (onSelect && selectEventName) {
-			eventHandler = Liferay.on(selectEventName, onSelect);
+			eventHandler = Liferay.on(selectEventName, (selectedItem) => {
+				onSelect(selectedItem);
+
+				setVisible(false);
+
+				if (onClose) {
+					onClose();
+				}
+			});
 		}
 
 		return () => {
@@ -188,7 +196,7 @@ const Modal = ({
 				eventHandler.detach();
 			}
 		};
-	}, [onSelect, selectEventName]);
+	}, [onClose, onSelect, selectEventName]);
 
 	return (
 		<>
@@ -297,6 +305,12 @@ class Iframe extends React.Component {
 		this.state = {loading: true, src: iframeURL.toString()};
 	}
 
+	componentDidUpdate(prevProps, prevState) {
+		if (!this.state.loading && prevState.loading) {
+			Liferay.fire('modalIframeLoaded', {src: this.state.src});
+		}
+	}
+
 	componentWillUnmount() {
 		if (this.delegateHandler) {
 			this.delegateHandler.removeListener();
@@ -324,8 +338,6 @@ class Iframe extends React.Component {
 
 			this.setState({loading: true});
 		};
-
-		Liferay.fire('modalIframeLoaded', {src: this.state.src});
 	};
 
 	render() {

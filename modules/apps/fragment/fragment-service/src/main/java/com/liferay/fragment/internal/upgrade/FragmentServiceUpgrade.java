@@ -14,19 +14,23 @@
 
 package com.liferay.fragment.internal.upgrade;
 
+import com.liferay.fragment.internal.upgrade.v1_1_0.UpgradePortletPreferences;
 import com.liferay.fragment.internal.upgrade.v2_0_0.util.FragmentCollectionTable;
 import com.liferay.fragment.internal.upgrade.v2_0_0.util.FragmentEntryLinkTable;
 import com.liferay.fragment.internal.upgrade.v2_0_0.util.FragmentEntryTable;
 import com.liferay.fragment.internal.upgrade.v2_1_0.UpgradeSchema;
 import com.liferay.fragment.internal.upgrade.v2_2_1.UpgradeFragmentEntry;
 import com.liferay.fragment.internal.upgrade.v2_4_0.UpgradeFragmentEntryLink;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.upgrade.BaseUpgradeSQLServerDatetime;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
+import com.liferay.portal.kernel.view.count.ViewCountManager;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.portal.upgrade.step.util.UpgradeStepFactory;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author José Ángel Jiménez
@@ -50,7 +54,11 @@ public class FragmentServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register("1.0.1", "1.0.2", new DummyUpgradeStep());
 
 		registry.register(
-			"1.0.2", "2.0.0",
+			"1.0.2", "1.1.0",
+			new UpgradePortletPreferences(_layoutLocalService));
+
+		registry.register(
+			"1.1.0", "2.0.0",
 			new BaseUpgradeSQLServerDatetime(
 				new Class<?>[] {
 					FragmentCollectionTable.class, FragmentEntryLinkTable.class,
@@ -95,5 +103,11 @@ public class FragmentServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register("2.3.0", "2.4.0", new UpgradeFragmentEntryLink());
 	}
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private ViewCountManager _viewCountManager;
 
 }

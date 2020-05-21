@@ -36,31 +36,50 @@ for (String childrenItemId : childrenItemIds) {
 			CollectionLayoutStructureItem collectionLayoutStructureItem = (CollectionLayoutStructureItem)layoutStructureItem;
 
 			request.setAttribute("render_layout_structure.jsp-childrenItemIds", layoutStructureItem.getChildrenItemIds());
+
+			InfoListRenderer infoListRenderer = portletLayoutDisplayContext.getInfoListRenderer(collectionLayoutStructureItem);
 			%>
 
-			<clay:row>
+			<c:choose>
+				<c:when test="<%= infoListRenderer != null %>">
 
-				<%
-				for (Object collectionObject : portletLayoutDisplayContext.getCollection(collectionLayoutStructureItem)) {
-					try {
-						request.setAttribute("render_layout_structure.jsp-collectionObject", collectionObject);
-				%>
+					<%
+					infoListRenderer.render(portletLayoutDisplayContext.getCollection(collectionLayoutStructureItem), request, response);
+					%>
 
-						<clay:col
-							md="<%= String.valueOf(12 / collectionLayoutStructureItem.getNumberOfColumns()) %>"
-						>
-							<liferay-util:include page="/layout/view/render_layout_structure.jsp" servletContext="<%= application %>" />
-						</clay:col>
+				</c:when>
+				<c:otherwise>
+					<clay:row>
 
-				<%
-					}
-					finally {
-						request.removeAttribute("render_layout_structure.jsp-collectionObject");
-					}
-				}
-				%>
+						<%
+						InfoDisplayContributor currentInfoDisplayContributor = (InfoDisplayContributor)request.getAttribute(InfoDisplayWebKeys.INFO_DISPLAY_CONTRIBUTOR);
 
-			</clay:row>
+						try {
+							request.setAttribute(InfoDisplayWebKeys.INFO_DISPLAY_CONTRIBUTOR, portletLayoutDisplayContext.getCollectionInfoDisplayContributor(collectionLayoutStructureItem));
+
+							for (Object collectionObject : portletLayoutDisplayContext.getCollection(collectionLayoutStructureItem)) {
+								request.setAttribute(InfoDisplayWebKeys.INFO_LIST_DISPLAY_OBJECT, collectionObject);
+						%>
+
+								<clay:col
+									md="<%= String.valueOf(12 / collectionLayoutStructureItem.getNumberOfColumns()) %>"
+								>
+									<liferay-util:include page="/render_fragment_layout/render_layout_structure.jsp" servletContext="<%= application %>" />
+								</clay:col>
+
+						<%
+							}
+						}
+						finally {
+							request.removeAttribute(InfoDisplayWebKeys.INFO_LIST_DISPLAY_OBJECT);
+
+							request.setAttribute(InfoDisplayWebKeys.INFO_DISPLAY_CONTRIBUTOR, currentInfoDisplayContributor);
+						}
+						%>
+
+					</clay:row>
+				</c:otherwise>
+			</c:choose>
 		</c:when>
 		<c:when test="<%= layoutStructureItem instanceof ColumnLayoutStructureItem %>">
 

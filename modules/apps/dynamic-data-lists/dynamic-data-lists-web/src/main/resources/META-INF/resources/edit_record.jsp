@@ -56,6 +56,15 @@ else if (Validator.isNull(defaultLanguageId)) {
 
 String languageId = ParamUtil.getString(request, "languageId", defaultLanguageId);
 
+Locale defaultEditLocale = LocaleUtil.fromLanguageId(ddmStructure.getDefaultLanguageId());
+
+if (ArrayUtil.contains(ddmStructure.getAvailableLanguageIds(), themeDisplay.getLanguageId())) {
+	defaultEditLocale = themeDisplay.getLocale();
+}
+else if (ArrayUtil.contains(ddmStructure.getAvailableLanguageIds(), user.getLanguageId())) {
+	defaultEditLocale = user.getLocale();
+}
+
 boolean translating = false;
 
 if (!defaultLanguageId.equals(languageId)) {
@@ -193,11 +202,12 @@ else {
 							classNameId="<%= classNameId %>"
 							classPK="<%= classPK %>"
 							ddmFormValues="<%= ddmFormValues %>"
-							defaultEditLocale="<%= LocaleUtil.fromLanguageId(themeDisplay.getLanguageId()) %>"
+							defaultEditLocale="<%= defaultEditLocale %>"
 							defaultLocale="<%= LocaleUtil.fromLanguageId(defaultLanguageId) %>"
 							groupId="<%= recordSet.getGroupId() %>"
 							repeatable="<%= translating ? false : true %>"
 							requestedLocale="<%= locale %>"
+							showLanguageSelector="<%= false %>"
 						/>
 					</c:when>
 					<c:otherwise>
@@ -207,7 +217,7 @@ else {
 									classNameId="<%= classNameId %>"
 									classPK="<%= classPK %>"
 									ddmFormValues="<%= ddmFormValues %>"
-									defaultEditLocale="<%= LocaleUtil.fromLanguageId(defaultLanguageId) %>"
+									defaultEditLocale="<%= defaultEditLocale %>"
 									defaultLocale="<%= LocaleUtil.fromLanguageId(defaultLanguageId) %>"
 									groupId="<%= recordSet.getGroupId() %>"
 									repeatable="<%= translating ? false : true %>"

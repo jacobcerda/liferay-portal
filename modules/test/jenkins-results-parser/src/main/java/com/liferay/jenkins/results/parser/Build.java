@@ -193,4 +193,26 @@ public interface Build {
 
 	public void update();
 
+	public interface BranchInformation {
+
+		public RemoteGitRef getCachedRemoteGitRef();
+
+		public String getReceiverUsername();
+
+		public String getRepositoryName();
+
+		public String getSenderBranchName();
+
+		public String getSenderBranchSHA();
+
+		public RemoteGitRef getSenderRemoteGitRef();
+
+		public String getSenderUsername();
+
+		public String getUpstreamBranchName();
+
+		public String getUpstreamBranchSHA();
+
+	}
+
 }

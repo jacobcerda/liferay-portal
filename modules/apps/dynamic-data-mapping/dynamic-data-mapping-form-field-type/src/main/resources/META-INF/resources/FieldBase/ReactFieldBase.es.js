@@ -12,6 +12,8 @@
  * details.
  */
 
+import './FieldBase.scss';
+
 import ClayButton from '@clayui/button';
 import ClayIcon, {ClayIconSpriteContext} from '@clayui/icon';
 import {ClayTooltipProvider} from '@clayui/tooltip';
@@ -19,14 +21,32 @@ import classNames from 'classnames';
 import {getRepeatedIndex} from 'dynamic-data-mapping-form-renderer';
 import React, {useMemo} from 'react';
 
+import {PageRendererAdapter} from './PageRendererAdapter.es';
+
+const getDefaultRows = (nestedFields) => {
+	return nestedFields.map((nestedField) => {
+		return {
+			columns: [
+				{
+					fields: [nestedField],
+					size: 12,
+				},
+			],
+		};
+	});
+};
+
 function FieldBase({
 	children,
+	context,
 	displayErrors,
+	editable,
 	editingLanguageId,
 	errorMessage,
 	label,
 	localizedValue = {},
 	name,
+	nestedFields,
 	onClick,
 	onRemoveButton,
 	onRepeatButton,
@@ -133,6 +153,17 @@ function FieldBase({
 					)}
 
 					{children}
+
+					{nestedFields && (
+						<div className="ddm-field-types-base__nested">
+							<PageRendererAdapter
+								context={context}
+								editable={editable}
+								rows={getDefaultRows(nestedFields)}
+								spritemap={spritemap}
+							/>
+						</div>
+					)}
 
 					{localizedValueArray.length > 0 &&
 						localizedValueArray.map((language) => (

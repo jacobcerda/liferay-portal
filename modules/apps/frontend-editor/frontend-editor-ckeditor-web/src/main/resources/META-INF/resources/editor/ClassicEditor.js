@@ -12,8 +12,9 @@
  * details.
  */
 
+import {useEventListener} from 'frontend-js-react-web';
 import {isPhone, isTablet} from 'frontend-js-web';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {Editor} from './Editor';
 
@@ -29,15 +30,16 @@ const getToolbarSet = (toolbarSet) => {
 };
 
 const ClassicEditor = ({
-	contents,
+	contents = '',
 	cssClass,
-	editorConfig,
+	editorConfig = {},
 	initialToolbarSet,
 	name,
+	onChangeMethodName,
 }) => {
 	const editorRef = useRef();
 
-	const [toolbarSet, setToolbarSet] = useState();
+	const [toolbarSet, setToolbarSet] = useState(initialToolbarSet);
 
 	const config = useMemo(() => {
 		return {
@@ -46,9 +48,51 @@ const ClassicEditor = ({
 		};
 	}, [editorConfig, toolbarSet]);
 
+	const getHTML = useCallback(() => {
+		let data = contents;
+
+		const editor = editorRef.current.editor;
+
+		if (editor && editor.instanceReady) {
+			data = editor.getData();
+
+			if (CKEDITOR.env.gecko && CKEDITOR.tools.trim(data) === '<br />') {
+				data = '';
+			}
+		}
+
+		return data;
+	}, [contents]);
+
+	const onChangeCallback = () => {
+		const editor = editorRef.current.editor;
+
+		if (editor.checkDirty()) {
+			window[onChangeMethodName](getHTML());
+
+			editor.resetDirty();
+		}
+	};
+
 	useEffect(() => {
 		setToolbarSet(getToolbarSet(initialToolbarSet));
 	}, [initialToolbarSet]);
+
+	useEffect(() => {
+		window[name] = {
+			getHTML,
+			getText() {
+				return contents;
+			},
+		};
+	}, [contents, getHTML, name]);
+
+	useEventListener(
+		'resize',
+		() => setToolbarSet(getToolbarSet(initialToolbarSet)),
+		true,
+		window
+	);
 
 	return (
 		<div className={cssClass} id={`${name}Container`}>
@@ -56,12 +100,17 @@ const ClassicEditor = ({
 				className="lfr-editable"
 				config={config}
 				data={contents}
-				id={name}
+				key={toolbarSet}
 				onBeforeLoad={(CKEDITOR) => {
 					CKEDITOR.disableAutoInline = true;
 					CKEDITOR.dtd.$removeEmpty.i = 0;
 					CKEDITOR.dtd.$removeEmpty.span = 0;
+
+					CKEDITOR.on('instanceCreated', ({editor}) => {
+						editor.name = name;
+					});
 				}}
+				onChange={onChangeCallback}
 				ref={editorRef}
 			/>
 		</div>

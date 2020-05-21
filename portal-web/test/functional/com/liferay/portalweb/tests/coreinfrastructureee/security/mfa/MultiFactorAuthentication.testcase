@@ -153,8 +153,7 @@ definition {
 			recipient = "test test",
 			specificURL = "http://www.able.com:8080",
 			userEmailAddress = "test@www.able.com",
-			userPassword = "test",
-			validOTP = "true");
+			userPassword = "test");
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
@@ -209,7 +208,6 @@ definition {
 		MultiFactorAuthentication.sendOTPEmailPG();
 
 		MultiFactorAuthentication.verifyOTP(
-			otp = "123456",
 			portalURL = "${portalURL}",
 			recipient = "test test",
 			userEmailAddress = "test@liferay.com",
@@ -222,8 +220,7 @@ definition {
 			portalURL = "${portalURL}",
 			recipient = "Test Test",
 			userEmailAddress = "test@liferay.com",
-			userPassword = "test",
-			validOTP = "true");
+			userPassword = "test");
 	}
 
 	@description = "This is a use case for LPS-101720"
@@ -270,8 +267,7 @@ definition {
 			portalURL = "${portalURL}",
 			recipient = "userfn userln",
 			userEmailAddress = "userea@liferay.com",
-			userPassword = "test",
-			validOTP = "true");
+			userPassword = "test");
 	}
 
 }

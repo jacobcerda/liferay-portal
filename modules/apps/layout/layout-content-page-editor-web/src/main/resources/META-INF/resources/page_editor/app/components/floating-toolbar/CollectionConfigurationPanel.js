@@ -38,6 +38,15 @@ function collectionIsMapped(collectionConfig) {
 	return collectionConfig.collection;
 }
 
+const LIST_STYLE_GRID = '';
+
+const DEFAULT_LIST_STYLES = [
+	{
+		label: Liferay.Language.get('grid'),
+		value: LIST_STYLE_GRID,
+	},
+];
+
 export const CollectionConfigurationPanel = ({item}) => {
 	const collectionLayoutId = useId();
 	const collectionNumberOfItemsId = useId();
@@ -62,7 +71,9 @@ export const CollectionConfigurationPanel = ({item}) => {
 		);
 	};
 
-	const [availableListRenderers, setAvailableListRenderers] = useState([]);
+	const [availableListStyles, setAvailableListStyles] = useState(
+		DEFAULT_LIST_STYLES
+	);
 
 	const collectionItemType = collectionConfig.collection
 		? collectionConfig.collection.itemType
@@ -74,10 +85,13 @@ export const CollectionConfigurationPanel = ({item}) => {
 				className: collectionItemType,
 			})
 				.then((response) => {
-					setAvailableListRenderers(response);
+					setAvailableListStyles([
+						...DEFAULT_LIST_STYLES,
+						...response,
+					]);
 				})
 				.catch(() => {
-					setAvailableListRenderers([]);
+					setAvailableListStyles(DEFAULT_LIST_STYLES);
 				});
 		}
 	}, [collectionItemType]);
@@ -92,47 +106,48 @@ export const CollectionConfigurationPanel = ({item}) => {
 					onCollectionSelect={(collection) =>
 						handleConfigurationChanged({
 							collection,
+							listStyle: LIST_STYLE_GRID,
 						})
 					}
 				/>
 			</ClayForm.Group>
 			{collectionIsMapped(item.config) && (
 				<>
-					{availableListRenderers.length > 0 && (
+					<ClayForm.Group small>
+						<label htmlFor={listStyleId}>
+							{Liferay.Language.get('list-style')}
+						</label>
+						<ClaySelectWithOption
+							aria-label={Liferay.Language.get('list-style')}
+							id={listStyleId}
+							onChange={({target: {value}}) =>
+								handleConfigurationChanged({
+									listStyle: value,
+								})
+							}
+							options={availableListStyles}
+							value={item.config.listStyle}
+						/>
+					</ClayForm.Group>
+
+					{item.config.listStyle === LIST_STYLE_GRID && (
 						<ClayForm.Group small>
-							<label htmlFor={listStyleId}>
-								{Liferay.Language.get('list-style')}
+							<label htmlFor={collectionLayoutId}>
+								{Liferay.Language.get('layout')}
 							</label>
 							<ClaySelectWithOption
-								aria-label={Liferay.Language.get('list-style')}
-								id={listStyleId}
+								aria-label={Liferay.Language.get('layout')}
+								id={collectionLayoutId}
 								onChange={({target: {value}}) =>
 									handleConfigurationChanged({
-										listStyle: value,
+										numberOfColumns: value,
 									})
 								}
-								options={availableListRenderers}
-								value={item.config.listStyle}
+								options={LAYOUT_OPTIONS}
+								value={item.config.numberOfColumns}
 							/>
 						</ClayForm.Group>
 					)}
-
-					<ClayForm.Group small>
-						<label htmlFor={collectionLayoutId}>
-							{Liferay.Language.get('layout')}
-						</label>
-						<ClaySelectWithOption
-							aria-label={Liferay.Language.get('layout')}
-							id={collectionLayoutId}
-							onChange={({target: {value}}) =>
-								handleConfigurationChanged({
-									numberOfColumns: value,
-								})
-							}
-							options={LAYOUT_OPTIONS}
-							value={item.config.numberOfColumns}
-						/>
-					</ClayForm.Group>
 
 					<ClayForm.Group small>
 						<label htmlFor={collectionNumberOfItemsId}>
