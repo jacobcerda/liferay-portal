@@ -303,7 +303,7 @@ public abstract class TopLevelBuild extends BaseBuild {
 	}
 
 	@Override
-	public JSONObject getTestReportJSONObject() {
+	public JSONObject getTestReportJSONObject(boolean cache) {
 		return null;
 	}
 
@@ -336,6 +336,11 @@ public abstract class TopLevelBuild extends BaseBuild {
 		}
 
 		return validationBuild.getGitHubMessageElement();
+	}
+
+	@Override
+	public boolean isUniqueFailure() {
+		return true;
 	}
 
 	@Override
@@ -586,7 +591,7 @@ public abstract class TopLevelBuild extends BaseBuild {
 
 	protected Element[] getBuildFailureElements() {
 		Map<Build, Element> downstreamBuildFailureMessages =
-			getDownstreamBuildMessages("ABORTED", "FAILURE", "UNSTABLE");
+			getDownstreamBuildMessages(getFailedDownstreamBuilds());
 
 		List<Element> allCurrentBuildFailureElements = new ArrayList<>();
 		List<Element> upstreamBuildFailureElements = new ArrayList<>();
@@ -601,9 +606,7 @@ public abstract class TopLevelBuild extends BaseBuild {
 			Element failureElement = entry.getValue();
 
 			if (failureElement != null) {
-				if (UpstreamFailureUtil.isBuildFailingInUpstreamJob(
-						failedDownstreamBuild)) {
-
+				if (!failedDownstreamBuild.isUniqueFailure()) {
 					upstreamBuildFailureElements.add(failureElement);
 
 					continue;

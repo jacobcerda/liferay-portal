@@ -50,10 +50,24 @@ AccountUsersAdminManagementToolbarDisplayContext accountUsersAdminManagementTool
 				keyProperty="userId"
 				modelVar="accountUserDisplay"
 			>
+
+				<%
+				row.setData(
+					HashMapBuilder.<String, Object>put(
+						"actions", StringUtil.merge(accountUsersAdminManagementToolbarDisplayContext.getAvailableActions(accountUserDisplay))
+					).build());
+				%>
+
 				<portlet:renderURL var="rowURL">
 					<portlet:param name="p_u_i_d" value="<%= String.valueOf(accountUserDisplay.getUserId()) %>" />
 					<portlet:param name="mvcPath" value="/account_users_admin/edit_account_user.jsp" />
 				</portlet:renderURL>
+
+				<%
+				if (!UserPermissionUtil.contains(permissionChecker, accountUserDisplay.getUserId(), ActionKeys.UPDATE) && !AccountPermission.contains(permissionChecker, AccountPortletKeys.ACCOUNT_USERS_ADMIN, AccountActionKeys.ASSIGN_ACCOUNTS)) {
+					rowURL = null;
+				}
+				%>
 
 				<liferay-ui:search-container-column-text
 					cssClass="table-cell-expand-small table-cell-minw-150"

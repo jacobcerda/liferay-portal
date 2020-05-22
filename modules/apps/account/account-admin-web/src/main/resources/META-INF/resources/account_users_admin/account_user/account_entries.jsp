@@ -19,7 +19,7 @@
 <%
 String backURL = ParamUtil.getString(request, "backURL", String.valueOf(renderResponse.createRenderURL()));
 
-User selUser = PortalUtil.getSelectedUser(request);
+User selUser = PortalUtil.getSelectedUser(request, false);
 
 SearchContainer<AccountEntryDisplay> accountEntryDisplaySearchContainer = AccountEntryDisplaySearchContainerFactory.create(selUser.getUserId(), liferayPortletRequest, liferayPortletResponse);
 
@@ -106,7 +106,9 @@ portletDisplay.setURLBack(backURL);
 					/>
 
 					<liferay-ui:search-container-column-text>
-						<a class="modify-link" data-rowId="<%= accountEntryDisplay.getAccountEntryId() %>" href="javascript:;"><%= removeAccountEntryIcon %></a>
+						<c:if test="<%= AccountEntryPermission.contains(permissionChecker, accountEntryDisplay.getAccountEntryId(), ActionKeys.MANAGE_USERS) %>">
+							<a class="modify-link" data-rowId="<%= accountEntryDisplay.getAccountEntryId() %>" href="javascript:;"><%= removeAccountEntryIcon %></a>
+						</c:if>
 					</liferay-ui:search-container-column-text>
 				</liferay-ui:search-container-row>
 

@@ -14,11 +14,18 @@
 
 package com.liferay.analytics.reports.web.internal.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * @author David Arques
@@ -28,8 +35,12 @@ public class TrafficSource {
 	public TrafficSource() {
 	}
 
-	public TrafficSource(String name, int trafficAmount, double trafficShare) {
+	public TrafficSource(
+		String name, List<SearchKeyword> searchKeywords, int trafficAmount,
+		double trafficShare) {
+
 		_name = name;
+		_searchKeywords = searchKeywords;
 		_trafficAmount = trafficAmount;
 		_trafficShare = trafficShare;
 	}
@@ -47,6 +58,7 @@ public class TrafficSource {
 		TrafficSource trafficSource = (TrafficSource)obj;
 
 		if (Objects.equals(_name, trafficSource._name) &&
+			Objects.equals(_searchKeywords, trafficSource._searchKeywords) &&
 			Objects.equals(_trafficAmount, trafficSource._trafficAmount) &&
 			Objects.equals(_trafficShare, trafficSource._trafficShare)) {
 
@@ -60,6 +72,11 @@ public class TrafficSource {
 		return _name;
 	}
 
+	@JsonProperty("keywords")
+	public List<SearchKeyword> getSearchKeywords() {
+		return _searchKeywords;
+	}
+
 	public int getTrafficAmount() {
 		return _trafficAmount;
 	}
@@ -70,11 +87,16 @@ public class TrafficSource {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(_name, _trafficAmount, _trafficShare);
+		return Objects.hash(
+			_name, _searchKeywords, _trafficAmount, _trafficShare);
 	}
 
 	public void setName(String name) {
 		_name = name;
+	}
+
+	public void setSearchKeywords(List<SearchKeyword> searchKeywords) {
+		_searchKeywords = searchKeywords;
 	}
 
 	public void setTrafficAmount(int trafficAmount) {
@@ -85,13 +107,11 @@ public class TrafficSource {
 		_trafficShare = trafficShare;
 	}
 
-	public JSONObject toJSONObject(
-		String helpMessage, JSONArray keywordsJSONArray, String title) {
-
+	public JSONObject toJSONObject(String helpMessage, String title) {
 		return JSONUtil.put(
 			"helpMessage", helpMessage
 		).put(
-			"keywords", keywordsJSONArray
+			"keywords", _getSearchKeywordsJSONArray()
 		).put(
 			"name", getName()
 		).put(
@@ -103,7 +123,31 @@ public class TrafficSource {
 		);
 	}
 
+	private JSONArray _getSearchKeywordsJSONArray() {
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		if (ListUtil.isEmpty(_searchKeywords)) {
+			return jsonArray;
+		}
+
+		Stream<SearchKeyword> stream = _searchKeywords.stream();
+
+		Comparator<SearchKeyword> comparator = Comparator.comparingInt(
+			SearchKeyword::getTraffic);
+
+		stream.sorted(
+			comparator.reversed()
+		).limit(
+			5
+		).forEachOrdered(
+			searchKeyword -> jsonArray.put(searchKeyword.toJSONObject())
+		);
+
+		return jsonArray;
+	}
+
 	private String _name;
+	private List<SearchKeyword> _searchKeywords;
 	private int _trafficAmount;
 	private double _trafficShare;
 

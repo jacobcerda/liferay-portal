@@ -15,6 +15,7 @@
 package com.liferay.account.admin.web.internal.display.context;
 
 import com.liferay.account.admin.web.internal.display.AccountUserDisplay;
+import com.liferay.account.admin.web.internal.security.permission.resource.AccountEntryPermission;
 import com.liferay.account.model.AccountEntry;
 import com.liferay.account.service.AccountEntryLocalServiceUtil;
 import com.liferay.account.service.AccountEntryUserRelLocalServiceUtil;
@@ -27,6 +28,7 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -35,7 +37,6 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -66,6 +67,10 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
+		if (!_hasManageUsersPermission()) {
+			return null;
+		}
+
 		return DropdownItemList.of(
 			() -> {
 				DropdownItem dropdownItem = new DropdownItem();
@@ -107,12 +112,9 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 			dropdownItem -> {
 				dropdownItem.putData("action", "selectAccountUsers");
 
-				long accountEntryId = ParamUtil.getLong(
-					request, "accountEntryId");
-
 				AccountEntry accountEntry =
 					AccountEntryLocalServiceUtil.fetchAccountEntry(
-						accountEntryId);
+						_getAccountEntryId());
 
 				if (accountEntry != null) {
 					dropdownItem.putData(
@@ -138,7 +140,8 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 					"mvcPath",
 					"/account_entries_admin/select_account_users.jsp");
 				selectAccountUsersURL.setParameter(
-					"accountEntryId", String.valueOf(accountEntryId));
+					"accountEntryId",
+					String.valueOf(accountEntry.getAccountEntryId()));
 				selectAccountUsersURL.setWindowState(LiferayWindowState.POP_UP);
 
 				dropdownItem.putData(
@@ -199,12 +202,10 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 
 	@Override
 	public Boolean isDisabled() {
-		long accountEntryId = ParamUtil.getLong(
-			liferayPortletRequest, "accountEntryId");
-
 		long count =
 			AccountEntryUserRelLocalServiceUtil.
-				getAccountEntryUserRelsCountByAccountEntryId(accountEntryId);
+				getAccountEntryUserRelsCountByAccountEntryId(
+					_getAccountEntryId());
 
 		if (count > 0) {
 			return false;
@@ -214,12 +215,13 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 	}
 
 	@Override
-	public Boolean isShowCreationMenu() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+	public Boolean isSelectable() {
+		return _hasManageUsersPermission();
+	}
 
-		return PortalPermissionUtil.contains(
-			themeDisplay.getPermissionChecker(), ActionKeys.ADD_USER);
+	@Override
+	public Boolean isShowCreationMenu() {
+		return _hasManageUsersPermission();
 	}
 
 	@Override
@@ -242,6 +244,31 @@ public class ViewAccountUsersManagementToolbarDisplayContext
 	@Override
 	protected String[] getOrderByKeys() {
 		return new String[] {"first-name", "last-name", "email-address"};
+	}
+
+	private long _getAccountEntryId() {
+		return ParamUtil.getLong(liferayPortletRequest, "accountEntryId");
+	}
+
+	private boolean _hasManageUsersPermission() {
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		try {
+			if (AccountEntryPermission.contains(
+					themeDisplay.getPermissionChecker(), _getAccountEntryId(),
+					ActionKeys.MANAGE_USERS)) {
+
+				return true;
+			}
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
+		}
+
+		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

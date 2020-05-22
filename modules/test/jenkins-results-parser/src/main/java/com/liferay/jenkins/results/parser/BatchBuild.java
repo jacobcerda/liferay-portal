@@ -83,7 +83,7 @@ public class BatchBuild extends BaseBuild {
 		}
 
 		Map<Build, Element> downstreamBuildFailureMessages =
-			getDownstreamBuildMessages("ABORTED", "FAILURE", "UNSTABLE");
+			getDownstreamBuildMessages(getFailedDownstreamBuilds());
 
 		List<Element> failureElements = new ArrayList<>();
 		List<Element> upstreamJobFailureElements = new ArrayList<>();
@@ -242,7 +242,7 @@ public class BatchBuild extends BaseBuild {
 			return Collections.emptyList();
 		}
 
-		JSONObject testReportJSONObject = getTestReportJSONObject();
+		JSONObject testReportJSONObject = getTestReportJSONObject(false);
 
 		JSONArray childReportsJSONArray = testReportJSONObject.optJSONArray(
 			"childReports");
@@ -465,17 +465,10 @@ public class BatchBuild extends BaseBuild {
 			successCount = getTestCountByStatus("SUCCESS");
 
 			if (isCompareToUpstream()) {
-				for (TestResult testResult : getTestResults(null)) {
-					if (!testResult.isFailing()) {
-						continue;
-					}
+				List<TestResult> upstreamJobFailureTestResults =
+					getUpstreamJobFailureTestResults();
 
-					if (UpstreamFailureUtil.isTestFailingInUpstreamJob(
-							testResult)) {
-
-						upstreamFailCount++;
-					}
-				}
+				upstreamFailCount = upstreamJobFailureTestResults.size();
 
 				if (showCommonFailuresCount) {
 					failCount = upstreamFailCount;
@@ -535,7 +528,7 @@ public class BatchBuild extends BaseBuild {
 
 	@Override
 	protected int getTestCountByStatus(String status) {
-		JSONObject testReportJSONObject = getTestReportJSONObject();
+		JSONObject testReportJSONObject = getTestReportJSONObject(false);
 
 		int failCount = testReportJSONObject.getInt("failCount");
 

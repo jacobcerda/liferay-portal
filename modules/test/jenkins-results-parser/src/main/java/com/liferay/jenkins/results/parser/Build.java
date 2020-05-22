@@ -151,7 +151,7 @@ public interface Build {
 
 	public Map<String, String> getStopPropertiesTempMap();
 
-	public JSONObject getTestReportJSONObject();
+	public JSONObject getTestReportJSONObject(boolean checkCache);
 
 	public List<TestResult> getTestResults(String testStatus);
 
@@ -169,6 +169,10 @@ public interface Build {
 	public int getTotalSlavesUsedCount(
 		String status, boolean modifiedBuildsOnly, boolean ignoreCurrentBuild);
 
+	public List<TestResult> getUniqueFailureTestResults();
+
+	public List<TestResult> getUpstreamJobFailureTestResults();
+
 	public boolean hasBuildURL(String buildURL);
 
 	public boolean hasGenericCIFailure();
@@ -180,6 +184,8 @@ public interface Build {
 	public boolean isFromArchive();
 
 	public boolean isFromCompletedBuild();
+
+	public boolean isUniqueFailure();
 
 	public void reinvoke();
 

@@ -29,7 +29,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -1105,12 +1104,12 @@ public abstract class BaseBuild implements Build {
 	}
 
 	@Override
-	public JSONObject getTestReportJSONObject() {
+	public JSONObject getTestReportJSONObject(boolean checkCache) {
 		try {
 			return JenkinsResultsParserUtil.toJSONObject(
 				JenkinsResultsParserUtil.getLocalURL(
 					getBuildURL() + "testReport/api/json"),
-				false);
+				checkCache);
 		}
 		catch (IOException ioException) {
 			throw new RuntimeException(
@@ -1236,6 +1235,30 @@ public abstract class BaseBuild implements Build {
 	}
 
 	@Override
+	public List<TestResult> getUniqueFailureTestResults() {
+		List<TestResult> uniqueFailureTestResults = new ArrayList<>();
+
+		for (Build downstreamBuild : getFailedDownstreamBuilds()) {
+			uniqueFailureTestResults.addAll(
+				downstreamBuild.getUniqueFailureTestResults());
+		}
+
+		return uniqueFailureTestResults;
+	}
+
+	@Override
+	public List<TestResult> getUpstreamJobFailureTestResults() {
+		List<TestResult> upstreamFailureTestResults = new ArrayList<>();
+
+		for (Build downstreamBuild : getFailedDownstreamBuilds()) {
+			upstreamFailureTestResults.addAll(
+				downstreamBuild.getUpstreamJobFailureTestResults());
+		}
+
+		return upstreamFailureTestResults;
+	}
+
+	@Override
 	public boolean hasBuildURL(String buildURL) {
 		try {
 			buildURL = JenkinsResultsParserUtil.decode(buildURL);
@@ -1330,6 +1353,11 @@ public abstract class BaseBuild implements Build {
 	@Override
 	public boolean isFromCompletedBuild() {
 		return fromCompletedBuild;
+	}
+
+	@Override
+	public boolean isUniqueFailure() {
+		return !UpstreamFailureUtil.isBuildFailingInUpstreamJob(this);
 	}
 
 	@Override
@@ -2465,28 +2493,20 @@ public abstract class BaseBuild implements Build {
 	}
 
 	protected Map<Build, Element> getDownstreamBuildMessages(
-		String... results) {
+		List<Build> downstreamBuilds) {
 
-		List<String> resultList = Arrays.asList(results);
-		List<Build> matchingBuilds = new ArrayList<>();
 		List<Callable<Element>> callables = new ArrayList<>();
 
-		for (final Build downstreamBuild : getDownstreamBuilds(null)) {
-			String downstreamBuildResult = downstreamBuild.getResult();
+		for (final Build downstreamBuild : downstreamBuilds) {
+			Callable<Element> callable = new Callable<Element>() {
 
-			if (resultList.contains(downstreamBuildResult)) {
-				matchingBuilds.add(downstreamBuild);
+				public Element call() {
+					return downstreamBuild.getGitHubMessageElement();
+				}
 
-				Callable<Element> callable = new Callable<Element>() {
+			};
 
-					public Element call() {
-						return downstreamBuild.getGitHubMessageElement();
-					}
-
-				};
-
-				callables.add(callable);
-			}
+			callables.add(callable);
 		}
 
 		ParallelExecutor<Element> parallelExecutor = new ParallelExecutor<>(
@@ -2497,7 +2517,7 @@ public abstract class BaseBuild implements Build {
 		Map<Build, Element> elementsMap = new LinkedHashMap<>();
 
 		for (int i = 0; i < elements.size(); i++) {
-			elementsMap.put(matchingBuilds.get(i), elements.get(i));
+			elementsMap.put(downstreamBuilds.get(i), elements.get(i));
 		}
 
 		return elementsMap;
@@ -2505,6 +2525,16 @@ public abstract class BaseBuild implements Build {
 
 	protected ExecutorService getExecutorService() {
 		return null;
+	}
+
+	protected List<Build> getFailedDownstreamBuilds() {
+		List<Build> failedDownstreamBuilds = new ArrayList<>();
+
+		failedDownstreamBuilds.addAll(getDownstreamBuilds("ABORTED", null));
+		failedDownstreamBuilds.addAll(getDownstreamBuilds("FAILURE", null));
+		failedDownstreamBuilds.addAll(getDownstreamBuilds("UNSTABLE", null));
+
+		return failedDownstreamBuilds;
 	}
 
 	protected Element getFailureMessageElement() {
@@ -3073,7 +3103,7 @@ public abstract class BaseBuild implements Build {
 	}
 
 	protected int getTestCountByStatus(String status) {
-		JSONObject testReportJSONObject = getTestReportJSONObject();
+		JSONObject testReportJSONObject = getTestReportJSONObject(false);
 
 		if (testReportJSONObject == null) {
 			return 0;
