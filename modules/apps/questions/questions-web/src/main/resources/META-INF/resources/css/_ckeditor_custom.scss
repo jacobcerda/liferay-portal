@@ -1,3 +1,9 @@
+.cke_reset,
+.cke_wysiwyg_frame,
+.cke_wysiwyg_div {
+	background-color: transparent !important;
+}
+
 .cke_readonly .cke .cke_inner .cke_bottom,
 .cke_readonly .cke .cke_inner .cke_top {
 	display: none;
@@ -5,4 +11,10 @@
 
 .cke_readonly .cke_chrome {
 	border: none;
+}
+
+.cke_readonly_body {
+	color: $body-color;
+	font-family: $font-family-base;
+	font-size: $font-size-base;
 }

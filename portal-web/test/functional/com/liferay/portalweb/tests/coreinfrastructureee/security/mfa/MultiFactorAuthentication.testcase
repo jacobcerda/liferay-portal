@@ -31,6 +31,49 @@ definition {
 		}
 	}
 
+	@description = "This is a use case for LPS-110309"
+	test AssertDescriptionsForConfigurationEntries {
+		property test.name.skip.portal.instance = "MultiFactorAuthentication#AssertDescriptionsForConfigurationEntries";
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Multi-Factor Authentication",
+			configurationName = "Email One-Time Password System Configuration",
+			configurationScope = "System Scope");
+
+		AssertTextEquals(
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_DISABLE",
+			value1 = "Disable multi-factor authentication system-wide.");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Multi-Factor Authentication",
+			configurationName = "Email One-Time Password Configuration",
+			configurationScope = "Virtual Instance Scope");
+
+		MultiFactorAuthentication.assertDescriptions();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Multi-Factor Authentication",
+			configurationName = "Email One-Time Password Configuration",
+			configurationScope = "Virtual Instance Scope");
+
+		MultiFactorAuthentication.assertDescriptions();
+	}
+
 	@description = "This is a use case for LPS-92659"
 	test BlockedAfterReachAllowedFailedAttempts {
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";

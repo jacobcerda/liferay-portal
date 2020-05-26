@@ -156,10 +156,6 @@ export default function getAlloyEditorProcessor(
 						nativeEditor.execCommand('selectAll');
 					}
 				}),
-
-				_stopEventPropagation(element, 'keydown'),
-				_stopEventPropagation(element, 'keyup'),
-				_stopEventPropagation(element, 'keypress'),
 			];
 
 			if (config.undoEnabled) {
@@ -223,23 +219,6 @@ export default function getAlloyEditorProcessor(
 			if (element !== _element) {
 				render(element, value, editableConfig);
 			}
-		},
-	};
-}
-
-/**
- * Adds a listener to stop the given element event propagation
- * @param {HTMLElement} element
- * @param {string} eventName
- */
-function _stopEventPropagation(element, eventName) {
-	const handler = (event) => event.stopPropagation();
-
-	element.addEventListener(eventName, handler);
-
-	return {
-		removeListener: () => {
-			element.removeEventListener(eventName, handler);
 		},
 	};
 }

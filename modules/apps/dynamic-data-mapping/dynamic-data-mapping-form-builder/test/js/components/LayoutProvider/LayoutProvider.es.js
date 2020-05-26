@@ -489,6 +489,7 @@ describe('LayoutProvider', () => {
 
 				const {child, provider} = component.refs;
 				const mockEvent = {
+					activePage: 0,
 					fieldName: 'radio',
 				};
 

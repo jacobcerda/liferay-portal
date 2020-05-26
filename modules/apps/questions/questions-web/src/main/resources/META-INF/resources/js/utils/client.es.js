@@ -156,7 +156,6 @@ export const getTags = (page = 1, pageSize = 20, siteKey, search = '') =>
         query {
             keywordsRanked(page: ${page}, pageSize: ${pageSize}, siteKey: ${siteKey}, search: ${search}){
                 items {
-                    dateCreated
                     id
                     keywordUsageCount
                     name
@@ -219,6 +218,20 @@ export const getThread = (friendlyUrlPath, siteKey) =>
             }
         }`,
 		{nestedFields: 'lastPostDate'}
+	);
+
+export const getMessageBoardThreadById = (messageBoardThreadId) =>
+	request(
+		gql`
+        query {
+            messageBoardThread(messageBoardThreadId: ${messageBoardThreadId}){
+                friendlyUrlPath
+				id
+                messageBoardSection {
+                	title
+                }
+            }
+        }`
 	);
 
 export const getThreadContent = (friendlyUrlPath, siteKey) =>

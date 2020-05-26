@@ -138,6 +138,10 @@ export const duplicateField = (
 const handleFieldDuplicated = (props, state, {activePage, fieldName}) => {
 	const {pages} = state;
 
+	if (activePage === undefined) {
+		activePage = state.activePage;
+	}
+
 	const originalField = JSON.parse(
 		JSON.stringify(FormSupport.findFieldByFieldName(pages, fieldName))
 	);

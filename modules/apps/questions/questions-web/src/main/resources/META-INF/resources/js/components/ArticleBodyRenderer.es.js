@@ -14,23 +14,10 @@
 
 import parser from 'bbcode-to-react';
 import {Editor} from 'frontend-editor-ckeditor-web';
-import React from 'react';
+import React, {useContext} from 'react';
 
-export function getCKEditorConfig() {
-	const config = {
-		allowedContent: true,
-		autoGrow_minHeight: 200,
-		autoGrow_onStartup: true,
-		codeSnippet_theme: 'monokai_sublime',
-		extraPlugins: 'autogrow,codesnippet',
-		readOnly: true,
-		removePlugins: 'elementspath',
-	};
-
-	config.toolbar = [];
-
-	return config;
-}
+import {AppContext} from '../AppContext.es';
+import {getCKEditorReadOnlyConfig} from '../utils/utils.es';
 
 export default ({
 	articleBody,
@@ -38,31 +25,39 @@ export default ({
 	encodingFormat,
 	id,
 	signature,
-}) => (
-	<>
-		{encodingFormat === 'bbcode' && <p>{parser.toReact(articleBody)}</p>}
-		{encodingFormat !== 'bbcode' && compactMode && (
-			<div
-				className={`questions-article-body-${id}`}
-				dangerouslySetInnerHTML={{__html: articleBody}}
-			/>
-		)}
-		{encodingFormat !== 'bbcode' && !compactMode && (
-			<div className={`cke_readonly questions-article-body-${id}`}>
-				<Editor
-					config={getCKEditorConfig()}
-					data={articleBody}
-					required
-				/>
-			</div>
-		)}
+}) => {
+	const context = useContext(AppContext);
 
-		{signature && (
-			<style
-				dangerouslySetInnerHTML={{
-					__html: `.questions-article-body-${id} p:last-child:after {content: " - ${signature}"; font-weight: bold;}`,
-				}}
-			/>
-		)}
-	</>
-);
+	return (
+		<>
+			{encodingFormat === 'bbcode' && (
+				<p>{parser.toReact(articleBody)}</p>
+			)}
+			{encodingFormat !== 'bbcode' && compactMode && (
+				<div
+					className={`questions-article-body-${id}`}
+					dangerouslySetInnerHTML={{__html: articleBody}}
+				/>
+			)}
+			{encodingFormat !== 'bbcode' && !compactMode && (
+				<div className={`cke_readonly questions-article-body-${id}`}>
+					<Editor
+						config={getCKEditorReadOnlyConfig(
+							context.includeContextPath
+						)}
+						data={articleBody}
+						required
+					/>
+				</div>
+			)}
+
+			{signature && (
+				<style
+					dangerouslySetInnerHTML={{
+						__html: `.questions-article-body-${id} p:last-child:after {content: " - ${signature}"; font-weight: bold;}`,
+					}}
+				/>
+			)}
+		</>
+	);
+};

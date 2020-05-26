@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.upload.UploadServletRequest;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -46,6 +47,12 @@ public class UploadServletRequestFilter extends BasePortalFilter {
 	public boolean isFilterEnabled(
 		HttpServletRequest httpServletRequest,
 		HttpServletResponse httpServletResponse) {
+
+		String servletPath = httpServletRequest.getServletPath();
+
+		if (servletPath.startsWith(Portal.PATH_MODULE)) {
+			return false;
+		}
 
 		String contentType = httpServletRequest.getHeader(
 			HttpHeaders.CONTENT_TYPE);

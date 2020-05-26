@@ -21,4 +21,8 @@ export default {
 		icon: 'radio-button',
 		title: Liferay.Language.get('radio-field-type-label'),
 	},
+	select: {
+		icon: 'list',
+		title: Liferay.Language.get('select-field-type-label'),
+	},
 };

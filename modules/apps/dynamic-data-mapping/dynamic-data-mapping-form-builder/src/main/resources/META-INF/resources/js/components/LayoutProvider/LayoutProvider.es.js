@@ -351,7 +351,12 @@ class LayoutProvider extends Component {
 	}
 
 	_handleFieldChangesCanceled() {
-		const {focusedField, pages, previousFocusedField} = this.state;
+		const {
+			activePage,
+			focusedField,
+			pages,
+			previousFocusedField,
+		} = this.state;
 		const {settingsContext} = previousFocusedField;
 
 		const visitor = new PagesVisitor(settingsContext.pages);
@@ -366,6 +371,7 @@ class LayoutProvider extends Component {
 		visitor.setPages(pages);
 
 		this.setState({
+			activePage,
 			focusedField: previousFocusedField,
 			pages: visitor.mapFields((field) => {
 				if (field.fieldName === focusedField.fieldName) {

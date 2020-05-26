@@ -30,7 +30,11 @@ import org.osgi.service.component.annotations.Component;
  * @author Marcos Martins
  */
 @Component(
-	immediate = true, property = "ddm.form.field.type.name=checkbox_multiple",
+	immediate = true,
+	property = {
+		"ddm.form.field.type.name=checkbox_multiple",
+		"ddm.form.field.type.name=select"
+	},
 	service = DDMFormFieldTypeReportProcessor.class
 )
 public class CheckboxMultipleDDMFormFieldTypeReportProcessor

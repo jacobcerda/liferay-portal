@@ -1,8 +1,6 @@
 @component-name = "portal-wcm"
 definition {
 
-	property osgi.module.configuration.file.names = "com.liferay.layout.page.template.admin.web.internal.configuration.ExportImportMasterLayoutConfiguration.config";
-	property osgi.module.configurations = "enabled=B&quot;true&quot;";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Layout Page Templates";
@@ -30,15 +28,9 @@ definition {
 	@priority = "5"
 	test CannotExportMastersPageTemplateWithoutPublishedVersion {
 		task ("Add a custom master but not publish") {
-			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
-
-			LexiconEntry.gotoAdd();
-
-			PortletEntry.inputName(name = "Custom Masters Page Template");
-
-			Button.clickSave();
-
-			PageEditor.assertFragmentSidebarLoaded();
+			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
+				groupName = "Test Site Name",
+				masterPageTemplateEntryName = "Custom Masters Page Template");
 		}
 
 		task ("Assert custom master has a Draft label") {
@@ -70,12 +62,14 @@ definition {
 	@priority = "4"
 	test ExportImportMastersPageTemplateWithCompositionOfFragments {
 		task ("Add a custom master") {
-			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
-
-			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Custom Masters Page Template");
+			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
+				groupName = "Test Site Name",
+				masterPageTemplateEntryName = "Custom Masters Page Template");
 		}
 
 		task ("Add composition of fragments to custom master") {
+			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
+
 			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
 				item = "Edit",
 				masterLayoutName = "Custom Masters Page Template");
@@ -180,12 +174,14 @@ definition {
 	@priority = "4"
 	test ExportImportMastersPageTemplateWithCustomConfigurationSettingOfFragments {
 		task ("Add a custom master") {
-			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
-
-			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Custom Masters Page Template");
+			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
+				groupName = "Test Site Name",
+				masterPageTemplateEntryName = "Custom Masters Page Template");
 		}
 
 		task ("Add a Section and a Heading to custom master and set up configuration settings of them") {
+			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
+
 			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
 				item = "Edit",
 				masterLayoutName = "Custom Masters Page Template");
@@ -260,16 +256,116 @@ definition {
 		}
 	}
 
+	@description = "This is a use case for LPS-102207. Can export a master page template with the custom Look and Feel and import."
+	@priority = "4"
+	test ExportImportMastersPageTemplateWithCustomLookAndFeel {
+		task ("Add a custom master") {
+			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
+				groupName = "Test Site Name",
+				masterPageTemplateEntryName = "Custom Masters Page Template");
+		}
+
+		task ("Configure the Look and Feel of custom master") {
+			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
+
+			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
+				item = "Edit",
+				masterLayoutName = "Custom Masters Page Template");
+
+			PageEditor.gotoTab(tabName = "Look and Feel");
+
+			Theme.configureLookAndFeelShowFooter(showFooter = "true");
+
+			Pause(locator1 = "3000");
+
+			Theme.configureLookAndFeelShowHeader(showHeader = "true");
+
+			Pause(locator1 = "3000");
+
+			Theme.configureLookAndFeelShowHeaderSearch(showHeaderSearch = "true");
+
+			Pause(locator1 = "3000");
+
+			Theme.configureLookAndFeelShowMaxMinAppLinks(showMaxMinAppLinks = "true");
+
+			Pause(locator1 = "3000");
+
+			Theme.configureLookAndFeelWrapWidgetPageContent(wrapWidgetPageContent = "true");
+
+			Pause(locator1 = "3000");
+
+			PortletEntry.save();
+
+			Navigator.gotoBack();
+
+			PageEditor.assertFragmentSidebarLoaded();
+
+			Button.click(button = "Publish Master");
+		}
+
+		task ("Export custom master") {
+			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
+
+			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
+				item = "Export",
+				masterLayoutName = "Custom Masters Page Template");
+
+			DownloadTempFile();
+		}
+
+		task ("Import masters page template in new site") {
+			JSONGroup.addGroup(groupName = "Site Name");
+
+			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "site-name");
+
+			MastersPageTemplatesAdmin.importMastersFromTempFolder();
+		}
+
+		task ("Assert the Look and Feel Settings are imported") {
+			MastersPageTemplatesAdmin.viewMastersPresent(masterLayoutName = "Custom Masters Page Template");
+
+			MastersPageTemplatesAdmin.gotoMasters(masterLayoutName = "Custom Masters Page Template");
+
+			PageEditor.gotoTab(tabName = "Look and Feel");
+
+			Pause(locator1 = "3000");
+
+			AssertChecked.assertCheckedNotVisible(locator1 = "Radio#SPECIFIC_LOOK");
+
+			AssertChecked.assertCheckedNotVisible(
+				key_toggleSwitchLabel = "Show Footer",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+			AssertChecked.assertCheckedNotVisible(
+				key_toggleSwitchLabel = "Show Header",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+			AssertChecked.assertCheckedNotVisible(
+				key_toggleSwitchLabel = "Show Header Search",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+			AssertChecked.assertCheckedNotVisible(
+				key_toggleSwitchLabel = "Show Maximize/Minimize Application Links",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+			AssertChecked.assertCheckedNotVisible(
+				key_toggleSwitchLabel = "Wrap Widget Page Content",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+	}
+
 	@description = "This is a use case for LPS-102207. Can export a master page template containing the edited inline content of fragments and import."
 	@priority = "4"
 	test ExportImportMastersPageTemplateWithEditedInlineContentOfFragments {
 		task ("Add a custom master") {
-			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
-
-			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Custom Masters Page Template");
+			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
+				groupName = "Test Site Name",
+				masterPageTemplateEntryName = "Custom Masters Page Template");
 		}
 
 		task ("Add fragments to custom master and edit inline content") {
+			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
+
 			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
 				item = "Edit",
 				masterLayoutName = "Custom Masters Page Template");
@@ -376,12 +472,14 @@ definition {
 	@priority = "4"
 	test ExportImportMastersPageTemplateWithThumbnail {
 		task ("Add a custom master") {
-			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
-
-			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Custom Masters Page Template");
+			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
+				groupName = "Test Site Name",
+				masterPageTemplateEntryName = "Custom Masters Page Template");
 		}
 
 		task ("Change thumbnail of custom master") {
+			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
+
 			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
 				item = "Change Thumbnail",
 				masterLayoutName = "Custom Masters Page Template");
@@ -422,12 +520,14 @@ definition {
 	@priority = "4"
 	test OverwriteExistingEntryWithThumbnailIfCheckOverwriteExistingEntries {
 		task ("Add a custom master") {
-			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
-
-			MastersPageTemplatesAdmin.addMasters(masterLayoutName = "Custom Masters Page Template");
+			JSONLayoutpagetemplate.addMasterPageTemplateEntry(
+				groupName = "Test Site Name",
+				masterPageTemplateEntryName = "Custom Masters Page Template");
 		}
 
 		task ("Change thumbnail of custom master") {
+			MastersPageTemplatesAdmin.openMastersAdmin(siteURLKey = "test-site-name");
+
 			MastersPageTemplatesAdmin.gotoMastersEllipsisItem(
 				item = "Change Thumbnail",
 				masterLayoutName = "Custom Masters Page Template");

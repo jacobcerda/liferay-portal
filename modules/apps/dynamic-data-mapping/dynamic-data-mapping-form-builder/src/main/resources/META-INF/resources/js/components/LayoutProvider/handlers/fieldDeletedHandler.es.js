@@ -118,6 +118,11 @@ export const removeField = (props, pages, fieldName) => {
 
 export const handleFieldDeleted = (props, state, {activePage, fieldName}) => {
 	const {pages} = state;
+
+	if (activePage === undefined) {
+		activePage = state.activePage;
+	}
+
 	const newPages = pages.map((page, pageIndex) => {
 		if (activePage === pageIndex) {
 			return {

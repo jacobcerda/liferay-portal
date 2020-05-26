@@ -89,99 +89,100 @@ export default withRouter(
 				section.parentSection.messageBoardSections.items) ||
 			[];
 
+		const navigateToNewQuestion = () => {
+			if (context.redirectToLogin && !themeDisplay.isSignedIn()) {
+				window.location.replace(
+					`/c/portal/login?redirect=/#/questions/${sectionTitle}/new`
+				);
+			}
+			else {
+				historyPushParser(`/questions/${sectionTitle}/new`);
+			}
+
+			return false;
+		};
+
 		return (
 			<div className="d-flex flex-column flex-lg-row justify-content-between">
 				<div className="d-flex flex-grow-1">
 					{!!getParentSubSections().length && (
-						<>
-							<ClayDropDown
-								active={active}
-								className="questions-navigation-dropdown"
-								onActiveChange={setActive}
-								trigger={
-									<div className="align-items-center d-flex h-100">
-										{section.parentSection && (
-											<ClayInput.Group>
-												<ClayInput.GroupItem className="align-items-center">
-													<div className="questions-navigation-parent-section-title text-truncate">
-														{
-															section
-																.parentSection
-																.title
-														}
-														{':'}
-													</div>
-												</ClayInput.GroupItem>
+						<ClayDropDown
+							active={active}
+							className="questions-navigation-dropdown"
+							onActiveChange={setActive}
+							trigger={
+								<div className="align-items-center d-flex h-100">
+									{section.parentSection && (
+										<ClayInput.Group>
+											<ClayInput.GroupItem className="align-items-center">
+												<div className="questions-navigation-parent-section-title text-truncate">
+													{
+														section.parentSection
+															.title
+													}
+													{':'}
+												</div>
+											</ClayInput.GroupItem>
 
-												<ClayInput.GroupItem
-													className="questions-navigation-section-title text-truncate"
-													shrink
-												>
-													{section.title ===
-													section.parentSection.title
-														? Liferay.Language.get(
-																'all'
-														  )
-														: section.title}
-												</ClayInput.GroupItem>
+											<ClayInput.GroupItem
+												className="questions-navigation-section-title text-truncate"
+												shrink
+											>
+												{section.title ===
+												section.parentSection.title
+													? Liferay.Language.get(
+															'all'
+													  )
+													: section.title}
+											</ClayInput.GroupItem>
 
-												<ClayInput.GroupItem
-													className="align-items-center"
-													shrink
-												>
-													<ClayIcon symbol="caret-bottom" />
-												</ClayInput.GroupItem>
-											</ClayInput.Group>
-										)}
-									</div>
-								}
+											<ClayInput.GroupItem
+												className="align-items-center"
+												shrink
+											>
+												<ClayIcon symbol="caret-bottom" />
+											</ClayInput.GroupItem>
+										</ClayInput.Group>
+									)}
+								</div>
+							}
+						>
+							<Link
+								to={`/questions/${
+									(section &&
+										section.parentSection &&
+										section.parentSection.title) ||
+									sectionTitle
+								}`}
 							>
-								<Link
-									to={`/questions/${
-										(section &&
-											section.parentSection &&
-											section.parentSection.title) ||
-										sectionTitle
-									}`}
-								>
-									<ClayDropDown.Help>
-										{Liferay.Language.get('all')}
-									</ClayDropDown.Help>
-								</Link>
+								<ClayDropDown.Help>
+									{Liferay.Language.get('all')}
+								</ClayDropDown.Help>
+							</Link>
 
-								<ClayDropDown.ItemList>
-									<ClayDropDown.Group>
-										{getParentSubSections().map(
-											(item, i) => (
-												<ClayDropDown.Item
-													href={item.href}
-													key={i}
-												>
-													<Link
-														to={
-															'/questions/' +
-															item.title
-														}
-													>
-														{item.title}
-													</Link>
-												</ClayDropDown.Item>
-											)
-										)}
-									</ClayDropDown.Group>
-								</ClayDropDown.ItemList>
-							</ClayDropDown>
+							<ClayDropDown.ItemList>
+								<ClayDropDown.Group>
+									{getParentSubSections().map((item, i) => (
+										<ClayDropDown.Item
+											href={item.href}
+											key={i}
+										>
+											<Link
+												to={'/questions/' + item.title}
+											>
+												{item.title}
+											</Link>
+										</ClayDropDown.Item>
+									))}
+								</ClayDropDown.Group>
+							</ClayDropDown.ItemList>
+						</ClayDropDown>
+					)}
 
-							{section &&
-								section.actions &&
-								section.actions.subscribe && (
-									<div className="c-ml-3">
-										<SectionSubscription
-											section={section}
-										/>
-									</div>
-								)}
-						</>
+					{section && section.actions && section.actions.subscribe && (
+						<div className="c-ml-3">
+							<SectionSubscription section={section} />
+						</div>
 					)}
 				</div>
 
@@ -242,41 +243,32 @@ export default withRouter(
 							</ClayInput.GroupInsetItem>
 						</ClayInput.GroupItem>
 
-						{section &&
-							section.actions &&
-							section.actions['add-thread'] && (
-								<ClayInput.GroupItem shrink>
-									<ClayButton
-										className="c-ml-3 d-none d-sm-block text-nowrap"
-										displayType="primary"
-										onClick={() =>
-											historyPushParser(
-												`/questions/${sectionTitle}/new`
-											)
-										}
-									>
+						{(context.redirectToLogin ||
+							(section &&
+								section.actions &&
+								section.actions['add-thread'])) && (
+							<ClayInput.GroupItem shrink>
+								<ClayButton
+									className="c-ml-3 d-none d-sm-block text-nowrap"
+									displayType="primary"
+									onClick={navigateToNewQuestion}
+								>
+									{Liferay.Language.get('ask-question')}
+								</ClayButton>
+
+								<ClayButton
+									className="btn-monospaced d-block d-sm-none position-fixed questions-button shadow"
+									displayType="primary"
+									onClick={navigateToNewQuestion}
+								>
+									<ClayIcon symbol="pencil" />
+
+									<span className="sr-only">
 										{Liferay.Language.get('ask-question')}
-									</ClayButton>
-
-									<ClayButton
-										className="btn-monospaced d-block d-sm-none position-fixed questions-button shadow"
-										displayType="primary"
-										onClick={() =>
-											historyPushParser(
-												`/questions/${sectionTitle}/new`
-											)
-										}
-									>
-										<ClayIcon symbol="pencil" />
-
-										<span className="sr-only">
-											{Liferay.Language.get(
-												'ask-question'
-											)}
-										</span>
-									</ClayButton>
-								</ClayInput.GroupItem>
-							)}
+									</span>
+								</ClayButton>
+							</ClayInput.GroupItem>
+						)}
 					</ClayInput.Group>
 				</div>
 			</div>

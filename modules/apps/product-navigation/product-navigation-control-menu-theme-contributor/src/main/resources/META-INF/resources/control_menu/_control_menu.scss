@@ -32,8 +32,8 @@ a.control-menu-icon,
 		}
 	}
 
-	a,
-	button:not(.dropdown-item) {
+	a:not(.dropdown-item),
+	button:not(.btn-link):not(.dropdown-item):not(.nav-link) {
 		color: $control-menu-level-1-link-color;
 
 		&:focus,
@@ -208,6 +208,16 @@ a.control-menu-icon,
 	line-height: 32px;
 	text-align: center;
 	width: 32px;
+}
+
+.global-menu-app {
+	.control-menu-level-1 {
+		background-color: $white;
+	}
+
+	.control-menu-level-1-heading {
+		color: $black;
+	}
 }
 
 .tools-control-group {

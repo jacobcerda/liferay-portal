@@ -15,9 +15,10 @@
 import React from 'react';
 
 import colors from '../../utils/colors.es';
+import {roundPercentage} from '../../utils/data.es';
 
 export default ({active, activeIndex, payload, totalEntries}) => {
-	const getPercentage = (count) => (100 * count) / totalEntries;
+	const getPercentage = (count) => count / totalEntries;
 
 	if (!active) {
 		return null;
@@ -41,7 +42,7 @@ export default ({active, activeIndex, payload, totalEntries}) => {
 				{`${label}: ${count} ${Liferay.Language.get(
 					'entries'
 				).toLowerCase()}`}{' '}
-				<b>({getPercentage(count).toFixed(0)}%)</b>
+				<b>({roundPercentage(getPercentage(count))})</b>
 			</p>
 		</div>
 	);

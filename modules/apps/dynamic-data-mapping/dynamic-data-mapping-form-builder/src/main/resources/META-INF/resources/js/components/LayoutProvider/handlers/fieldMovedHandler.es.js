@@ -23,13 +23,14 @@ import handleSectionAdded from './sectionAddedHandler.es';
 export default (props, state, event) => {
 	const {
 		sourceFieldName,
+		sourceFieldPage,
 		targetFieldName,
 		targetIndexes,
 		targetParentFieldName,
 	} = event;
-	const activePage = targetIndexes.pageIndex;
+
 	const deletedState = handleFieldDeleted(props, state, {
-		activePage,
+		activePage: sourceFieldPage,
 		fieldName: sourceFieldName,
 	});
 	const sourceField = FormSupport.findFieldByFieldName(
@@ -63,6 +64,7 @@ export default (props, state, event) => {
 		if (parentFieldName) {
 			mergedState = {
 				...handleFieldDeleted(props, state, {
+					activePage: sourceFieldPage,
 					fieldName: parentFieldName,
 				}),
 			};

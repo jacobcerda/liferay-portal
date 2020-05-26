@@ -126,6 +126,11 @@ const withMoveableFields = (ChildComponent) => {
 					'.ddm-field-container'
 				);
 
+				const sourceFieldPage = parseInt(
+					dom.closest(source, '[data-ddm-page]').dataset.ddmPage,
+					10
+				);
+
 				let targetFieldName;
 
 				if (target.classList.contains('ddm-field-container')) {
@@ -148,6 +153,7 @@ const withMoveableFields = (ChildComponent) => {
 
 				this._handleFieldMoved({
 					sourceFieldName,
+					sourceFieldPage,
 					targetFieldName,
 					targetIndexes: FormSupport.getIndexes(target.parentElement),
 					targetParentFieldName,
