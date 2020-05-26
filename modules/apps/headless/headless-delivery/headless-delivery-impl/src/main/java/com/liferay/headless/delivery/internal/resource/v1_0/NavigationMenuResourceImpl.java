@@ -183,8 +183,13 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 			siteId, false, link);
 
 		if (layout == null) {
-			layout = _layoutLocalService.getLayoutByFriendlyURL(
+			layout = _layoutLocalService.fetchLayoutByFriendlyURL(
 				siteId, true, link);
+		}
+
+		if (layout == null) {
+			throw new BadRequestException(
+				"No page found with friendly URL " + link);
 		}
 
 		return layout;
