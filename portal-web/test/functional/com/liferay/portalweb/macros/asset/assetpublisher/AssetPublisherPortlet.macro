@@ -560,7 +560,7 @@ definition {
 
 			LexiconEntry.changeDisplayStyle(displayStyle = "table");
 
-			if ("${siteScopeType}" != "Parent Site") {
+			if ("${siteScopeType}" == "Child Site") {
 				Type(
 					locator1 = "TextInput#SITE_SEARCH_KEYWORDS",
 					value1 = "${siteName}");
@@ -578,11 +578,9 @@ definition {
 				locator1 = "APConfigurationSites#SITES_TABLE_TYPE",
 				value1 = "${siteScopeType}");
 
-			ClickNoError(locator1 = "SitesSelectSite#SITES_TABLE_CHOOSE_SITE_LINK");
+			Click(locator1 = "SitesSelectSite#SITES_TABLE_CHOOSE_SITE_LINK");
 
-			if (IsElementPresent(locator1 = "IFrame#SELECT_SITES")) {
-				IFrame.closeFrame();
-			}
+			Alert.viewSuccessMessage();
 
 			SelectFrame(value1 = "relative=top");
 

@@ -32,6 +32,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-110309"
+	@priority = "4"
 	test AssertDescriptionsForConfigurationEntries {
 		property test.name.skip.portal.instance = "MultiFactorAuthentication#AssertDescriptionsForConfigurationEntries";
 
@@ -75,6 +76,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-92659"
+	@priority = "5"
 	test BlockedAfterReachAllowedFailedAttempts {
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property test.name.skip.portal.instance = "MultiFactorAuthentication#BlockedAfterReachAllowedFailedAttempts";
@@ -214,6 +216,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-92659"
+	@priority = "5"
 	test LoginSuccessfulAfterRetryTimeout {
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property test.name.skip.portal.instance = "MultiFactorAuthentication#LoginSuccessfulAfterRetryTimeout";
@@ -311,6 +314,67 @@ definition {
 			recipient = "userfn userln",
 			userEmailAddress = "userea@liferay.com",
 			userPassword = "test");
+	}
+
+	@description = "This is a use case for LPS-92658"
+	@priority = "4"
+	test ViewResourceActionsOfOTPVerificationFailure {
+		var portalURL = PropsUtil.get("portal.url");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Multi-Factor Authentication",
+			configurationName = "Email One-Time Password Configuration",
+			configurationScope = "Virtual Instance Scope");
+
+		MultiFactorAuthentication.configureOTPEmailSender(
+			emailAddress = "test@liferay.com",
+			emailSenderName = "Joe Bloggs");
+
+		MultiFactorAuthentication.viewOTPEmailSenderCP(
+			emailAddress = "test@liferay.com",
+			emailSenderName = "Joe Bloggs");
+
+		MultiFactorAuthentication.configureOTP(enableOTP = "true");
+
+		SignOut.signOut();
+
+		SignIn.signIn(userEmailAddress = "test@liferay.com");
+
+		MultiFactorAuthentication.sendOTPEmailPG();
+
+		MultiFactorAuthentication.verifyOTP(
+			portalURL = "${portalURL}",
+			recipient = "test test",
+			userEmailAddress = "test@liferay.com",
+			userPassword = "test",
+			validOTP = "false");
+
+		MultiFactorAuthentication.verifyOTP(
+			portalURL = "${portalURL}",
+			recipient = "Test Test",
+			userEmailAddress = "test@liferay.com",
+			userPassword = "test");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Audit");
+
+		Audit.searchCP(
+			resourceAction = "MFA_EMAIL_OTP_VERIFICATION_FAILURE",
+			searchTerm = "MFA_EMAIL_OTP_VERIFICATION_FAILURE",
+			userName = "Test Test");
+
+		Audit.viewAuditDetails(
+			additionalInformation = "Incorrect email one-time password",
+			resourceAction = "MFA_EMAIL_OTP_VERIFICATION_FAILURE",
+			resourceName = "MFAEmailOTPChecker",
+			userName = "Test Test");
 	}
 
 }

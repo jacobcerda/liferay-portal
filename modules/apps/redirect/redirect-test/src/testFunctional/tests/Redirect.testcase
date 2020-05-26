@@ -593,13 +593,28 @@ definition {
 		var portalURL = PropsUtil.get("portal.url");
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Source Page1");
+
+		for (var destinationURL : list " ,liferay.com,test,redirect/test") {
+			Redirect.openRedirectAdmin(siteURLKey = "test-site-name");
+
+			Redirect.addEntry(
+				destinationURL = "${destinationURL}",
+				destinationURLVariation = "RelativeURL",
+				siteName = "test-site-name",
+				sourceURL = "test-source-page");
+		}
+
 		Redirect.openRedirectAdmin(siteURLKey = "test-site-name");
 
 		Redirect.addEntry(
-			destinationURL = " ",
-			destinationURLVariation = "Space",
+			destinationURL = "www.liferay.com",
 			siteName = "test-site-name",
-			sourceURL = "test-source-page");
+			sourceURL = "test-source-page1");
+
+		Redirect.viewEntryFloatingURL(redirectURL = "http://www.liferay.com");
 
 		Redirect.openRedirectAdmin(siteURLKey = "test-site-name");
 
@@ -943,6 +958,35 @@ definition {
 		AssertVisible(
 			key_pageName = "Pagina de prueba",
 			locator1 = "Home#PAGE_ACTIVE");
+	}
+
+	@description = "This ensures that the old friendlyURL can be removed from the history."
+	@priority = "5"
+	test RemoveOldFriendlyURL {
+		property osgi.module.configuration.file.names = "com.liferay.layout.admin.web.internal.configuration.FFViewFriendlyURLHistoryConfiguration.config";
+		property osgi.module.configurations = "enabled=B&quot;true&quot;";
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Page");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page");
+
+		Page.editFriendlyURL(friendlyURLEdit = "/new-test-page");
+
+		Page.gotoFriendlyURLHistory();
+
+		Page.removeOldFriendlyURL(oldFriendlyURL = "/test-page");
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/test-site-name/test-page");
+
+		AssertTextPresent(value1 = "The requested resource could not be found.");
 	}
 
 	@description = "This ensures that an expired permanent redirect can be reset."

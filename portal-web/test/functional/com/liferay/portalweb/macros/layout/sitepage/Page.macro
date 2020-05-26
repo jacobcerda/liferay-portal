@@ -388,6 +388,10 @@ definition {
 			locator1 = "Home#PAGE_CHILD_PAGE");
 	}
 
+	macro gotoFriendlyURLHistory {
+		Click(locator1 = "Icon#FRIENDLY_URL_HISTORY");
+	}
+
 	macro gotoPagePanelPortlet {
 		var key_portletName = "${portletName}";
 
@@ -450,6 +454,24 @@ definition {
 		Navigator.openSpecificURL(url = "${localizationPageURL}");
 
 		AssertLocation(value1 = "${localizationPageURL}");
+	}
+
+	macro removeOldFriendlyURL {
+		AssertVisible(
+			key_oldFriendlyURL = "${oldFriendlyURL}",
+			locator1 = "SitePages#FRIENDLY_URL_HISTORY_ITEM");
+
+		MouseOver(
+			key_oldFriendlyURL = "${oldFriendlyURL}",
+			locator1 = "SitePages#FRIENDLY_URL_HISTORY_ITEM");
+
+		Click(
+			key_oldFriendlyURL = "${oldFriendlyURL}",
+			locator1 = "Icon#FRIENDLY_URL_HISTORY_ITEM_DELETE");
+
+		AssertElementNotPresent(
+			key_oldFriendlyURL = "${oldFriendlyURL}",
+			locator1 = "SitePages#FRIENDLY_URL_HISTORY_ITEM");
 	}
 
 	macro selectMobileDeviceFamily {
