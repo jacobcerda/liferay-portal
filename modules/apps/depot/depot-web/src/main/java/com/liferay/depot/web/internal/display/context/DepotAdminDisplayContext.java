@@ -15,6 +15,7 @@
 package com.liferay.depot.web.internal.display.context;
 
 import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryGroupRelServiceUtil;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.depot.web.internal.constants.DepotAdminWebKeys;
 import com.liferay.depot.web.internal.search.DepotEntrySearch;
@@ -83,6 +84,13 @@ public class DepotAdminDisplayContext {
 		return "icon";
 	}
 
+	public int getDepotEntryConnectedGroupsCount(DepotEntry depotEntry)
+		throws PortalException {
+
+		return DepotEntryGroupRelServiceUtil.getDepotEntryGroupRelsCount(
+			depotEntry);
+	}
+
 	public DepotEntryVerticalCard getDepotEntryVerticalCard(
 			DepotEntry depotEntry)
 		throws PortalException {
@@ -141,7 +149,8 @@ public class DepotAdminDisplayContext {
 			_liferayPortletRequest, _liferayPortletResponse, _getPortletURL(),
 			getSearchContainerId());
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(DepotEntry.class);
+		Indexer<DepotEntry> indexer = IndexerRegistryUtil.getIndexer(
+			DepotEntry.class);
 
 		SearchContext searchContext = SearchContextFactory.getInstance(
 			PortalUtil.getHttpServletRequest(_liferayPortletRequest));
