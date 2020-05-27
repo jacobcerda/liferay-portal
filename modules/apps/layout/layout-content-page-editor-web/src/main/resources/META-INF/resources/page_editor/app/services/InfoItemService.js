@@ -68,6 +68,24 @@ export default {
 	},
 
 	/**
+	 * Get available list item styles for the list style
+	 * @param {object} options
+	 * @param {string} options.listStyle listStyle
+	 * @param {function} options.onNetworkStatus
+	 */
+	getAvailableListItemStyles({listStyle, onNetworkStatus}) {
+		return serviceFetch(
+			config.getAvailableListItemStylesURL,
+			{
+				body: {
+					listStyle,
+				},
+			},
+			onNetworkStatus
+		);
+	},
+
+	/**
 	 * Get available list renderers for the class name
 	 * @param {object} options
 	 * @param {string} options.className className

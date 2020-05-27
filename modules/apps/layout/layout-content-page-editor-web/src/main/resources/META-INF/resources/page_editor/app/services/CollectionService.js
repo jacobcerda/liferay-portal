@@ -20,11 +20,13 @@ export default {
 	/**
 	 * Get an asset's value
 	 * @param {object} options
-	 * @param {string} options.layoutObjectReference
+	 * @param {string} options.listItemStyle
+	 * @param {string} options.listStyle
 	 * @param {function} options.onNetworkStatus
 	 */
 	getCollectionField({
 		collection,
+		listItemStyle,
 		listStyle,
 		onNetworkStatus,
 		segmentsExperienceId,
@@ -35,6 +37,7 @@ export default {
 			{
 				body: {
 					layoutObjectReference: JSON.stringify(collection),
+					listItemStyle,
 					listStyle,
 					segmentsExperienceId,
 					size,

@@ -18,6 +18,7 @@ import com.liferay.asset.info.display.contributor.util.ContentAccessor;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.info.display.contributor.InfoDisplayContributor;
 import com.liferay.info.display.contributor.InfoDisplayContributorTracker;
+import com.liferay.info.list.renderer.DefaultInfoListRendererContext;
 import com.liferay.info.list.renderer.InfoListRenderer;
 import com.liferay.info.list.renderer.InfoListRendererTracker;
 import com.liferay.info.pagination.Pagination;
@@ -85,6 +86,8 @@ public class GetCollectionFieldMVCResourceCommand
 		String layoutObjectReference = ParamUtil.getString(
 			resourceRequest, "layoutObjectReference");
 		String listStyle = ParamUtil.getString(resourceRequest, "listStyle");
+		String listItemStyle = ParamUtil.getString(
+			resourceRequest, "listItemStyle");
 		long segmentsExperienceId = ParamUtil.getLong(
 			resourceRequest, "segmentsExperienceId");
 		int size = ParamUtil.getInteger(resourceRequest, "size");
@@ -93,8 +96,8 @@ public class GetCollectionFieldMVCResourceCommand
 			jsonObject = _getCollectionFieldsJSONObject(
 				_portal.getHttpServletRequest(resourceRequest),
 				_portal.getHttpServletResponse(resourceResponse),
-				layoutObjectReference, listStyle, themeDisplay.getLocale(),
-				segmentsExperienceId, size);
+				layoutObjectReference, listStyle, listItemStyle,
+				themeDisplay.getLocale(), segmentsExperienceId, size);
 		}
 		catch (Exception exception) {
 			jsonObject.put(
@@ -110,8 +113,9 @@ public class GetCollectionFieldMVCResourceCommand
 	private JSONObject _getCollectionFieldsJSONObject(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse,
-			String layoutObjectReference, String listStyle, Locale locale,
-			long segmentsExperienceId, int size)
+			String layoutObjectReference, String listStyle,
+			String listItemStyle, Locale locale, long segmentsExperienceId,
+			int size)
 		throws PortalException {
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
@@ -158,9 +162,10 @@ public class GetCollectionFieldMVCResourceCommand
 					itemType = FileEntry.class.getName();
 				}
 
-				InfoDisplayContributor infoDisplayContributor =
-					_infoDisplayContributorTracker.getInfoDisplayContributor(
-						itemType);
+				InfoDisplayContributor<Object> infoDisplayContributor =
+					(InfoDisplayContributor<Object>)
+						_infoDisplayContributorTracker.
+							getInfoDisplayContributor(itemType);
 
 				for (Object object : list) {
 					jsonArray.put(
@@ -175,12 +180,20 @@ public class GetCollectionFieldMVCResourceCommand
 					UnsyncStringWriter unsyncStringWriter =
 						new UnsyncStringWriter();
 
-					PipingServletResponse pipingServletResponse =
+					HttpServletResponse pipingHttpServletResponse =
 						new PipingServletResponse(
 							httpServletResponse, unsyncStringWriter);
 
+					DefaultInfoListRendererContext
+						defaultInfoListRendererContext =
+							new DefaultInfoListRendererContext(
+								httpServletRequest, pipingHttpServletResponse);
+
+					defaultInfoListRendererContext.setListItemStyleKey(
+						listItemStyle);
+
 					infoListRenderer.render(
-						list, httpServletRequest, pipingServletResponse);
+						list, defaultInfoListRendererContext);
 
 					jsonObject.put("content", unsyncStringWriter.toString());
 				}
@@ -199,8 +212,8 @@ public class GetCollectionFieldMVCResourceCommand
 	}
 
 	private JSONObject _getDisplayObjectJSONObject(
-			InfoDisplayContributor infoDisplayContributor, Object object,
-			Locale locale)
+			InfoDisplayContributor<Object> infoDisplayContributor,
+			Object object, Locale locale)
 		throws PortalException {
 
 		JSONObject displayObjectJSONObject = JSONFactoryUtil.createJSONObject();

@@ -147,6 +147,7 @@ const Collection = React.forwardRef(({children, item}, ref) => {
 		if (collectionConfig.collection) {
 			CollectionService.getCollectionField({
 				collection: collectionConfig.collection,
+				listItemStyle: collectionConfig.listItemStyle || null,
 				listStyle: collectionConfig.listStyle,
 				onNetworkStatus: dispatch,
 				segmentsExperienceId,
@@ -163,6 +164,7 @@ const Collection = React.forwardRef(({children, item}, ref) => {
 		}
 	}, [
 		collectionConfig.collection,
+		collectionConfig.listItemStyle,
 		collectionConfig.listStyle,
 		collectionConfig.numberOfItems,
 		dispatch,

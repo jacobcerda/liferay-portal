@@ -21,12 +21,31 @@ import {fetch} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useRef, useState} from 'react';
 
-const AppsPanel = ({
-	categories = [],
-	portletNamespace,
-	recentSites,
-	viewAllURL,
-}) => {
+const Sites = ({label, sites}) => {
+	return (
+		<>
+			<li className="dropdown-subheader">{label}</li>
+
+			{sites.map(({key, label, logoURL, url}) => (
+				<li key={key}>
+					<a className="dropdown-item" href={url}>
+						<ClaySticker
+							className="inline-item-before"
+							inline={true}
+							size="sm"
+						>
+							<img className="sticker-img" src={logoURL} />
+						</ClaySticker>
+
+						{label}
+					</a>
+				</li>
+			))}
+		</>
+	);
+};
+
+const AppsPanel = ({categories = [], portletNamespace, sites}) => {
 	const [activeTab, setActiveTab] = useState(0);
 
 	return (
@@ -82,61 +101,55 @@ const AppsPanel = ({
 										{Liferay.Language.get('sites')}
 									</li>
 
-									<li className="dropdown-subheader">
-										{Liferay.Language.get(
-											'recently-visited'
+									{sites.recentSites &&
+										sites.recentSites.length > 0 && (
+											<Sites
+												label={Liferay.Language.get(
+													'recently-visited'
+												)}
+												sites={sites.recentSites}
+											/>
 										)}
-									</li>
 
-									{recentSites.map(
-										({key, label, logoURL, url}) => (
-											<li key={key}>
-												<a
-													className="dropdown-item"
-													href={url}
-												>
-													<ClaySticker
-														className="inline-item-before"
-														inline={true}
-														size="sm"
-													>
-														<img
-															className="sticker-img"
-															src={logoURL}
-														/>
-													</ClaySticker>
+									{sites.mySites &&
+										sites.mySites.length > 0 && (
+											<Sites
+												label={Liferay.Language.get(
+													'my-sites'
+												)}
+												sites={sites.mySites}
+											/>
+										)}
 
-													{label}
-												</a>
-											</li>
-										)
+									{sites.viewAllURL && (
+										<li>
+											<ClayButton
+												displayType="link"
+												onClick={() => {
+													Liferay.Util.openModal({
+														id: `${portletNamespace}selectSite`,
+														onSelect: (
+															selectedItem
+														) => {
+															Liferay.Util.navigate(
+																selectedItem.url
+															);
+														},
+														selectEventName: `${portletNamespace}selectSite`,
+														title: Liferay.Language.get(
+															'select-site-or-asset-library'
+														),
+														url: sites.viewAllURL,
+													});
+												}}
+												small
+											>
+												{Liferay.Language.get(
+													'view-all'
+												)}
+											</ClayButton>
+										</li>
 									)}
-
-									<li>
-										<ClayButton
-											displayType="link"
-											onClick={() => {
-												Liferay.Util.openModal({
-													id: `${portletNamespace}selectSite`,
-													onSelect: (
-														selectedItem
-													) => {
-														Liferay.Util.navigate(
-															selectedItem.url
-														);
-													},
-													selectEventName: `${portletNamespace}selectSite`,
-													title: Liferay.Language.get(
-														'select-site-or-asset-library'
-													),
-													url: viewAllURL,
-												});
-											}}
-											small
-										>
-											{Liferay.Language.get('view-all')}
-										</ClayButton>
-									</li>
 								</ul>
 							</div>
 						</div>
@@ -174,12 +187,11 @@ const GlobalMenu = ({panelAppsURL}) => {
 		if (!fetchCategoriesPromiseRef.current) {
 			fetchCategoriesPromiseRef.current = fetch(panelAppsURL)
 				.then((response) => response.json())
-				.then(({items, portletNamespace, recentSites, viewAllURL}) => {
+				.then(({items, portletNamespace, sites}) => {
 					setAppsPanelData({
 						categories: items,
 						portletNamespace,
-						recentSites,
-						viewAllURL,
+						sites,
 					});
 				})
 				.catch(() => {

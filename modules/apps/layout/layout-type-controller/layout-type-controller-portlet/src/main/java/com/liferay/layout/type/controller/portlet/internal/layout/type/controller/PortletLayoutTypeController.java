@@ -96,8 +96,9 @@ public class PortletLayoutTypeController extends BaseLayoutTypeControllerImpl {
 		httpServletRequest.setAttribute(
 			PortletLayoutDisplayContext.class.getName(),
 			new PortletLayoutDisplayContext(
-				httpServletRequest, _infoDisplayContributorTracker,
-				_infoListRendererTracker, _layoutListRetrieverTracker,
+				httpServletRequest, httpServletResponse,
+				_infoDisplayContributorTracker, _infoListRendererTracker,
+				_layoutListRetrieverTracker,
 				_listObjectReferenceFactoryTracker));
 
 		RequestDispatcher requestDispatcher =

@@ -794,10 +794,12 @@ public class ResourceOpenAPIParser {
 			if ((get != null) && basePath.equals(entry.getKey())) {
 				List<String> tags = get.getTags();
 
-				String tag = tags.get(0);
+				if (!tags.isEmpty()) {
+					String tag = tags.get(0);
 
-				if (!tag.equals(schemaName)) {
-					return tag;
+					if (!tag.equals(schemaName)) {
+						return tag;
+					}
 				}
 			}
 		}
@@ -856,6 +858,8 @@ public class ResourceOpenAPIParser {
 			}
 		}
 
+		String returnType = String.class.getName();
+
 		if ((response != null) && (response.getContent() != null)) {
 			Map<String, Content> sortedContents =
 				TreeMapBuilder.<String, Content>putAll(
@@ -884,7 +888,7 @@ public class ResourceOpenAPIParser {
 					return javax.ws.rs.core.Response.class.getName();
 				}
 
-				String returnType = OpenAPIParserUtil.getJavaDataType(
+				returnType = OpenAPIParserUtil.getJavaDataType(
 					javaDataTypeMap, schema);
 
 				if (returnType.startsWith("[")) {
@@ -905,7 +909,7 @@ public class ResourceOpenAPIParser {
 		}
 
 		if (Get.class.isInstance(operation)) {
-			return String.class.getName();
+			return returnType;
 		}
 
 		return javax.ws.rs.core.Response.class.getName();

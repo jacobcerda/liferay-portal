@@ -14,6 +14,7 @@
 
 package com.liferay.app.builder.service.impl;
 
+import com.liferay.app.builder.constants.AppBuilderAppConstants;
 import com.liferay.app.builder.model.AppBuilderApp;
 import com.liferay.app.builder.model.AppBuilderAppDeployment;
 import com.liferay.app.builder.service.AppBuilderAppDeploymentLocalService;
@@ -43,12 +44,31 @@ import org.osgi.service.component.annotations.Reference;
 public class AppBuilderAppLocalServiceImpl
 	extends AppBuilderAppLocalServiceBaseImpl {
 
-	@Indexable(type = IndexableType.REINDEX)
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #addAppBuilderApp(long, long, long, boolean, long, long,
+	 *             long, Map, String)}
+	 */
+	@Deprecated
 	@Override
 	public AppBuilderApp addAppBuilderApp(
 			long groupId, long companyId, long userId, boolean active,
 			long ddmStructureId, long ddmStructureLayoutId,
 			long deDataListViewId, Map<Locale, String> nameMap)
+		throws PortalException {
+
+		return addAppBuilderApp(
+			groupId, companyId, userId, active, ddmStructureId,
+			ddmStructureLayoutId, deDataListViewId, nameMap,
+			AppBuilderAppConstants.SCOPE_STANDARD);
+	}
+
+	@Indexable(type = IndexableType.REINDEX)
+	@Override
+	public AppBuilderApp addAppBuilderApp(
+			long groupId, long companyId, long userId, boolean active,
+			long ddmStructureId, long ddmStructureLayoutId,
+			long deDataListViewId, Map<Locale, String> nameMap, String scope)
 		throws PortalException {
 
 		User user = userLocalService.getUser(userId);
@@ -67,6 +87,7 @@ public class AppBuilderAppLocalServiceImpl
 		appBuilderApp.setDdmStructureLayoutId(ddmStructureLayoutId);
 		appBuilderApp.setDeDataListViewId(deDataListViewId);
 		appBuilderApp.setNameMap(nameMap);
+		appBuilderApp.setScope(scope);
 
 		return appBuilderAppPersistence.update(appBuilderApp);
 	}
@@ -119,6 +140,13 @@ public class AppBuilderAppLocalServiceImpl
 
 	@Override
 	public List<AppBuilderApp> getAppBuilderApps(
+		long companyId, boolean active, String scope) {
+
+		return appBuilderAppPersistence.findByC_A_S(companyId, active, scope);
+	}
+
+	@Override
+	public List<AppBuilderApp> getAppBuilderApps(
 		long groupId, int start, int end,
 		OrderByComparator<AppBuilderApp> orderByComparator) {
 
@@ -136,6 +164,15 @@ public class AppBuilderAppLocalServiceImpl
 	}
 
 	@Override
+	public List<AppBuilderApp> getAppBuilderApps(
+		long groupId, String scope, int start, int end,
+		OrderByComparator<AppBuilderApp> orderByComparator) {
+
+		return appBuilderAppPersistence.findByG_S(
+			groupId, scope, start, end, orderByComparator);
+	}
+
+	@Override
 	public int getAppBuilderAppsCount(long groupId) {
 		return appBuilderAppPersistence.countByGroupId(groupId);
 	}
@@ -149,6 +186,11 @@ public class AppBuilderAppLocalServiceImpl
 	}
 
 	@Override
+	public int getAppBuilderAppsCount(long groupId, String scope) {
+		return appBuilderAppPersistence.countByG_S(groupId, scope);
+	}
+
+	@Override
 	public List<AppBuilderApp> getCompanyAppBuilderApps(
 		long companyId, int start, int end,
 		OrderByComparator<AppBuilderApp> orderByComparator) {
@@ -158,8 +200,22 @@ public class AppBuilderAppLocalServiceImpl
 	}
 
 	@Override
+	public List<AppBuilderApp> getCompanyAppBuilderApps(
+		long companyId, String scope, int start, int end,
+		OrderByComparator<AppBuilderApp> orderByComparator) {
+
+		return appBuilderAppPersistence.findByC_S(
+			companyId, scope, start, end, orderByComparator);
+	}
+
+	@Override
 	public int getCompanyAppBuilderAppsCount(long companyId) {
 		return appBuilderAppPersistence.countByCompanyId(companyId);
+	}
+
+	@Override
+	public int getCompanyAppBuilderAppsCount(long companyId, String scope) {
+		return appBuilderAppPersistence.countByC_S(companyId, scope);
 	}
 
 	@Indexable(type = IndexableType.REINDEX)

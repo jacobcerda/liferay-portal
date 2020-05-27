@@ -270,6 +270,9 @@ public class ContentPageEditorDisplayContext {
 				"getAssetMappingFieldsURL",
 				getResourceURL("/content_layout/get_asset_mapping_fields")
 			).put(
+				"getAvailableListItemStylesURL",
+				getResourceURL("/content_layout/get_available_list_item_styles")
+			).put(
 				"getAvailableListRenderersURL",
 				getResourceURL("/content_layout/get_available_list_renderers")
 			).put(
@@ -1312,7 +1315,7 @@ public class ContentPageEditorDisplayContext {
 	private List<String> _getInfoDisplayContributorsClassNames() {
 		List<String> infoDisplayContributorsClassNames = new ArrayList<>();
 
-		for (InfoDisplayContributor infoDisplayContributor :
+		for (InfoDisplayContributor<?> infoDisplayContributor :
 				infoDisplayContributorTracker.getInfoDisplayContributors()) {
 
 			// LPS-111037
@@ -1413,11 +1416,11 @@ public class ContentPageEditorDisplayContext {
 	private Set<Map<String, Object>> _getMappedInfoItems() throws Exception {
 		Set<Map<String, Object>> mappedInfoItems = new HashSet<>();
 
-		Set<InfoDisplayObjectProvider> infoDisplayObjectProviders =
+		Set<InfoDisplayObjectProvider<?>> infoDisplayObjectProviders =
 			ContentUtil.getMappedInfoDisplayObjectProviders(
 				getGroupId(), themeDisplay.getPlid());
 
-		for (InfoDisplayObjectProvider infoDisplayObjectProvider :
+		for (InfoDisplayObjectProvider<?> infoDisplayObjectProvider :
 				infoDisplayObjectProviders) {
 
 			mappedInfoItems.add(

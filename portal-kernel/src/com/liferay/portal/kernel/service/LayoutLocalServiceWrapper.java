@@ -977,6 +977,15 @@ public class LayoutLocalServiceWrapper
 		return _layoutLocalService.getLayout(groupId, privateLayout, layoutId);
 	}
 
+	@Override
+	public Layout getLayoutByFriendlyURL(
+			long groupId, boolean privateLayout, String friendlyURL)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutLocalService.getLayoutByFriendlyURL(
+			groupId, privateLayout, friendlyURL);
+	}
+
 	/**
 	 * Returns the layout for the icon image; throws a {@link
 	 * NoSuchLayoutException} otherwise.

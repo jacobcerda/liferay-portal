@@ -14,9 +14,13 @@
 
 package com.liferay.jenkins.results.parser;
 
+import java.io.IOException;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.dom4j.Element;
 
@@ -42,6 +46,60 @@ public class PullRequestPortalTopLevelBuild extends PortalTopLevelBuild {
 
 			exception.printStackTrace();
 		}
+	}
+
+	@Override
+	public String getResult() {
+		String result = super.getResult();
+
+		List<Build> downstreamBuildFailures = getFailedDownstreamBuilds();
+
+		if ((result == null) || downstreamBuildFailures.isEmpty()) {
+			return result;
+		}
+
+		Properties buildProperties;
+
+		try {
+			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(
+				"Unable to get build properties", ioException);
+		}
+
+		boolean pullRequestForwardUpstreamFailureComparisonEnabled =
+			Boolean.parseBoolean(
+				buildProperties.getProperty(
+					"pull.request.forward.upstream.failure.comparison." +
+						"enabled"));
+
+		if (!pullRequestForwardUpstreamFailureComparisonEnabled) {
+			return result;
+		}
+
+		String testSuiteName = getTestSuiteName();
+
+		if (!testSuiteName.matches("relevant|stable")) {
+			return result;
+		}
+
+		String batchWhitelist = buildProperties.getProperty(
+			"pull.request.forward.upstream.failure.comparison.batch.whitelist");
+
+		List<String> whitelistedBatchNames = Arrays.asList(
+			batchWhitelist.split("\\s*,\\s*"));
+
+		for (Build downstreamBuild : downstreamBuildFailures) {
+			if (downstreamBuild.isUniqueFailure() ||
+				!whitelistedBatchNames.contains(
+					downstreamBuild.getJobVariant())) {
+
+				return result;
+			}
+		}
+
+		return "APPROVED";
 	}
 
 	public String getStableJobResult() {
@@ -74,12 +132,14 @@ public class PullRequestPortalTopLevelBuild extends PortalTopLevelBuild {
 			return null;
 		}
 
+		String result = getResult();
 		int stableJobDownstreamBuildsSuccessCount =
 			getJobVariantsDownstreamBuildCount(
 				stableJobBatchNames, "SUCCESS", null);
 
-		if (stableJobDownstreamBuildsSuccessCount ==
-				stableJobDownstreamBuildsSize) {
+		if (((result != null) && result.matches("(APPROVED|SUCCESS)")) ||
+			(stableJobDownstreamBuildsSuccessCount ==
+				stableJobDownstreamBuildsSize)) {
 
 			_stableJobResult = "SUCCESS";
 		}
@@ -144,20 +204,9 @@ public class PullRequestPortalTopLevelBuild extends PortalTopLevelBuild {
 
 		StringBuilder sb = new StringBuilder();
 
-		List<String> stableJobBatchNames = new ArrayList<>(
-			_stableJob.getBatchNames());
+		String stableJobResult = getStableJobResult();
 
-		int stableJobDownstreamBuildsSuccessCount =
-			getJobVariantsDownstreamBuildCount(
-				stableJobBatchNames, "SUCCESS", null);
-
-		List<Build> stableJobDownstreamBuilds = getStableJobDownstreamBuilds();
-
-		int stableJobDownstreamBuildsSize = stableJobDownstreamBuilds.size();
-
-		if (stableJobDownstreamBuildsSuccessCount ==
-				stableJobDownstreamBuildsSize) {
-
+		if (stableJobResult.equals("SUCCESS")) {
 			sb.append(":heavy_check_mark: ");
 		}
 		else {
@@ -165,9 +214,17 @@ public class PullRequestPortalTopLevelBuild extends PortalTopLevelBuild {
 		}
 
 		sb.append("ci:test:stable - ");
-		sb.append(String.valueOf(stableJobDownstreamBuildsSuccessCount));
+
+		sb.append(
+			getJobVariantsDownstreamBuildCount(
+				new ArrayList<>(_stableJob.getBatchNames()), "SUCCESS", null));
+
 		sb.append(" out of ");
-		sb.append(String.valueOf(stableJobDownstreamBuildsSize));
+
+		List<Build> stableJobDownstreamBuilds = getStableJobDownstreamBuilds();
+
+		sb.append(stableJobDownstreamBuilds.size());
+
 		sb.append(" jobs passed");
 
 		return Dom4JUtil.getNewElement("h3", null, sb.toString());

@@ -16,22 +16,47 @@
 
 <%@ include file="/info_list_basic_list/init.jsp" %>
 
-<ul>
-
-	<%
-	for (Object infoListObject : infoListObjects) {
-	%>
-
-		<li>
+<c:choose>
+	<c:when test="<%= Objects.equals(infoListItemStyleKey, BasicListInfoListItemStyle.NUMBERED.getKey()) %>">
+		<ol>
 
 			<%
-			infoItemRenderer.render(infoListObject, request, response);
+			for (Object infoListObject : infoListObjects) {
 			%>
 
-		</li>
+				<li>
 
-	<%
-	}
-	%>
+					<%
+					infoItemRenderer.render(infoListObject, request, response);
+					%>
 
-</ul>
+				</li>
+
+			<%
+			}
+			%>
+
+		</ol>
+	</c:when>
+	<c:otherwise>
+		<ul class="<%= listCssClass %>">
+
+			<%
+			for (Object infoListObject : infoListObjects) {
+			%>
+
+				<li class="<%= listItemCssClass %>">
+
+					<%
+					infoItemRenderer.render(infoListObject, request, response);
+					%>
+
+				</li>
+
+			<%
+			}
+			%>
+
+		</ul>
+	</c:otherwise>
+</c:choose>

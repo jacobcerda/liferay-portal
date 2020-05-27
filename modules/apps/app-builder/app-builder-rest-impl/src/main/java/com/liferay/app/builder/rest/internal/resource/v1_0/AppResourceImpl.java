@@ -14,6 +14,7 @@
 
 package com.liferay.app.builder.rest.internal.resource.v1_0;
 
+import com.liferay.app.builder.constants.AppBuilderAppConstants;
 import com.liferay.app.builder.constants.AppBuilderConstants;
 import com.liferay.app.builder.deploy.AppDeployer;
 import com.liferay.app.builder.deploy.AppDeployerTracker;
@@ -146,13 +147,15 @@ public class AppResourceImpl
 				transform(
 					_appBuilderAppLocalService.getCompanyAppBuilderApps(
 						contextCompany.getCompanyId(),
+						AppBuilderAppConstants.SCOPE_STANDARD,
 						pagination.getStartPosition(),
 						pagination.getEndPosition(),
 						_toOrderByComparator(sorts[0])),
 					this::_toApp),
 				pagination,
 				_appBuilderAppLocalService.getCompanyAppBuilderAppsCount(
-					contextCompany.getCompanyId()));
+					contextCompany.getCompanyId(),
+					AppBuilderAppConstants.SCOPE_STANDARD));
 		}
 
 		return SearchUtil.search(
@@ -196,6 +199,15 @@ public class AppResourceImpl
 					booleanFilter.add(
 						userIdTermsFilter, BooleanClauseOccur.MUST);
 				}
+
+				BooleanQuery scopeBooleanQuery = new BooleanQueryImpl();
+
+				scopeBooleanQuery.addTerm(
+					"scope", AppBuilderAppConstants.SCOPE_STANDARD);
+
+				booleanFilter.add(
+					new QueryFilter(scopeBooleanQuery),
+					BooleanClauseOccur.MUST);
 			},
 			null, AppBuilderApp.class, keywords, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
@@ -257,6 +269,17 @@ public class AppResourceImpl
 		return SearchUtil.search(
 			Collections.emptyMap(),
 			booleanQuery -> {
+				BooleanFilter booleanFilter =
+					booleanQuery.getPreBooleanFilter();
+
+				BooleanQuery scopeBooleanQuery = new BooleanQueryImpl();
+
+				scopeBooleanQuery.addTerm(
+					"scope", AppBuilderAppConstants.SCOPE_STANDARD);
+
+				booleanFilter.add(
+					new QueryFilter(scopeBooleanQuery),
+					BooleanClauseOccur.MUST);
 			},
 			null, AppBuilderApp.class, keywords, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
@@ -308,17 +331,30 @@ public class AppResourceImpl
 			return Page.of(
 				transform(
 					_appBuilderAppLocalService.getAppBuilderApps(
-						siteId, pagination.getStartPosition(),
+						siteId, AppBuilderAppConstants.SCOPE_STANDARD,
+						pagination.getStartPosition(),
 						pagination.getEndPosition(),
 						_toOrderByComparator(sorts[0])),
 					this::_toApp),
 				pagination,
-				_appBuilderAppLocalService.getAppBuilderAppsCount(siteId));
+				_appBuilderAppLocalService.getAppBuilderAppsCount(
+					siteId, AppBuilderAppConstants.SCOPE_STANDARD));
 		}
 
 		return SearchUtil.search(
 			Collections.emptyMap(),
 			booleanQuery -> {
+				BooleanFilter booleanFilter =
+					booleanQuery.getPreBooleanFilter();
+
+				BooleanQuery scopeBooleanQuery = new BooleanQueryImpl();
+
+				scopeBooleanQuery.addTerm(
+					"scope", AppBuilderAppConstants.SCOPE_STANDARD);
+
+				booleanFilter.add(
+					new QueryFilter(scopeBooleanQuery),
+					BooleanClauseOccur.MUST);
 			},
 			null, AppBuilderApp.class, keywords, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
@@ -363,7 +399,8 @@ public class AppResourceImpl
 				PrincipalThreadLocal.getUserId(), app.getActive(),
 				dataDefinitionId, GetterUtil.getLong(app.getDataLayoutId()),
 				GetterUtil.getLong(app.getDataListViewId()),
-				LocalizedValueUtil.toLocaleStringMap(app.getName()));
+				LocalizedValueUtil.toLocaleStringMap(app.getName()),
+				AppBuilderAppConstants.SCOPE_STANDARD);
 
 		app.setId(appBuilderApp.getAppBuilderAppId());
 

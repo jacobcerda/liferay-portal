@@ -15,3 +15,47 @@
 --%>
 
 <%@ include file="/init.jsp" %>
+
+<clay:container
+	className="main-content-body"
+>
+	<div class="sheet">
+		<h2 class="sheet-title">
+			<%= LanguageUtil.format(request, "number-of-contents-per-audience-and-stage-x", 0, false) %>
+		</h2>
+
+		<div id="audit-graph">
+			<div class="inline-item my-5 p-5 w-100">
+				<span aria-hidden="true" class="loading-animation"></span>
+			</div>
+
+			<react:component
+				module="js/AuditGraphApp"
+			/>
+		</div>
+	</div>
+</clay:container>
+
+<clay:container
+	className="main-content-body"
+>
+	<div class="sheet">
+		<h2 class="sheet-title">
+			<%= LanguageUtil.format(request, "content-x", 0, false) %>
+		</h2>
+
+		<c:choose>
+			<c:when test="<%= true %>">
+				<div class="taglib-empty-result-message">
+					<div class="taglib-empty-result-message-header"></div>
+
+					<div class="sheet-text text-center">
+						<%= LanguageUtil.get(request, "there-are-no-contents") %>
+					</div>
+				</div>
+			</c:when>
+			<c:otherwise>
+			</c:otherwise>
+		</c:choose>
+	</div>
+</clay:container>

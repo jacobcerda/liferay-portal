@@ -71,31 +71,6 @@ public class DDMFormInstanceRecordVersionModelListener
 	}
 
 	@Override
-	public void onBeforeRemove(
-			DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion)
-		throws ModelListenerException {
-
-		try {
-			_updateDDMFormInstanceReport(
-				ddmFormInstanceRecordVersion,
-				DDMFormInstanceReportConstants.EVENT_DELETE_RECORD_VERSION);
-		}
-		catch (Exception exception) {
-			if (_log.isWarnEnabled()) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append("Unable to update dynamic data mapping form ");
-				sb.append("instance report for dynamic data mapping form ");
-				sb.append("instance record ");
-				sb.append(
-					ddmFormInstanceRecordVersion.getFormInstanceRecordId());
-
-				_log.warn(sb.toString(), exception);
-			}
-		}
-	}
-
-	@Override
 	public void onBeforeUpdate(
 			DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion)
 		throws ModelListenerException {

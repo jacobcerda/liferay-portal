@@ -16,6 +16,7 @@ package com.liferay.info.list.renderer;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -26,6 +27,10 @@ import javax.servlet.http.HttpServletResponse;
  * @author Jorge Ferrer
  */
 public interface InfoListRenderer<T> {
+
+	public default List<InfoListItemStyle> getAvailableInfoListItemStyles() {
+		return Collections.emptyList();
+	}
 
 	public default String getKey() {
 		Class<?> clazz = getClass();
@@ -40,5 +45,13 @@ public interface InfoListRenderer<T> {
 	public void render(
 		List<T> list, HttpServletRequest httpServletRequest,
 		HttpServletResponse httpServletResponse);
+
+	public default void render(
+		List<T> list, InfoListRendererContext infoListRendererContext) {
+
+		render(
+			list, infoListRendererContext.getHttpServletRequest(),
+			infoListRendererContext.getHttpServletResponse());
+	}
 
 }

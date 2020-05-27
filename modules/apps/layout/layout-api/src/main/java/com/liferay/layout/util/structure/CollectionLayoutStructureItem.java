@@ -70,6 +70,8 @@ public class CollectionLayoutStructureItem extends LayoutStructureItem {
 		return JSONUtil.put(
 			"collection", _collectionJSONObject
 		).put(
+			"listItemStyle", _listItemStyle
+		).put(
 			"listStyle", _listStyle
 		).put(
 			"numberOfColumns", _numberOfColumns
@@ -89,6 +91,10 @@ public class CollectionLayoutStructureItem extends LayoutStructureItem {
 	@Deprecated
 	public String getListFormat() {
 		return StringPool.BLANK;
+	}
+
+	public String getListItemStyle() {
+		return _listItemStyle;
 	}
 
 	public String getListStyle() {
@@ -119,6 +125,10 @@ public class CollectionLayoutStructureItem extends LayoutStructureItem {
 	public void setListFormat(String listFormat) {
 	}
 
+	public void setListItemStyle(String listItemStyle) {
+		_listItemStyle = listItemStyle;
+	}
+
 	public void setListStyle(String listStyle) {
 		_listStyle = listStyle;
 	}
@@ -138,6 +148,10 @@ public class CollectionLayoutStructureItem extends LayoutStructureItem {
 				itemConfigJSONObject.getJSONObject("collection"));
 		}
 
+		if (itemConfigJSONObject.has("listItemStyle")) {
+			setListItemStyle(itemConfigJSONObject.getString("listItemStyle"));
+		}
+
 		if (itemConfigJSONObject.has("listStyle")) {
 			setListStyle(itemConfigJSONObject.getString("listStyle"));
 		}
@@ -152,6 +166,7 @@ public class CollectionLayoutStructureItem extends LayoutStructureItem {
 	}
 
 	private JSONObject _collectionJSONObject;
+	private String _listItemStyle;
 	private String _listStyle;
 	private int _numberOfColumns = 1;
 	private int _numberOfItems = 5;

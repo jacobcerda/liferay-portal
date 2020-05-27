@@ -37,9 +37,11 @@ import com.liferay.portal.kernel.service.permission.LayoutPermission;
 import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.SessionClicks;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.servlet.PipingServletResponse;
 
@@ -171,7 +173,31 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 				httpServletRequest,
 				"com.liferay.frontend.js.web_toggleControls", "visible");
 
-			requestDispatcher.include(httpServletRequest, servletResponse);
+			Layout draftLayout = _layoutLocalService.fetchLayout(
+				_portal.getClassNameId(Layout.class), layout.getPlid());
+
+			if (layoutMode.equals(Constants.EDIT) && (draftLayout != null)) {
+				String layoutFullURL = _portal.getLayoutFullURL(
+					draftLayout, themeDisplay);
+
+				HttpServletRequest originalHttpServletRequest =
+					_portal.getOriginalServletRequest(httpServletRequest);
+
+				String backURL = originalHttpServletRequest.getParameter(
+					"p_l_back_url");
+
+				if (Validator.isNotNull(backURL)) {
+					layoutFullURL = _http.addParameter(
+						layoutFullURL, "p_l_back_url", backURL);
+				}
+
+				httpServletResponse.sendRedirect(
+					_http.addParameter(
+						layoutFullURL, "p_l_mode", Constants.EDIT));
+			}
+			else {
+				requestDispatcher.include(httpServletRequest, servletResponse);
+			}
 		}
 		finally {
 			removeAttributes(httpServletRequest);
@@ -327,6 +353,9 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 
 	@Reference
 	private FragmentRendererController _fragmentRendererController;
+
+	@Reference
+	private Http _http;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

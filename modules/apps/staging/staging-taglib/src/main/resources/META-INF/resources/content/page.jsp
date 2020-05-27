@@ -18,7 +18,7 @@
 
 <c:if test="<%= !dataSiteLevelPortlets.isEmpty() %>">
 	<aui:fieldset cssClass="options-group" markupView="lexicon">
-		<div class="sheet-section">
+		<clay:sheet-section>
 			<h3 class="sheet-subtitle"><liferay-ui:message key="content" /></h3>
 
 			<ul class="list-unstyled">
@@ -85,7 +85,7 @@
 													/>
 												</div>
 
-												<div class="flex-item-center range-options <%= disableInputs ? "hide" : StringPool.BLANK %>">
+												<div class='flex-item-center range-options <%= disableInputs ? "hide" : StringPool.BLANK %>'>
 													<clay:icon
 														symbol="reload"
 													/>
@@ -215,6 +215,6 @@
 					</ul>
 				</li>
 			</ul>
-		</div>
+		</clay:sheet-section>
 	</aui:fieldset>
 </c:if>

@@ -15,7 +15,11 @@
 package com.liferay.document.library.web.internal.info.list.renderer;
 
 import com.liferay.document.library.web.internal.info.item.renderer.FileEntryTitleInfoItemRenderer;
+import com.liferay.info.list.renderer.DefaultInfoListRendererContext;
+import com.liferay.info.list.renderer.InfoListItemStyle;
 import com.liferay.info.list.renderer.InfoListRenderer;
+import com.liferay.info.list.renderer.InfoListRendererContext;
+import com.liferay.info.taglib.list.renderer.BasicListInfoListItemStyle;
 import com.liferay.info.taglib.servlet.taglib.InfoListBasicListTag;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -24,6 +28,9 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +45,18 @@ public class FileEntryBasicListInfoListRenderer
 	implements InfoListRenderer<FileEntry> {
 
 	@Override
+	public List<InfoListItemStyle> getAvailableInfoListItemStyles() {
+		return Stream.of(
+			BasicListInfoListItemStyle.values()
+		).map(
+			basicListInfoListItemStyle ->
+				basicListInfoListItemStyle.getInfoListItemStyle()
+		).collect(
+			Collectors.toList()
+		);
+	}
+
+	@Override
 	public String getLabel(Locale locale) {
 		return LanguageUtil.get(locale, "basic-list");
 	}
@@ -47,14 +66,35 @@ public class FileEntryBasicListInfoListRenderer
 		List<FileEntry> fileEntries, HttpServletRequest httpServletRequest,
 		HttpServletResponse httpServletResponse) {
 
+		render(
+			fileEntries,
+			new DefaultInfoListRendererContext(
+				httpServletRequest, httpServletResponse));
+	}
+
+	@Override
+	public void render(
+		List<FileEntry> fileEntries,
+		InfoListRendererContext infoListRendererContext) {
+
 		InfoListBasicListTag infoListBasicListTag = new InfoListBasicListTag();
 
 		infoListBasicListTag.setInfoListObjects(fileEntries);
 		infoListBasicListTag.setItemRendererKey(
 			FileEntryTitleInfoItemRenderer.class.getName());
 
+		Optional<String> infoListItemStyleKeyOptional =
+			infoListRendererContext.getListItemStyleKeyOptional();
+
+		if (infoListItemStyleKeyOptional.isPresent()) {
+			infoListBasicListTag.setListItemStyleKey(
+				infoListItemStyleKeyOptional.get());
+		}
+
 		try {
-			infoListBasicListTag.doTag(httpServletRequest, httpServletResponse);
+			infoListBasicListTag.doTag(
+				infoListRendererContext.getHttpServletRequest(),
+				infoListRendererContext.getHttpServletResponse());
 		}
 		catch (Exception exception) {
 			_log.error("Unable to render file entries list", exception);

@@ -43,6 +43,7 @@ const FormViewControlMenu = ({backURL, dataLayoutId}) => {
 
 const EditFormView = (props) => {
 	const {
+		appsPortlet,
 		customObjectSidebarElementId,
 		dataDefinitionId,
 		dataLayoutBuilder,
@@ -69,7 +70,10 @@ const EditFormView = (props) => {
 					dataLayoutId={dataLayoutId}
 				/>
 
-				<FormViewUpperToolbar newCustomObject={newCustomObject} />
+				<FormViewUpperToolbar
+					appsPortlet={appsPortlet}
+					newCustomObject={newCustomObject}
+				/>
 
 				{createPortal(
 					<CustomObjectSidebar />,

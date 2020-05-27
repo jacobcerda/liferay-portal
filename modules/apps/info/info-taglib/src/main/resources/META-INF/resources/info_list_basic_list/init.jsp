@@ -15,3 +15,27 @@
 --%>
 
 <%@ include file="/init.jsp" %>
+
+<%@ page import="com.liferay.info.taglib.list.renderer.BasicListInfoListItemStyle" %><%@
+page import="com.liferay.portal.kernel.util.GetterUtil" %>
+
+<%@ page import="java.util.Objects" %>
+
+<%
+String infoListItemStyleKey = GetterUtil.getString(request.getAttribute("liferay-info:info-list-grid:listItemStyleKey"));
+
+String listCssClass = "";
+String listItemCssClass = "";
+
+if (Objects.equals(infoListItemStyleKey, BasicListInfoListItemStyle.BORDERED.getKey())) {
+	listCssClass = "list-group";
+	listItemCssClass = "list-group-item";
+}
+else if (Objects.equals(infoListItemStyleKey, BasicListInfoListItemStyle.INLINE.getKey())) {
+	listCssClass = "list-inline";
+	listItemCssClass = "list-inline-item";
+}
+else if (Objects.equals(infoListItemStyleKey, BasicListInfoListItemStyle.UNSTYLED.getKey())) {
+	listCssClass = "list-unstyled";
+}
+%>

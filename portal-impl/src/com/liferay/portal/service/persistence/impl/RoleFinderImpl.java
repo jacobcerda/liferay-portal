@@ -1139,16 +1139,17 @@ public class RoleFinderImpl extends RoleFinderBaseImpl implements RoleFinder {
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler((groupIds.length * 2) + 2);
+		StringBundler sb = new StringBundler(groupIds.length * 3 + 1);
 
-		sb.append(table);
-		sb.append(".groupId IN (");
+		sb.append(StringPool.OPEN_PARENTHESIS);
 
 		for (int i = 0; i < groupIds.length; i++) {
+			sb.append(table);
+			sb.append(".groupId = ");
 			sb.append(groupIds[i]);
 
 			if ((i + 1) < groupIds.length) {
-				sb.append(", ");
+				sb.append(" OR ");
 			}
 		}
 

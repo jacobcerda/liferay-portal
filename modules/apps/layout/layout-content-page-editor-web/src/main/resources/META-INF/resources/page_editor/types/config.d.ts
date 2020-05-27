@@ -55,6 +55,7 @@ export interface Config {
 	getAssetFieldValueURL: string;
 	getAssetMappingFieldsURL: string;
 	getAvailableListRenderersURL: string;
+	getAvailableListItemStylesURL: string;
 	getAvailableTemplatesURL: string;
 	getCollectionFieldURL: string;
 	getCollectionMappingFieldsURL: string;

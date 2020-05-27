@@ -618,3 +618,77 @@ archived. Skipping initialization by default streamlines page loads for the
 common case.
 
 ---------------------------------------
+
+### ContentTransformerListener Is Disabled By Default
+- **Date:** 2020-May-25
+- **JIRA Ticket:** [LPS-114239](https://issues.liferay.com/browse/LPS-114239)
+
+#### What changed?
+
+ContentTransformerListener is now disabled by default.
+
+#### Who is affected?
+
+Liferay installations who were using legacy web content features provided by the
+ContentTransformerListener such as embedding web content inside another web
+content, a legacy edit in place infrastructure, token replacements
+(@article_group_id@, @articleId;elementName@), etc.
+
+#### How should I update my code?
+
+There's no need to update your code. If you still want to use
+ContentTransformerListener, you can enable it in System Settings.
+
+#### Why was this change made?
+
+ContentTransformerListener does a lot of string processing on article elements
+(calling HtmlUtil.stripComments and HtmlUtil.stripHtml on article fields). We
+disabled it to improve performance.
+
+---------------------------------------
+### Liferay.BrowserSelectors.run Is No Longer Called
+- **Date:** 2020-May-26
+- **JIRA Ticket:** [LPS-112983](https://issues.liferay.com/browse/LPS-112983)
+
+#### What changed?
+
+The `Liferay.BrowserSelectors.run()` function is no longer called on all pages
+and as a result some CSS classes are no longer present in the opening `<html>`
+tag. Many of these are now added to the `<body>` element instead.
+
+#### Who is affected?
+
+This affects any code that relies on having the following CSS classes set on the
+`<html>` element: `aol`, `camino`, `edgeHTML` `edge`, `firefox`, `flock`
+`gecko`, `icab`, `ie11`, `ie6`, `ie7`, `ie9`, `ie`, `js` `konqueror`, `mac`
+`mozilla`, `netscape`, `opera`, `presto`, `safari` `secure`, `touch`, `trident`,
+`webkit`, and `win`.
+
+Instead, depending on which browser is being used, the following classes are
+added to the `<body>` element: `chrome`, `edge`, `firefox`, `ie`, `mobile`,
+and `other`.
+
+#### How should I update my code?
+
+There's no direct replacement for the `Liferay.BrowserSelectors.run()`
+function, but you can adapt your CSS and JS to target the new classes on
+the `<body>` element instead.
+
+Alternatively, you can still invoke `Liferay.BrowserSelectors.run()` to
+apply the old classes to the `<html>` element with the following code:
+
+```
+<aui:script use="liferay-browser-selectors">
+	Liferay.BrowserSelectors.run();
+</aui:script>
+```
+
+#### Why was this change made?
+
+The classes added to the top `<html>` element were being added via
+legacy JavaScript that depended on Alloy UI. With this change it is now
+done on the server side, streamlining page loads. Additionally, some of
+the previously added CSS classes were related to older browsers and are
+no longer relevant.
+
+---------------------------------------

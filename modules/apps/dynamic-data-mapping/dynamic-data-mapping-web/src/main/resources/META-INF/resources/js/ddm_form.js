@@ -1083,10 +1083,6 @@ AUI.add(
 						}
 
 						if (Lang.isUndefined(value)) {
-							value = instance.getValue();
-						}
-
-						if (Lang.isUndefined(value)) {
 							value = instance.getDefaultLocalization(
 								instance.get('displayLocale')
 							);
@@ -3640,7 +3636,16 @@ AUI.add(
 
 							if (
 								value ===
-								localizationMap[instance.get('displayLocale')]
+									localizationMap[
+										instance.get('displayLocale')
+									] ||
+								(!localizationMap[
+									instance.get('displayLocale')
+								] &&
+									value ===
+										localizationMap[
+											instance.getDefaultLocale()
+										])
 							) {
 								editor.setHTML(value);
 							}

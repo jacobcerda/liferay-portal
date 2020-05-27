@@ -12,7 +12,7 @@
  * details.
  */
 
-import {DataLayoutBuilderActions} from 'data-engine-taglib';
+import {DataLayoutBuilderActions, DataLayoutVisitor} from 'data-engine-taglib';
 import React, {useContext, useState} from 'react';
 
 import {AppContext} from '../../AppContext.es';
@@ -22,7 +22,7 @@ import {errorToast, successToast} from '../../utils/toast.es';
 import FormViewContext from './FormViewContext.es';
 import saveFormView from './saveFormView.es';
 
-export default ({newCustomObject}) => {
+export default ({appsPortlet, newCustomObject}) => {
 	const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
 
 	const [state, dispatch] = useContext(FormViewContext);
@@ -33,7 +33,11 @@ export default ({newCustomObject}) => {
 	);
 
 	const {basePortletURL} = useContext(AppContext);
-	const listUrl = `${basePortletURL}/#/custom-object/${dataDefinitionId}/form-views`;
+	let listUrl = basePortletURL;
+
+	if (!appsPortlet) {
+		listUrl = `${basePortletURL}/#/custom-object/${dataDefinitionId}/form-views`;
+	}
 
 	const onDataLayoutNameChange = ({target: {value}}) => {
 		dispatch({
@@ -123,7 +127,12 @@ export default ({newCustomObject}) => {
 				</UpperToolbar.Button>
 
 				<UpperToolbar.Button
-					disabled={!dataLayout.name[editingLanguageId]}
+					disabled={
+						!dataLayout.name[editingLanguageId] ||
+						DataLayoutVisitor.isDataLayoutEmpty(
+							dataLayout.dataLayoutPages
+						)
+					}
 					onClick={onSave}
 				>
 					{Liferay.Language.get('save')}

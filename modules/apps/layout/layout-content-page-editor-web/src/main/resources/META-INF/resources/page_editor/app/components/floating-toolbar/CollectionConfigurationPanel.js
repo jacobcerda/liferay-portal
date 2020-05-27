@@ -43,6 +43,7 @@ const DEFAULT_LIST_STYLES = [
 
 export const CollectionConfigurationPanel = ({item}) => {
 	const collectionLayoutId = useId();
+	const collectionListItemStyleId = useId();
 	const collectionNumberOfItemsId = useId();
 	const dispatch = useDispatch();
 	const listStyleId = useId();
@@ -57,6 +58,8 @@ export const CollectionConfigurationPanel = ({item}) => {
 			})
 		);
 	};
+
+	const [availableListItemStyles, setAvailableListItemStyles] = useState([]);
 
 	const [availableListStyles, setAvailableListStyles] = useState(
 		DEFAULT_LIST_STYLES
@@ -83,6 +86,23 @@ export const CollectionConfigurationPanel = ({item}) => {
 		}
 	}, [collectionItemType]);
 
+	useEffect(() => {
+		if (
+			item.config.listStyle &&
+			item.config.listStyle !== LIST_STYLE_GRID
+		) {
+			InfoItemService.getAvailableListItemStyles({
+				listStyle: item.config.listStyle,
+			})
+				.then((response) => {
+					setAvailableListItemStyles(response);
+				})
+				.catch(() => {
+					setAvailableListItemStyles([]);
+				});
+		}
+	}, [item.config.listStyle]);
+
 	return (
 		<>
 			<ClayForm.Group small>
@@ -93,6 +113,7 @@ export const CollectionConfigurationPanel = ({item}) => {
 					onCollectionSelect={(collection) =>
 						handleConfigurationChanged({
 							collection,
+							listItemStyle: null,
 							listStyle: LIST_STYLE_GRID,
 						})
 					}
@@ -135,6 +156,28 @@ export const CollectionConfigurationPanel = ({item}) => {
 							/>
 						</ClayForm.Group>
 					)}
+
+					{item.config.listStyle !== LIST_STYLE_GRID &&
+						availableListItemStyles.length > 0 && (
+							<ClayForm.Group small>
+								<label htmlFor={collectionListItemStyleId}>
+									{Liferay.Language.get('list-item-style')}
+								</label>
+								<ClaySelectWithOption
+									aria-label={Liferay.Language.get(
+										'list-item-style'
+									)}
+									id={collectionListItemStyleId}
+									onChange={({target: {value}}) =>
+										handleConfigurationChanged({
+											listItemStyle: value,
+										})
+									}
+									options={availableListItemStyles}
+									value={item.config.listItemStyle}
+								/>
+							</ClayForm.Group>
+						)}
 
 					<ClayForm.Group small>
 						<label htmlFor={collectionNumberOfItemsId}>

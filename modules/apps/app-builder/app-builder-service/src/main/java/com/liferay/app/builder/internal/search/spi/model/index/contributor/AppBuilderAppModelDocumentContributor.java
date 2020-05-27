@@ -74,6 +74,7 @@ public class AppBuilderAppModelDocumentContributor
 				appBuilderApp.getDefaultLanguageId(),
 				appBuilderApp.getGroupId()),
 			true, true);
+		document.addKeyword("scope", appBuilderApp.getScope());
 	}
 
 	protected String[] getLanguageIds(
