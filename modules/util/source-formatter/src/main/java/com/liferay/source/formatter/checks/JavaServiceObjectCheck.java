@@ -159,10 +159,12 @@ public class JavaServiceObjectCheck extends BaseJavaTermCheck {
 						int y = content.lastIndexOf(previousMatch, x);
 
 						content = StringUtil.replaceFirst(
-							content, match, previousMatch, x);
+							content, match, previousMatch,
+							matcher1.start() + x);
 
 						return StringUtil.replaceFirst(
-							content, previousMatch, match, y);
+							content, previousMatch, match,
+							matcher1.start() + y);
 					}
 				}
 
@@ -190,7 +192,9 @@ public class JavaServiceObjectCheck extends BaseJavaTermCheck {
 			for (Element columnElement :
 					(List<Element>)entityElement.elements("column")) {
 
-				if (columnName.equals(columnElement.attributeValue("name"))) {
+				if (StringUtil.equalsIgnoreCase(
+						columnName, columnElement.attributeValue("name"))) {
+
 					return i;
 				}
 

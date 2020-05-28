@@ -118,6 +118,11 @@ public interface DDMFormInstanceService extends BaseService {
 		long companyId, long groupId, String[] names, String[] descriptions,
 		boolean andOperator);
 
+	public void sendEmail(
+			long formInstanceId, String message, String subject,
+			String[] toEmailAddresses)
+		throws Exception;
+
 	/**
 	 * Updates the the record set's settings.
 	 *

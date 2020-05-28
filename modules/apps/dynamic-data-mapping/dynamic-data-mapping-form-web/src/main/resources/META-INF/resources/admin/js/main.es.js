@@ -38,7 +38,7 @@ import {Config} from 'metal-state';
 
 import PreviewButton from './components/PreviewButton/PreviewButton.es';
 import PublishButton from './components/PublishButton/PublishButton.es';
-import ShareFormPopover from './components/ShareFormPopover/ShareFormPopover.es';
+import ShareFormModal from './components/ShareFormModal/ShareFormModal.es';
 import AutoSave from './util/AutoSave.es';
 import FormURL from './util/FormURL.es';
 import Notifications from './util/Notifications.es';
@@ -401,11 +401,14 @@ class Form extends Component {
 			functionsMetadata,
 			functionsURL,
 			groupId,
+			localizedName,
 			namespace,
 			published,
 			redirectURL,
 			rolesURL,
 			rules,
+			shareFormInstanceURL,
+			sharingUserAutocompleteURL,
 			spritemap,
 			view,
 		} = this.props;
@@ -545,17 +548,19 @@ class Form extends Component {
 						spritemap={spritemap}
 						title={Liferay.Language.get('leave-form')}
 					/>
+					{published && (
+						<ShareFormModal
+							localizedName={localizedName}
+							portletNamespace={namespace}
+							shareFormInstanceURL={shareFormInstanceURL}
+							sharingUserAutocompleteURL={
+								sharingUserAutocompleteURL
+							}
+							spritemap={spritemap}
+							url={this._createFormURL()}
+						/>
+					)}
 				</div>
-				{published && (
-					<ShareFormPopover
-						alignElement={document.querySelector(
-							'.share-form-icon'
-						)}
-						spritemap={spritemap}
-						url={this._createFormURL()}
-						visible={false}
-					/>
-				)}
 			</div>
 		);
 	}
@@ -1276,6 +1281,24 @@ Form.PROPS = {
 	 */
 
 	saved: Config.bool(),
+
+	/**
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!string}
+	 */
+
+	shareFormInstanceURL: Config.string(),
+
+	/**
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!string}
+	 */
+
+	sharingUserAutocompleteURL: Config.string(),
 
 	/**
 	 * Whether to show an alert telling the user about the result of the

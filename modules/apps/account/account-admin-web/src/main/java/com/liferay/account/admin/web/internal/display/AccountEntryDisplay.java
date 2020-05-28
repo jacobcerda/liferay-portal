@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,18 +32,16 @@ import java.util.List;
 public class AccountEntryDisplay {
 
 	public static AccountEntryDisplay of(AccountEntry accountEntry) {
-		return new AccountEntryDisplay(accountEntry);
-	}
-
-	public static AccountEntryDisplay of(long accountEntryId) {
-		AccountEntry accountEntry =
-			AccountEntryLocalServiceUtil.fetchAccountEntry(accountEntryId);
-
 		if (accountEntry != null) {
 			return new AccountEntryDisplay(accountEntry);
 		}
 
-		return null;
+		return _EMPTY_INSTANCE;
+	}
+
+	public static AccountEntryDisplay of(long accountEntryId) {
+		return of(
+			AccountEntryLocalServiceUtil.fetchAccountEntry(accountEntryId));
 	}
 
 	public long getAccountEntryId() {
@@ -89,8 +88,25 @@ public class AccountEntryDisplay {
 		return _statusLabelStyle;
 	}
 
+	public String getTaxId() {
+		return _taxId;
+	}
+
 	public boolean isActive() {
 		return _active;
+	}
+
+	private AccountEntryDisplay() {
+		_accountEntryId = 0;
+		_active = true;
+		_description = StringPool.BLANK;
+		_domains = Collections.emptyList();
+		_logoId = 0;
+		_name = StringPool.BLANK;
+		_parentAccountEntryName = StringPool.BLANK;
+		_statusLabel = StringPool.BLANK;
+		_statusLabelStyle = StringPool.BLANK;
+		_taxId = StringPool.BLANK;
 	}
 
 	private AccountEntryDisplay(AccountEntry accountEntry) {
@@ -103,6 +119,7 @@ public class AccountEntryDisplay {
 		_parentAccountEntryName = _getParentAccountEntryName(accountEntry);
 		_statusLabel = _getStatusLabel(accountEntry);
 		_statusLabelStyle = _getStatusLabelStyle(accountEntry);
+		_taxId = accountEntry.getTaxId();
 	}
 
 	private List<String> _getDomains(AccountEntry accountEntry) {
@@ -165,6 +182,9 @@ public class AccountEntryDisplay {
 		return false;
 	}
 
+	private static final AccountEntryDisplay _EMPTY_INSTANCE =
+		new AccountEntryDisplay();
+
 	private final long _accountEntryId;
 	private final boolean _active;
 	private final String _description;
@@ -174,5 +194,6 @@ public class AccountEntryDisplay {
 	private final String _parentAccountEntryName;
 	private final String _statusLabel;
 	private final String _statusLabelStyle;
+	private final String _taxId;
 
 }

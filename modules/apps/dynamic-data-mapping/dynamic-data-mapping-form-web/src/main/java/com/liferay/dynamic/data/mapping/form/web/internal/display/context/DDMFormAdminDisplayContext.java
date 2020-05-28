@@ -84,6 +84,7 @@ import com.liferay.portal.kernel.json.JSONSerializer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletProvider;
@@ -115,6 +116,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
@@ -927,6 +929,32 @@ public class DDMFormAdminDisplayContext {
 	public String getSharedFormURL() {
 		return _addDefaultSharedFormLayoutPortalInstanceLifecycleListener.
 			getFormLayoutURL(formAdminRequestHelper.getThemeDisplay(), false);
+	}
+
+	public String getShareFormInstanceURL() {
+		PortletURL shareFormInstanceURL = renderResponse.createActionURL();
+
+		shareFormInstanceURL.setParameter(
+			ActionRequest.ACTION_NAME, "/admin/share_form_instance");
+
+		if (_ddmFormInstance != null) {
+			shareFormInstanceURL.setParameter(
+				"formInstanceId",
+				String.valueOf(_ddmFormInstance.getFormInstanceId()));
+		}
+
+		return shareFormInstanceURL.toString();
+	}
+
+	public String getSharingUserAutocompleteURL() {
+		LiferayPortletURL sharingUserAutocompleteURL =
+			(LiferayPortletURL)renderResponse.createResourceURL();
+
+		sharingUserAutocompleteURL.setCopyCurrentRenderParameters(false);
+		sharingUserAutocompleteURL.setResourceID(
+			"/admin/sharing_user_autocomplete");
+
+		return sharingUserAutocompleteURL.toString();
 	}
 
 	public String getSortingURL() throws Exception {
