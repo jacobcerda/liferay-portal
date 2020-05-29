@@ -43,7 +43,7 @@ definition {
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password System Configuration",
+			configurationName = "Multi-Factor Authentication System Configuration",
 			configurationScope = "System Scope");
 
 		AssertTextEquals(
@@ -57,7 +57,7 @@ definition {
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password Configuration",
+			configurationName = "Multi-Factor Authentication System Configuration",
 			configurationScope = "Virtual Instance Scope");
 
 		MultiFactorAuthentication.assertDescriptions();
@@ -69,7 +69,7 @@ definition {
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password Configuration",
+			configurationName = "Multi-Factor Authentication: Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
 		MultiFactorAuthentication.assertDescriptions();
@@ -88,7 +88,7 @@ definition {
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password Configuration",
+			configurationName = "Multi-Factor Authentication: Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
 		MultiFactorAuthentication.configureOTPEmailSender(
@@ -201,7 +201,7 @@ definition {
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password System Configuration",
+			configurationName = "Multi-Factor Authentication System Configuration",
 			configurationScope = "System Scope");
 
 		FormFields.viewCheckboxNotChecked(fieldName = "Disable Multi-Factor Authentication");
@@ -225,7 +225,7 @@ definition {
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password Configuration",
+			configurationName = "Multi-Factor Authentication: Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
 		MultiFactorAuthentication.configureOTPEmailSender(
@@ -255,7 +255,7 @@ definition {
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password Configuration",
+			configurationName = "Multi-Factor Authentication: Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
 		MultiFactorAuthentication.configureOTP(enableOTP = "false");
@@ -283,7 +283,7 @@ definition {
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password Configuration",
+			configurationName = "Multi-Factor Authentication: Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
 		MultiFactorAuthentication.configureOTPEmailSender(
@@ -343,7 +343,7 @@ definition {
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password Configuration",
+			configurationName = "Multi-Factor Authentication: Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
 		MultiFactorAuthentication.configureOTPEmailSender(
@@ -381,7 +381,7 @@ definition {
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password Configuration",
+			configurationName = "Multi-Factor Authentication: Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
 		MultiFactorAuthentication.configureOTPEmailSender(
