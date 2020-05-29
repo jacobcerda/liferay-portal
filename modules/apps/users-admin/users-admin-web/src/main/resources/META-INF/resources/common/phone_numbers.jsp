@@ -26,8 +26,8 @@ List<Phone> phones = PhoneServiceUtil.getPhones(className, classPK);
 %>
 
 <clay:content-row
-	className="sheet-subtitle"
 	containerElement="h3"
+	cssClass="sheet-subtitle"
 >
 	<clay:content-col
 		expand="true"
@@ -106,9 +106,10 @@ List<Phone> phones = PhoneServiceUtil.getPhones(className, classPK);
 			cssClass="table-cell-expand-smaller"
 		>
 			<c:if test="<%= phone.isPrimary() %>">
-				<span class="label label-primary">
-					<span class="label-item label-item-expand"><%= StringUtil.toUpperCase(LanguageUtil.get(request, "primary"), locale) %></span>
-				</span>
+				<clay:label
+					displayType="primary"
+					label="primary"
+				/>
 			</c:if>
 		</liferay-ui:search-container-column-text>
 

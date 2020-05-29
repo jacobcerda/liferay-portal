@@ -191,6 +191,10 @@ public class DataDefinitionResourceImpl
 					dataDefinition, _ddmFormFieldTypeServicesTracker));
 		}
 
+		DataLayoutResource dataLayoutResource = _getDataLayoutResource(false);
+
+		dataLayoutResource.deleteDataLayoutsDataDefinition(dataDefinitionId);
+
 		_deDataListViewLocalService.deleteDEDataListViews(dataDefinitionId);
 
 		_ddmStructureLocalService.deleteStructure(dataDefinitionId);
@@ -205,7 +209,7 @@ public class DataDefinitionResourceImpl
 			ActionKeys.VIEW);
 
 		return DataDefinitionUtil.toDataDefinition(
-			_ddmFormFieldTypeServicesTracker,
+			_dataDefinitionContentTypeTracker, _ddmFormFieldTypeServicesTracker,
 			_ddmStructureLocalService.getStructure(dataDefinitionId),
 			_spiDDMFormRuleConverter);
 	}
@@ -250,39 +254,40 @@ public class DataDefinitionResourceImpl
 			Long dataDefinitionId, String fieldName)
 		throws Exception {
 
-		return JSONUtil.put(
-			"dataLayouts",
-			transformToArray(
-				_deDataDefinitionFieldLinkLocalService.
-					getDEDataDefinitionFieldLinks(
-						_portal.getClassNameId(DDMStructureLayout.class),
-						dataDefinitionId, fieldName),
-				deDataDefinitionFieldLink -> {
-					DDMStructureLayout ddmStructureLayout =
-						_ddmStructureLayoutLocalService.getDDMStructureLayout(
-							deDataDefinitionFieldLink.getClassPK());
+		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
+			dataDefinitionId);
 
-					return ddmStructureLayout.getName(
-						ddmStructureLayout.getDefaultLanguageId());
-				},
-				String.class)
-		).put(
-			"dataListViews",
-			transformToArray(
-				_deDataDefinitionFieldLinkLocalService.
-					getDEDataDefinitionFieldLinks(
-						_portal.getClassNameId(DEDataListView.class),
-						dataDefinitionId, fieldName),
-				deDataDefinitionFieldLink -> {
-					DEDataListView deDataListView =
-						_deDataListViewLocalService.getDEDataListView(
-							deDataDefinitionFieldLink.getClassPK());
+		DataDefinitionContentType dataDefinitionContentType =
+			_dataDefinitionContentTypeTracker.getDataDefinitionContentType(
+				ddmStructure.getClassNameId());
 
-					return deDataListView.getName(
-						deDataListView.getDefaultLanguageId());
-				},
-				String.class)
-		).toString();
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		if (StringUtil.equals(
+				dataDefinitionContentType.getContentType(),
+				"app-builder-fieldset")) {
+
+			for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
+					_deDataDefinitionFieldLinkLocalService.
+						getDEDataDefinitionFieldLinks(
+							_portal.getClassNameId(DDMStructure.class),
+							dataDefinitionId)) {
+
+				jsonArray.put(
+					_getDataDefinitionFieldLinksJSONObject(
+						deDataDefinitionFieldLink.getClassPK(),
+						deDataDefinitionFieldLink.getFieldName(),
+						_ddmStructureLocalService.getStructure(
+							deDataDefinitionFieldLink.getClassPK())));
+			}
+		}
+		else {
+			jsonArray.put(
+				_getDataDefinitionFieldLinksJSONObject(
+					dataDefinitionId, fieldName, ddmStructure));
+		}
+
+		return jsonArray.toString();
 	}
 
 	@Override
@@ -321,7 +326,7 @@ public class DataDefinitionResourceImpl
 		throws Exception {
 
 		return DataDefinitionUtil.toDataDefinition(
-			_ddmFormFieldTypeServicesTracker,
+			_dataDefinitionContentTypeTracker, _ddmFormFieldTypeServicesTracker,
 			_ddmStructureLocalService.getStructure(
 				siteId,
 				_dataDefinitionContentTypeTracker.getClassNameId(contentType),
@@ -455,6 +460,7 @@ public class DataDefinitionResourceImpl
 			},
 			sorts,
 			document -> DataDefinitionUtil.toDataDefinition(
+				_dataDefinitionContentTypeTracker,
 				_ddmFormFieldTypeServicesTracker,
 				_ddmStructureLocalService.getStructure(
 					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK))),
@@ -525,8 +531,8 @@ public class DataDefinitionResourceImpl
 		}
 
 		dataDefinition = DataDefinitionUtil.toDataDefinition(
-			_ddmFormFieldTypeServicesTracker, ddmStructure,
-			_spiDDMFormRuleConverter);
+			_dataDefinitionContentTypeTracker, _ddmFormFieldTypeServicesTracker,
+			ddmStructure, _spiDDMFormRuleConverter);
 
 		_resourceLocalService.addResources(
 			contextCompany.getCompanyId(), siteId,
@@ -719,6 +725,47 @@ public class DataDefinitionResourceImpl
 		return null;
 	}
 
+	private JSONObject _getDataDefinitionFieldLinksJSONObject(
+		Long dataDefinitionId, String fieldName, DDMStructure ddmStructure) {
+
+		return JSONUtil.put(
+			"dataDefinition",
+			ddmStructure.getName(ddmStructure.getDefaultLanguageId())
+		).put(
+			"dataLayouts",
+			transformToArray(
+				_deDataDefinitionFieldLinkLocalService.
+					getDEDataDefinitionFieldLinks(
+						_portal.getClassNameId(DDMStructureLayout.class),
+						dataDefinitionId, fieldName),
+				deDataDefinitionFieldLink -> {
+					DDMStructureLayout ddmStructureLayout =
+						_ddmStructureLayoutLocalService.getDDMStructureLayout(
+							deDataDefinitionFieldLink.getClassPK());
+
+					return ddmStructureLayout.getName(
+						ddmStructureLayout.getDefaultLanguageId());
+				},
+				String.class)
+		).put(
+			"dataListViews",
+			transformToArray(
+				_deDataDefinitionFieldLinkLocalService.
+					getDEDataDefinitionFieldLinks(
+						_portal.getClassNameId(DEDataListView.class),
+						dataDefinitionId, fieldName),
+				deDataDefinitionFieldLink -> {
+					DEDataListView deDataListView =
+						_deDataListViewLocalService.getDEDataListView(
+							deDataDefinitionFieldLink.getClassPK());
+
+					return deDataListView.getName(
+						deDataListView.getDefaultLanguageId());
+				},
+				String.class)
+		);
+	}
+
 	private DataLayoutResource _getDataLayoutResource(boolean checkPermission) {
 		DataLayoutResource.Builder builder = DataLayoutResource.builder();
 
@@ -853,6 +900,7 @@ public class DataDefinitionResourceImpl
 
 		DataDefinition existingDataDefinition =
 			DataDefinitionUtil.toDataDefinition(
+				_dataDefinitionContentTypeTracker,
 				_ddmFormFieldTypeServicesTracker,
 				_ddmStructureLocalService.getStructure(dataDefinitionId),
 				_spiDDMFormRuleConverter);
@@ -1044,8 +1092,8 @@ public class DataDefinitionResourceImpl
 		throws Exception {
 
 		return DataDefinitionUtil.toDataDefinition(
-			_ddmFormFieldTypeServicesTracker, ddmStructure,
-			_spiDDMFormRuleConverter);
+			_dataDefinitionContentTypeTracker, _ddmFormFieldTypeServicesTracker,
+			ddmStructure, _spiDDMFormRuleConverter);
 	}
 
 	private DataDefinitionField[] _toDataDefinitionFields(
@@ -1351,7 +1399,7 @@ public class DataDefinitionResourceImpl
 			_ddmFormSerializer.serialize(builder.build());
 
 		return DataDefinitionUtil.toDataDefinition(
-			_ddmFormFieldTypeServicesTracker,
+			_dataDefinitionContentTypeTracker, _ddmFormFieldTypeServicesTracker,
 			_ddmStructureLocalService.updateStructure(
 				PrincipalThreadLocal.getUserId(), dataDefinitionId,
 				DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID,

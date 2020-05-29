@@ -38,27 +38,22 @@ import org.osgi.service.component.annotations.Component;
 	service = DDMFormFieldTypeReportProcessor.class
 )
 public class CheckboxMultipleDDMFormFieldTypeReportProcessor
-	extends BaseDDMFormFieldTypeReportProcessor {
+	implements DDMFormFieldTypeReportProcessor {
 
 	@Override
-	protected JSONObject doProcess(
-			DDMFormFieldValue ddmFormFieldValue,
-			JSONObject formInstanceReportDataJSONObject,
-			String formInstanceReportEvent)
+	public JSONObject process(
+			DDMFormFieldValue ddmFormFieldValue, JSONObject fieldJSONObject,
+			long formInstanceRecordId, String formInstanceReportEvent)
 		throws Exception {
-
-		JSONObject fieldJSONObject =
-			formInstanceReportDataJSONObject.getJSONObject(
-				ddmFormFieldValue.getName());
 
 		JSONObject valuesJSONObject = fieldJSONObject.getJSONObject("values");
 
 		Value value = ddmFormFieldValue.getValue();
 
-		JSONArray keysJSONArray = JSONFactoryUtil.createJSONArray(
+		JSONArray valueJSONArray = JSONFactoryUtil.createJSONArray(
 			value.getString(value.getDefaultLocale()));
 
-		Iterator<String> iterator = keysJSONArray.iterator();
+		Iterator<String> iterator = valueJSONArray.iterator();
 
 		while (iterator.hasNext()) {
 			String key = iterator.next();
@@ -80,7 +75,7 @@ public class CheckboxMultipleDDMFormFieldTypeReportProcessor
 			valuesJSONObject.put(key, count);
 		}
 
-		return formInstanceReportDataJSONObject;
+		return fieldJSONObject;
 	}
 
 }

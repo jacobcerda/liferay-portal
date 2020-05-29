@@ -82,12 +82,12 @@ boolean columnOptionsVisible = GetterUtil.getBoolean(SessionClicks.get(request, 
 </aui:script>
 
 <clay:container-fluid
-	className="calendar-portlet-column-parent"
+	cssClass="calendar-portlet-column-parent"
 >
 	<clay:row>
 		<c:if test="<%= !displaySchedulerOnly %>">
 			<clay:col
-				className='<%= "calendar-portlet-column-options " + (columnOptionsVisible ? StringPool.BLANK : "hide") %>'
+				cssClass='<%= "calendar-portlet-column-options " + (columnOptionsVisible ? StringPool.BLANK : "hide") %>'
 				id='<%= renderResponse.getNamespace() + "columnOptions" %>'
 				md="3"
 			>
@@ -144,7 +144,7 @@ boolean columnOptionsVisible = GetterUtil.getBoolean(SessionClicks.get(request, 
 		</c:if>
 
 		<clay:col
-			className="calendar-portlet-column-grid"
+			cssClass="calendar-portlet-column-grid"
 			id='<%= renderResponse.getNamespace() + "columnGrid" %>'
 			md="<%= (columnOptionsVisible && !displaySchedulerOnly) ? String.valueOf(9) : String.valueOf(12) %>"
 		>

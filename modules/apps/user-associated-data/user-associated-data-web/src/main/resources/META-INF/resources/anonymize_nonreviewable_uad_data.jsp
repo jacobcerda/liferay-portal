@@ -32,7 +32,7 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 <liferay-util:include page="/uad_data_navigation_bar.jsp" servletContext="<%= application %>" />
 
 <clay:container-fluid
-	className="container-form-lg"
+	cssClass="container-form-lg"
 >
 	<aui:form method="post" name="nonreviewableUADDataForm">
 		<aui:input name="p_u_i_d" type="hidden" value="<%= String.valueOf(selectedUser.getUserId()) %>" />
@@ -104,8 +104,8 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 									name="status"
 								>
 									<clay:label
-										label='<%= uadApplicationSummaryDisplay.hasItems() ? StringUtil.toUpperCase(LanguageUtil.get(request, "pending"), locale) : StringUtil.toUpperCase(LanguageUtil.get(request, "done"), locale) %>'
-										style='<%= uadApplicationSummaryDisplay.hasItems() ? "warning" : "success" %>'
+										displayType='<%= uadApplicationSummaryDisplay.hasItems() ? "warning" : "success" %>'
+										label='<%= uadApplicationSummaryDisplay.hasItems() ? "pending" : "done" %>'
 									/>
 								</liferay-ui:search-container-column-text>
 							</liferay-ui:search-container-row>

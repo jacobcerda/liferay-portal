@@ -344,6 +344,15 @@ public class DEDataDefinitionFieldLinkLocalServiceUtil {
 		return getService().getDEDataDefinitionFieldLinks(ddmStructureId);
 	}
 
+	public static java.util.List
+		<com.liferay.data.engine.model.DEDataDefinitionFieldLink>
+			getDEDataDefinitionFieldLinks(
+				long classNameId, long ddmStructureId) {
+
+		return getService().getDEDataDefinitionFieldLinks(
+			classNameId, ddmStructureId);
+	}
+
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
 	 DEDataDefinitionFieldLinkLocalServiceImpl#getDEDataDefinitionFieldLinks(long, long, String[])}

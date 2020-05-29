@@ -90,6 +90,7 @@ import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletConfigFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
+import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -263,6 +264,9 @@ public class ContentPageEditorDisplayContext {
 				"editFragmentEntryLinkURL",
 				getFragmentEntryActionURL(
 					"/content_layout/edit_fragment_entry_link")
+			).put(
+				"fragmentPanelEnabled",
+				_ffLayoutContentPageEditorConfiguration.fragmentPanelEnabled()
 			).put(
 				"getAssetFieldValueURL",
 				getResourceURL("/content_layout/get_asset_field_value")
@@ -754,8 +758,18 @@ public class ContentPageEditorDisplayContext {
 		if (!Objects.equals(
 				publishedLayout.getType(), LayoutConstants.TYPE_PORTLET)) {
 
-			return getFragmentEntryActionURL(
-				"/content_layout/discard_draft_layout");
+			PortletURL discardDraftURL = PortletURLFactoryUtil.create(
+				httpServletRequest, LayoutAdminPortletKeys.GROUP_PAGES,
+				PortletRequest.ACTION_PHASE);
+
+			discardDraftURL.setParameter(
+				ActionRequest.ACTION_NAME, "/layout/discard_draft_layout");
+			discardDraftURL.setParameter(
+				"redirect", themeDisplay.getURLCurrent());
+			discardDraftURL.setParameter(
+				"selPlid", String.valueOf(themeDisplay.getPlid()));
+
+			return discardDraftURL.toString();
 		}
 
 		PortletURL deleteLayoutURL = PortalUtil.getControlPanelPortletURL(

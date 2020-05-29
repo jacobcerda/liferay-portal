@@ -19,6 +19,7 @@ import com.liferay.data.engine.rest.dto.v2_0.DataDefinition;
 import com.liferay.data.engine.rest.dto.v2_0.DataDefinitionField;
 import com.liferay.data.engine.rest.dto.v2_0.DataRecord;
 import com.liferay.data.engine.rest.internal.constants.DataActionKeys;
+import com.liferay.data.engine.rest.internal.content.type.DataDefinitionContentTypeTracker;
 import com.liferay.data.engine.rest.internal.dto.v2_0.util.DataDefinitionUtil;
 import com.liferay.data.engine.rest.internal.odata.entity.v2_0.DataRecordEntityModel;
 import com.liferay.data.engine.rest.internal.security.permission.resource.DataRecordCollectionModelResourcePermission;
@@ -155,8 +156,8 @@ public class DataRecordResourceImpl
 			dataRecordCollectionId, DataActionKeys.EXPORT_DATA_RECORDS);
 
 		DataRecordExporter dataRecordExporter = new DataRecordExporter(
-			_ddlRecordSetLocalService, _ddmFormFieldTypeServicesTracker,
-			_spiDDMFormRuleConverter);
+			_dataDefinitionContentTypeTracker, _ddlRecordSetLocalService,
+			_ddmFormFieldTypeServicesTracker, _spiDDMFormRuleConverter);
 
 		return dataRecordExporter.export(
 			transform(
@@ -275,6 +276,7 @@ public class DataRecordResourceImpl
 
 		_validate(
 			DataDefinitionUtil.toDataDefinition(
+				_dataDefinitionContentTypeTracker,
 				_ddmFormFieldTypeServicesTracker, ddmStructure,
 				_spiDDMFormRuleConverter),
 			dataRecord);
@@ -323,6 +325,7 @@ public class DataRecordResourceImpl
 
 		_validate(
 			DataDefinitionUtil.toDataDefinition(
+				_dataDefinitionContentTypeTracker,
 				_ddmFormFieldTypeServicesTracker, ddmStructure,
 				_spiDDMFormRuleConverter),
 			dataRecord);
@@ -493,6 +496,9 @@ public class DataRecordResourceImpl
 					ArrayUtil.toStringArray(missingFieldNames));
 		}
 	}
+
+	@Reference
+	private DataDefinitionContentTypeTracker _dataDefinitionContentTypeTracker;
 
 	@Reference
 	private DataRecordCollectionModelResourcePermission

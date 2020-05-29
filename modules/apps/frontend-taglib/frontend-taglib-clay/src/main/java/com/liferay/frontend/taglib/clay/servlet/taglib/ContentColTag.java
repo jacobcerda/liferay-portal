@@ -66,19 +66,29 @@ public class ContentColTag extends BaseContainerTag {
 		return _START_PAGE;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #processCssClasses(String)}
+	 */
+	@Deprecated
 	@Override
 	protected String processClassName(Set<String> className) {
-		className.add("autofit-col");
+		return processCssClasses(className);
+	}
+
+	@Override
+	protected String processCssClasses(Set<String> cssClasses) {
+		cssClasses.add("autofit-col");
 
 		if (_expand) {
-			className.add("autofit-col-expand");
+			cssClasses.add("autofit-col-expand");
 		}
 
 		if (_gutters) {
-			className.add("autofit-col-gutters");
+			cssClasses.add("autofit-col-gutters");
 		}
 
-		return super.processClassName(className);
+		return super.processCssClasses(cssClasses);
 	}
 
 	private static final String _ATTRIBUTE_NAMESPACE = "clay:content-col:";

@@ -40,8 +40,8 @@ if (accountEntryDisplay.getAccountEntryId() > 0) {
 
 <clay:sheet-section>
 	<clay:content-row
-		className="sheet-subtitle"
 		containerElement="h3"
+		cssClass="sheet-subtitle"
 	>
 		<clay:content-col
 			expand="true"

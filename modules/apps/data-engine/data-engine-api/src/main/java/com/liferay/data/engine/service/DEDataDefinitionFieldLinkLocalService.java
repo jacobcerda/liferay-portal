@@ -279,6 +279,10 @@ public interface DEDataDefinitionFieldLinkLocalService
 	public List<DEDataDefinitionFieldLink> getDEDataDefinitionFieldLinks(
 		long ddmStructureId);
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<DEDataDefinitionFieldLink> getDEDataDefinitionFieldLinks(
+		long classNameId, long ddmStructureId);
+
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
 	 DEDataDefinitionFieldLinkLocalServiceImpl#getDEDataDefinitionFieldLinks(long, long, String[])}

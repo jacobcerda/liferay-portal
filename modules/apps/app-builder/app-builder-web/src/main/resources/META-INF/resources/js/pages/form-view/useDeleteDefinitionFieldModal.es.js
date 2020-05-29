@@ -38,7 +38,9 @@ export default (callback) => {
 
 		return getItem(
 			`/o/data-engine/v2.0/data-definitions/${dataDefinitionId}/data-definition-field-links?fieldName=${event.fieldName}`
-		).then(({dataLayouts, dataListViews}) => {
+		).then((dataDefinitions) => {
+			const {dataLayouts, dataListViews} = dataDefinitions[0];
+
 			dispatchModal({
 				payload: {
 					body: (

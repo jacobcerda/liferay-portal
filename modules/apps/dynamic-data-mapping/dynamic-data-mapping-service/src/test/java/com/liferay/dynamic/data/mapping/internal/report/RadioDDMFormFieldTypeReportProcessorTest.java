@@ -78,18 +78,21 @@ public class RadioDDMFormFieldTypeReportProcessorTest extends PowerMockito {
 			radioDDMFormFieldTypeReportProcessor =
 				new RadioDDMFormFieldTypeReportProcessor();
 
-		JSONObject processedFormInstanceReportDataJSONObject =
+		JSONObject processedFieldJSONObject =
 			radioDDMFormFieldTypeReportProcessor.process(
-				ddmFormFieldValue, JSONFactoryUtil.createJSONObject(),
-				DDMFormInstanceReportConstants.EVENT_ADD_RECORD_VERSION);
-
-		JSONObject fieldJSONObject =
-			processedFormInstanceReportDataJSONObject.getJSONObject("field1");
+				ddmFormFieldValue,
+				JSONUtil.put(
+					"type", DDMFormFieldType.RADIO
+				).put(
+					"values", JSONFactoryUtil.createJSONObject()
+				),
+				0, DDMFormInstanceReportConstants.EVENT_ADD_RECORD_VERSION);
 
 		Assert.assertEquals(
-			DDMFormFieldType.RADIO, fieldJSONObject.getString("type"));
+			DDMFormFieldType.RADIO, processedFieldJSONObject.getString("type"));
 
-		JSONObject valuesJSONObject = fieldJSONObject.getJSONObject("values");
+		JSONObject valuesJSONObject = processedFieldJSONObject.getJSONObject(
+			"values");
 
 		Assert.assertEquals(1, valuesJSONObject.getLong("option1"));
 	}
@@ -127,18 +130,21 @@ public class RadioDDMFormFieldTypeReportProcessorTest extends PowerMockito {
 			radioDDMFormFieldTypeReportProcessor =
 				new RadioDDMFormFieldTypeReportProcessor();
 
-		JSONObject processedFormInstanceReportDataJSONObject =
+		JSONObject processedFieldJSONObject =
 			radioDDMFormFieldTypeReportProcessor.process(
-				ddmFormFieldValue, JSONFactoryUtil.createJSONObject(),
-				DDMFormInstanceReportConstants.EVENT_ADD_RECORD_VERSION);
-
-		JSONObject fieldJSONObject =
-			processedFormInstanceReportDataJSONObject.getJSONObject("field1");
+				ddmFormFieldValue,
+				JSONUtil.put(
+					"type", DDMFormFieldType.RADIO
+				).put(
+					"values", JSONFactoryUtil.createJSONObject()
+				),
+				0, DDMFormInstanceReportConstants.EVENT_ADD_RECORD_VERSION);
 
 		Assert.assertEquals(
-			DDMFormFieldType.RADIO, fieldJSONObject.getString("type"));
+			DDMFormFieldType.RADIO, processedFieldJSONObject.getString("type"));
 
-		JSONObject valuesJSONObject = fieldJSONObject.getJSONObject("values");
+		JSONObject valuesJSONObject = processedFieldJSONObject.getJSONObject(
+			"values");
 
 		Assert.assertFalse(valuesJSONObject.has(""));
 	}
@@ -172,27 +178,22 @@ public class RadioDDMFormFieldTypeReportProcessorTest extends PowerMockito {
 			value
 		);
 
-		JSONObject formInstanceReportDataJSONObject = JSONUtil.put(
-			ddmFormFieldValue.getName(),
-			JSONUtil.put(
-				"type", DDMFormFieldType.RADIO
-			).put(
-				"values", JSONFactoryUtil.createJSONObject("{option1 : 1}")
-			));
-
 		RadioDDMFormFieldTypeReportProcessor
 			radioDDMFormFieldTypeReportProcessor =
 				new RadioDDMFormFieldTypeReportProcessor();
 
-		JSONObject processedFormInstanceReportDataJSONObject =
+		JSONObject processedFieldJSONObject =
 			radioDDMFormFieldTypeReportProcessor.process(
-				ddmFormFieldValue, formInstanceReportDataJSONObject,
-				DDMFormInstanceReportConstants.EVENT_ADD_RECORD_VERSION);
+				ddmFormFieldValue,
+				JSONUtil.put(
+					"type", DDMFormFieldType.RADIO
+				).put(
+					"values", JSONFactoryUtil.createJSONObject("{option1 : 1}")
+				),
+				0, DDMFormInstanceReportConstants.EVENT_ADD_RECORD_VERSION);
 
-		JSONObject fieldJSONObject =
-			processedFormInstanceReportDataJSONObject.getJSONObject("field1");
-
-		JSONObject valuesJSONObject = fieldJSONObject.getJSONObject("values");
+		JSONObject valuesJSONObject = processedFieldJSONObject.getJSONObject(
+			"values");
 
 		Assert.assertEquals(2, valuesJSONObject.getLong("option1"));
 	}

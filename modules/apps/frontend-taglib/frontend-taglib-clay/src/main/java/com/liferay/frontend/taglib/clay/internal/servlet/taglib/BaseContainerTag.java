@@ -23,6 +23,7 @@ import com.liferay.taglib.util.IncludeTag;
 import com.liferay.taglib.util.InlineUtil;
 
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.jsp.JspWriter;
@@ -33,24 +34,124 @@ import javax.servlet.jsp.PageContext;
  */
 public class BaseContainerTag extends IncludeTag {
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getCssClass()}
+	 */
+	@Deprecated
 	public String getClassName() {
-		return _className;
+		return getCssClass();
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	public String getComponentId() {
+		return _componentId;
 	}
 
 	public String getContainerElement() {
 		return _containerElement;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	public String getContributorKey() {
+		return _contributorKey;
+	}
+
+	public String getCssClass() {
+		return _cssClass;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	public Map<String, String> getData() {
+		return _data;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	public String getDefaultEventHandler() {
+		return _defaultEventHandler;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getCssClass()}
+	 */
+	@Deprecated
+	public String getElementClasses() {
+		return getCssClass();
+	}
+
 	public String getId() {
 		return _id;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #setCssClass(String)}
+	 */
+	@Deprecated
 	public void setClassName(String className) {
-		_className = className;
+		setCssClass(className);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	public void setComponentId(String componentId) {
+		_componentId = componentId;
 	}
 
 	public void setContainerElement(String containerElement) {
 		_containerElement = containerElement;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	public void setContributorKey(String contributorKey) {
+		_contributorKey = contributorKey;
+	}
+
+	public void setCssClass(String cssClass) {
+		_cssClass = cssClass;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	public void setData(Map<String, String> data) {
+		_data = data;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	public void setDefaultEventHandler(String defaultEventHandler) {
+		_defaultEventHandler = defaultEventHandler;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #setCssClass(String)}
+	 */
+	@Deprecated
+	public void setElementClasses(String elementClasses) {
+		setCssClass(elementClasses);
 	}
 
 	public void setId(String id) {
@@ -68,8 +169,13 @@ public class BaseContainerTag extends IncludeTag {
 	protected void cleanUp() {
 		super.cleanUp();
 
-		_className = null;
-		_containerElement = "div";
+		_componentId = null;
+		_containerElement = null;
+		_contributorKey = null;
+		_cssClass = null;
+		_data = null;
+		_defaultEventHandler = null;
+		_elementClasses = null;
 		_id = null;
 	}
 
@@ -78,12 +184,21 @@ public class BaseContainerTag extends IncludeTag {
 		return _CLEAN_UP_SET_ATTRIBUTES;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #processCssClasses(String)}
+	 */
+	@Deprecated
 	protected String processClassName(Set<String> className) {
-		if (Validator.isNotNull(_className)) {
-			className.addAll(StringUtil.split(_className, CharPool.SPACE));
+		return processCssClasses(className);
+	}
+
+	protected String processCssClasses(Set<String> cssClasses) {
+		if (Validator.isNotNull(_cssClass)) {
+			cssClasses.addAll(StringUtil.split(_cssClass, CharPool.SPACE));
 		}
 
-		return StringUtil.merge(className, StringPool.SPACE);
+		return StringUtil.merge(cssClasses, StringPool.SPACE);
 	}
 
 	@Override
@@ -101,10 +216,14 @@ public class BaseContainerTag extends IncludeTag {
 	protected int processStartTag() throws Exception {
 		JspWriter jspWriter = pageContext.getOut();
 
+		if (_containerElement == null) {
+			setContainerElement("div");
+		}
+
 		jspWriter.write("<");
 		jspWriter.write(_containerElement);
 		jspWriter.write(" class=\"");
-		jspWriter.write(processClassName(new LinkedHashSet<>()));
+		jspWriter.write(processCssClasses(new LinkedHashSet<>()));
 		jspWriter.write("\"");
 
 		if (Validator.isNotNull(_id)) {
@@ -131,8 +250,13 @@ public class BaseContainerTag extends IncludeTag {
 
 	private static final boolean _CLEAN_UP_SET_ATTRIBUTES = true;
 
-	private String _className;
-	private String _containerElement = "div";
+	private String _componentId;
+	private String _containerElement;
+	private String _contributorKey;
+	private String _cssClass;
+	private Map<String, String> _data;
+	private String _defaultEventHandler;
+	private String _elementClasses;
 	private String _id;
 
 }

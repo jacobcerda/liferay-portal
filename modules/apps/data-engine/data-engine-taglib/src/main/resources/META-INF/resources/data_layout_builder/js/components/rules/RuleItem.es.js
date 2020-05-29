@@ -81,6 +81,7 @@ export default function RuleItem({rule, toggleRulesEditorVisibility}) {
 				onClick={() => toggleRulesEditorVisibility(rule)}
 			>
 				<Text capitalize>{Liferay.Language.get('if')}</Text>
+
 				{conditions.map(({operands, operator}, index) => {
 					const [first, last] = operands;
 
@@ -89,9 +90,11 @@ export default function RuleItem({rule, toggleRulesEditorVisibility}) {
 							<Text lowercase>
 								{Liferay.Language.get('field')}
 							</Text>
+
 							<ClayLabel displayType="success">
 								{getFieldLabel(dataDefinition, first.value)}
 							</ClayLabel>
+
 							<ClayLabel displayType="secondary">
 								{OPERATOR_LABELS[operator] || operator}
 							</ClayLabel>
@@ -113,9 +116,22 @@ export default function RuleItem({rule, toggleRulesEditorVisibility}) {
 
 				<Text>{Liferay.Language.get('then')}</Text>
 
-				{actions.map(({action, target}, index) => (
+				{actions.map(({action, expression, target}, index) => (
 					<>
 						<Text lowercase>{action}</Text>
+
+						{expression && (
+							<>
+								<ClayLabel displayType="secondary">
+									{expression}
+								</ClayLabel>
+
+								<Text lowercase>
+									{Liferay.Language.get('into')}
+								</Text>
+							</>
+						)}
+
 						<ClayLabel displayType="success">
 							{getFieldLabel(dataDefinition, target)}
 						</ClayLabel>

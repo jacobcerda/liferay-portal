@@ -33,16 +33,16 @@ pageContext.setAttribute("scopeAliasesDescriptionsMap", scopeAliasesDescriptions
 %>
 
 <clay:container-fluid
-	className="container-view"
+	cssClass="container-view"
 >
-	<div class="sheet">
-		<div class="sheet-header">
+	<clay:sheet>
+		<clay:sheet-header>
 			<h2 class="sheet-title"><liferay-ui:message key="scopes" /></h2>
 
 			<div class="sheet-text"><liferay-ui:message key="scopes-description" /></div>
-		</div>
+		</clay:sheet-header>
 
-		<div class="sheet-section">
+		<clay:sheet-section>
 			<liferay-ui:error exception="<%= OAuth2ApplicationClientCredentialUserIdException.class %>">
 
 				<%
@@ -60,7 +60,7 @@ pageContext.setAttribute("scopeAliasesDescriptionsMap", scopeAliasesDescriptions
 			</liferay-ui:error>
 
 			<clay:row>
-				<div class="col-lg-12">
+				<clay:col>
 					<portlet:actionURL name="/admin/assign_scopes" var="assignScopesURL">
 						<portlet:param name="mvcRenderCommandName" value="/admin/assign_scopes" />
 						<portlet:param name="navigation" value="assign_scopes" />
@@ -136,10 +136,10 @@ pageContext.setAttribute("scopeAliasesDescriptionsMap", scopeAliasesDescriptions
 							<aui:button href="<%= PortalUtil.escapeRedirect(redirect) %>" type="cancel" />
 						</aui:button-row>
 					</aui:form>
-				</div>
+				</clay:col>
 			</clay:row>
-		</div>
-	</div>
+		</clay:sheet-section>
+	</clay:sheet>
 </clay:container-fluid>
 
 <aui:script require="metal-dom/src/dom as dom">

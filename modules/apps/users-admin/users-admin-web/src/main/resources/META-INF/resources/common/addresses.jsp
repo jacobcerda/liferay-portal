@@ -27,8 +27,8 @@ List<Address> addresses = AddressServiceUtil.getAddresses(className, classPK);
 
 <clay:sheet-header>
 	<clay:content-row
-		className="sheet-title"
 		containerElement="h2"
+		cssClass="sheet-title"
 	>
 		<clay:content-col
 			expand="true"
@@ -87,9 +87,11 @@ List<Address> addresses = AddressServiceUtil.getAddresses(className, classPK);
 
 				<tr>
 					<td>
-						<div class="sticker sticker-secondary sticker-static">
-							<aui:icon image="picture" markupView="lexicon" />
-						</div>
+						<clay:sticker
+							cssClass="sticker-static"
+							displayType="secondary"
+							icon="picture"
+						/>
 					</td>
 					<td class="table-cell-expand">
 						<h4>
@@ -109,15 +111,16 @@ List<Address> addresses = AddressServiceUtil.getAddresses(className, classPK);
 
 						<c:if test="<%= address.isPrimary() %>">
 							<div class="address-primary-label-wrapper">
-								<span class="label label-primary">
-									<span class="label-item label-item-expand"><%= StringUtil.toUpperCase(LanguageUtil.get(request, "primary"), locale) %></span>
-								</span>
+								<clay:label
+									displayType="primary"
+									label="primary"
+								/>
 							</div>
 						</c:if>
 					</td>
 					<td>
 						<clay:content-col
-							className="lfr-search-container-wrapper"
+							cssClass="lfr-search-container-wrapper"
 						>
 							<liferay-util:include page="/common/address_action.jsp" servletContext="<%= application %>">
 								<liferay-util:param name="addressId" value="<%= String.valueOf(address.getAddressId()) %>" />

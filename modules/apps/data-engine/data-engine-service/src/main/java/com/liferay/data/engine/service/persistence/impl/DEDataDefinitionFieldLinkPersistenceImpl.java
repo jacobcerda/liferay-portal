@@ -2579,6 +2579,564 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	private static final String _FINDER_COLUMN_C_C_CLASSPK_2 =
 		"deDataDefinitionFieldLink.classPK = ?";
 
+	private FinderPath _finderPathWithPaginationFindByC_DDMSI;
+	private FinderPath _finderPathWithoutPaginationFindByC_DDMSI;
+	private FinderPath _finderPathCountByC_DDMSI;
+
+	/**
+	 * Returns all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @return the matching de data definition field links
+	 */
+	@Override
+	public List<DEDataDefinitionFieldLink> findByC_DDMSI(
+		long classNameId, long ddmStructureId) {
+
+		return findByC_DDMSI(
+			classNameId, ddmStructureId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			null);
+	}
+
+	/**
+	 * Returns a range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @param start the lower bound of the range of de data definition field links
+	 * @param end the upper bound of the range of de data definition field links (not inclusive)
+	 * @return the range of matching de data definition field links
+	 */
+	@Override
+	public List<DEDataDefinitionFieldLink> findByC_DDMSI(
+		long classNameId, long ddmStructureId, int start, int end) {
+
+		return findByC_DDMSI(classNameId, ddmStructureId, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @param start the lower bound of the range of de data definition field links
+	 * @param end the upper bound of the range of de data definition field links (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching de data definition field links
+	 */
+	@Override
+	public List<DEDataDefinitionFieldLink> findByC_DDMSI(
+		long classNameId, long ddmStructureId, int start, int end,
+		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
+
+		return findByC_DDMSI(
+			classNameId, ddmStructureId, start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @param start the lower bound of the range of de data definition field links
+	 * @param end the upper bound of the range of de data definition field links (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching de data definition field links
+	 */
+	@Override
+	public List<DEDataDefinitionFieldLink> findByC_DDMSI(
+		long classNameId, long ddmStructureId, int start, int end,
+		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
+		boolean useFinderCache) {
+
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
+
+		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+			(orderByComparator == null)) {
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByC_DDMSI;
+				finderArgs = new Object[] {classNameId, ddmStructureId};
+			}
+		}
+		else if (useFinderCache) {
+			finderPath = _finderPathWithPaginationFindByC_DDMSI;
+			finderArgs = new Object[] {
+				classNameId, ddmStructureId, start, end, orderByComparator
+			};
+		}
+
+		List<DEDataDefinitionFieldLink> list = null;
+
+		if (useFinderCache) {
+			list = (List<DEDataDefinitionFieldLink>)finderCache.getResult(
+				finderPath, finderArgs, this);
+
+			if ((list != null) && !list.isEmpty()) {
+				for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
+						list) {
+
+					if ((classNameId !=
+							deDataDefinitionFieldLink.getClassNameId()) ||
+						(ddmStructureId !=
+							deDataDefinitionFieldLink.getDdmStructureId())) {
+
+						list = null;
+
+						break;
+					}
+				}
+			}
+		}
+
+		if (list == null) {
+			StringBundler sb = null;
+
+			if (orderByComparator != null) {
+				sb = new StringBundler(
+					4 + (orderByComparator.getOrderByFields().length * 2));
+			}
+			else {
+				sb = new StringBundler(4);
+			}
+
+			sb.append(_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE);
+
+			sb.append(_FINDER_COLUMN_C_DDMSI_CLASSNAMEID_2);
+
+			sb.append(_FINDER_COLUMN_C_DDMSI_DDMSTRUCTUREID_2);
+
+			if (orderByComparator != null) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+			}
+			else {
+				sb.append(DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL);
+			}
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(classNameId);
+
+				queryPos.add(ddmStructureId);
+
+				list = (List<DEDataDefinitionFieldLink>)QueryUtil.list(
+					query, getDialect(), start, end);
+
+				cacheResult(list);
+
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
+			}
+			catch (Exception exception) {
+				if (useFinderCache) {
+					finderCache.removeResult(finderPath, finderArgs);
+				}
+
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Returns the first de data definition field link in the ordered set where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching de data definition field link
+	 * @throws NoSuchDataDefinitionFieldLinkException if a matching de data definition field link could not be found
+	 */
+	@Override
+	public DEDataDefinitionFieldLink findByC_DDMSI_First(
+			long classNameId, long ddmStructureId,
+			OrderByComparator<DEDataDefinitionFieldLink> orderByComparator)
+		throws NoSuchDataDefinitionFieldLinkException {
+
+		DEDataDefinitionFieldLink deDataDefinitionFieldLink =
+			fetchByC_DDMSI_First(
+				classNameId, ddmStructureId, orderByComparator);
+
+		if (deDataDefinitionFieldLink != null) {
+			return deDataDefinitionFieldLink;
+		}
+
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("classNameId=");
+		sb.append(classNameId);
+
+		sb.append(", ddmStructureId=");
+		sb.append(ddmStructureId);
+
+		sb.append("}");
+
+		throw new NoSuchDataDefinitionFieldLinkException(sb.toString());
+	}
+
+	/**
+	 * Returns the first de data definition field link in the ordered set where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching de data definition field link, or <code>null</code> if a matching de data definition field link could not be found
+	 */
+	@Override
+	public DEDataDefinitionFieldLink fetchByC_DDMSI_First(
+		long classNameId, long ddmStructureId,
+		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
+
+		List<DEDataDefinitionFieldLink> list = findByC_DDMSI(
+			classNameId, ddmStructureId, 0, 1, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last de data definition field link in the ordered set where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching de data definition field link
+	 * @throws NoSuchDataDefinitionFieldLinkException if a matching de data definition field link could not be found
+	 */
+	@Override
+	public DEDataDefinitionFieldLink findByC_DDMSI_Last(
+			long classNameId, long ddmStructureId,
+			OrderByComparator<DEDataDefinitionFieldLink> orderByComparator)
+		throws NoSuchDataDefinitionFieldLinkException {
+
+		DEDataDefinitionFieldLink deDataDefinitionFieldLink =
+			fetchByC_DDMSI_Last(classNameId, ddmStructureId, orderByComparator);
+
+		if (deDataDefinitionFieldLink != null) {
+			return deDataDefinitionFieldLink;
+		}
+
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("classNameId=");
+		sb.append(classNameId);
+
+		sb.append(", ddmStructureId=");
+		sb.append(ddmStructureId);
+
+		sb.append("}");
+
+		throw new NoSuchDataDefinitionFieldLinkException(sb.toString());
+	}
+
+	/**
+	 * Returns the last de data definition field link in the ordered set where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching de data definition field link, or <code>null</code> if a matching de data definition field link could not be found
+	 */
+	@Override
+	public DEDataDefinitionFieldLink fetchByC_DDMSI_Last(
+		long classNameId, long ddmStructureId,
+		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
+
+		int count = countByC_DDMSI(classNameId, ddmStructureId);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<DEDataDefinitionFieldLink> list = findByC_DDMSI(
+			classNameId, ddmStructureId, count - 1, count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the de data definition field links before and after the current de data definition field link in the ordered set where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * @param deDataDefinitionFieldLinkId the primary key of the current de data definition field link
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next de data definition field link
+	 * @throws NoSuchDataDefinitionFieldLinkException if a de data definition field link with the primary key could not be found
+	 */
+	@Override
+	public DEDataDefinitionFieldLink[] findByC_DDMSI_PrevAndNext(
+			long deDataDefinitionFieldLinkId, long classNameId,
+			long ddmStructureId,
+			OrderByComparator<DEDataDefinitionFieldLink> orderByComparator)
+		throws NoSuchDataDefinitionFieldLinkException {
+
+		DEDataDefinitionFieldLink deDataDefinitionFieldLink = findByPrimaryKey(
+			deDataDefinitionFieldLinkId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			DEDataDefinitionFieldLink[] array =
+				new DEDataDefinitionFieldLinkImpl[3];
+
+			array[0] = getByC_DDMSI_PrevAndNext(
+				session, deDataDefinitionFieldLink, classNameId, ddmStructureId,
+				orderByComparator, true);
+
+			array[1] = deDataDefinitionFieldLink;
+
+			array[2] = getByC_DDMSI_PrevAndNext(
+				session, deDataDefinitionFieldLink, classNameId, ddmStructureId,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected DEDataDefinitionFieldLink getByC_DDMSI_PrevAndNext(
+		Session session, DEDataDefinitionFieldLink deDataDefinitionFieldLink,
+		long classNameId, long ddmStructureId,
+		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		sb.append(_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE);
+
+		sb.append(_FINDER_COLUMN_C_DDMSI_CLASSNAMEID_2);
+
+		sb.append(_FINDER_COLUMN_C_DDMSI_DDMSTRUCTUREID_2);
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			sb.append(DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = sb.toString();
+
+		Query query = session.createQuery(sql);
+
+		query.setFirstResult(0);
+		query.setMaxResults(2);
+
+		QueryPos queryPos = QueryPos.getInstance(query);
+
+		queryPos.add(classNameId);
+
+		queryPos.add(ddmStructureId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						deDataDefinitionFieldLink)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<DEDataDefinitionFieldLink> list = query.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63; from the database.
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 */
+	@Override
+	public void removeByC_DDMSI(long classNameId, long ddmStructureId) {
+		for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
+				findByC_DDMSI(
+					classNameId, ddmStructureId, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS, null)) {
+
+			remove(deDataDefinitionFieldLink);
+		}
+	}
+
+	/**
+	 * Returns the number of de data definition field links where classNameId = &#63; and ddmStructureId = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param ddmStructureId the ddm structure ID
+	 * @return the number of matching de data definition field links
+	 */
+	@Override
+	public int countByC_DDMSI(long classNameId, long ddmStructureId) {
+		FinderPath finderPath = _finderPathCountByC_DDMSI;
+
+		Object[] finderArgs = new Object[] {classNameId, ddmStructureId};
+
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+
+		if (count == null) {
+			StringBundler sb = new StringBundler(3);
+
+			sb.append(_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE);
+
+			sb.append(_FINDER_COLUMN_C_DDMSI_CLASSNAMEID_2);
+
+			sb.append(_FINDER_COLUMN_C_DDMSI_DDMSTRUCTUREID_2);
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(classNameId);
+
+				queryPos.add(ddmStructureId);
+
+				count = (Long)query.uniqueResult();
+
+				finderCache.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception exception) {
+				finderCache.removeResult(finderPath, finderArgs);
+
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String _FINDER_COLUMN_C_DDMSI_CLASSNAMEID_2 =
+		"deDataDefinitionFieldLink.classNameId = ? AND ";
+
+	private static final String _FINDER_COLUMN_C_DDMSI_DDMSTRUCTUREID_2 =
+		"deDataDefinitionFieldLink.ddmStructureId = ?";
+
 	private FinderPath _finderPathWithPaginationFindByC_DDMSI_F;
 	private FinderPath _finderPathWithoutPaginationFindByC_DDMSI_F;
 	private FinderPath _finderPathCountByC_DDMSI_F;
@@ -4466,6 +5024,15 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 
 			args = new Object[] {
 				deDataDefinitionFieldLinkModelImpl.getClassNameId(),
+				deDataDefinitionFieldLinkModelImpl.getDdmStructureId()
+			};
+
+			finderCache.removeResult(_finderPathCountByC_DDMSI, args);
+			finderCache.removeResult(
+				_finderPathWithoutPaginationFindByC_DDMSI, args);
+
+			args = new Object[] {
+				deDataDefinitionFieldLinkModelImpl.getClassNameId(),
 				deDataDefinitionFieldLinkModelImpl.getDdmStructureId(),
 				deDataDefinitionFieldLinkModelImpl.getFieldName()
 			};
@@ -4568,6 +5135,30 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 				finderCache.removeResult(_finderPathCountByC_C, args);
 				finderCache.removeResult(
 					_finderPathWithoutPaginationFindByC_C, args);
+			}
+
+			if ((deDataDefinitionFieldLinkModelImpl.getColumnBitmask() &
+				 _finderPathWithoutPaginationFindByC_DDMSI.
+					 getColumnBitmask()) != 0) {
+
+				Object[] args = new Object[] {
+					deDataDefinitionFieldLinkModelImpl.getOriginalClassNameId(),
+					deDataDefinitionFieldLinkModelImpl.
+						getOriginalDdmStructureId()
+				};
+
+				finderCache.removeResult(_finderPathCountByC_DDMSI, args);
+				finderCache.removeResult(
+					_finderPathWithoutPaginationFindByC_DDMSI, args);
+
+				args = new Object[] {
+					deDataDefinitionFieldLinkModelImpl.getClassNameId(),
+					deDataDefinitionFieldLinkModelImpl.getDdmStructureId()
+				};
+
+				finderCache.removeResult(_finderPathCountByC_DDMSI, args);
+				finderCache.removeResult(
+					_finderPathWithoutPaginationFindByC_DDMSI, args);
 			}
 
 			if ((deDataDefinitionFieldLinkModelImpl.getColumnBitmask() &
@@ -5004,6 +5595,29 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		_finderPathCountByC_C = new FinderPath(
 			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+			new String[] {Long.class.getName(), Long.class.getName()});
+
+		_finderPathWithPaginationFindByC_DDMSI = new FinderPath(
+			entityCacheEnabled, finderCacheEnabled,
+			DEDataDefinitionFieldLinkImpl.class,
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_DDMSI",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Integer.class.getName(), Integer.class.getName(),
+				OrderByComparator.class.getName()
+			});
+
+		_finderPathWithoutPaginationFindByC_DDMSI = new FinderPath(
+			entityCacheEnabled, finderCacheEnabled,
+			DEDataDefinitionFieldLinkImpl.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_DDMSI",
+			new String[] {Long.class.getName(), Long.class.getName()},
+			DEDataDefinitionFieldLinkModelImpl.CLASSNAMEID_COLUMN_BITMASK |
+			DEDataDefinitionFieldLinkModelImpl.DDMSTRUCTUREID_COLUMN_BITMASK);
+
+		_finderPathCountByC_DDMSI = new FinderPath(
+			entityCacheEnabled, finderCacheEnabled, Long.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_DDMSI",
 			new String[] {Long.class.getName(), Long.class.getName()});
 
 		_finderPathWithPaginationFindByC_DDMSI_F = new FinderPath(

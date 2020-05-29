@@ -53,19 +53,25 @@ RankingResultContentDisplayContext rankingResultContentDisplayContext = rankingR
 %>
 
 <clay:container-fluid
-	className="container-no-gutters-sm-down container-view"
+	cssClass="container-no-gutters-sm-down container-view"
 >
 	<c:choose>
 		<c:when test="<%= rankingResultContentDisplayContext.isVisible() %>">
-			<div class="result-rankings-view-content-container sheet sheet-lg">
-				<div class="autofit-row">
-					<div class="autofit-col autofit-col-expand">
+			<clay:sheet
+				cssClass="result-rankings-view-content-container"
+			>
+				<clay:content-row>
+					<clay:content-col
+						expand="true"
+					>
 						<div class="sheet-title">
 							<%= rankingResultContentDisplayContext.getHeaderTitle() %>
 						</div>
-					</div>
+					</clay:content-col>
 
-					<div class="autofit-col visible-interaction">
+					<clay:content-col
+						cssClass="visible-interaction"
+					>
 						<c:if test="<%= rankingResultContentDisplayContext.hasEditPermission() %>">
 							<div class="asset-actions lfr-meta-actions">
 
@@ -92,15 +98,15 @@ RankingResultContentDisplayContext rankingResultContentDisplayContext = rankingR
 								/>
 							</div>
 						</c:if>
-					</div>
-				</div>
+					</clay:content-col>
+				</clay:content-row>
 
 				<liferay-asset:asset-display
 					assetEntry="<%= rankingResultContentDisplayContext.getAssetEntry() %>"
 					assetRenderer="<%= rankingResultContentDisplayContext.getAssetRenderer() %>"
 					assetRendererFactory="<%= rankingResultContentDisplayContext.getAssetRendererFactory() %>"
 				/>
-			</div>
+			</clay:sheet>
 		</c:when>
 		<c:otherwise>
 			<div class="alert alert-danger">

@@ -84,7 +84,7 @@ public class UserOrganizationSegmentsCriteriaContributor
 			}
 
 			if (!organizations.isEmpty()) {
-				sb.setIndex(sb.index() - 1);
+				sb.setStringAt("'", sb.index() - 1);
 			}
 
 			sb.append(")");

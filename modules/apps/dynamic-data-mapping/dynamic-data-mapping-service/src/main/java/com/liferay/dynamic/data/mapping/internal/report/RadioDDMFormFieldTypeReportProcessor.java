@@ -31,28 +31,22 @@ import org.osgi.service.component.annotations.Component;
 	service = DDMFormFieldTypeReportProcessor.class
 )
 public class RadioDDMFormFieldTypeReportProcessor
-	extends BaseDDMFormFieldTypeReportProcessor {
+	implements DDMFormFieldTypeReportProcessor {
 
 	@Override
-	protected JSONObject doProcess(
-			DDMFormFieldValue ddmFormFieldValue,
-			JSONObject formInstanceReportDataJSONObject,
-			String formInstanceReportEvent)
+	public JSONObject process(
+			DDMFormFieldValue ddmFormFieldValue, JSONObject fieldJSONObject,
+			long formInstanceRecordId, String formInstanceReportEvent)
 		throws Exception {
 
-		JSONObject fieldJSONObject =
-			formInstanceReportDataJSONObject.getJSONObject(
-				ddmFormFieldValue.getName());
+		JSONObject valuesJSONObject = fieldJSONObject.getJSONObject("values");
 
 		Value value = ddmFormFieldValue.getValue();
 
-		String key = value.getString(value.getDefaultLocale());
+		String valueString = value.getString(value.getDefaultLocale());
 
-		if (Validator.isNotNull(key)) {
-			JSONObject valuesJSONObject = fieldJSONObject.getJSONObject(
-				"values");
-
-			int count = valuesJSONObject.getInt(key, 0);
+		if (Validator.isNotNull(valueString)) {
+			int count = valuesJSONObject.getInt(valueString, 0);
 
 			if (formInstanceReportEvent.equals(
 					DDMFormInstanceReportConstants.EVENT_ADD_RECORD_VERSION)) {
@@ -66,10 +60,10 @@ public class RadioDDMFormFieldTypeReportProcessor
 				count--;
 			}
 
-			valuesJSONObject.put(key, count);
+			valuesJSONObject.put(valueString, count);
 		}
 
-		return formInstanceReportDataJSONObject;
+		return fieldJSONObject;
 	}
 
 }

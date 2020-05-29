@@ -35,11 +35,11 @@ List<Tuple> assetLinkEntries = (List<Tuple>)request.getAttribute("liferay-asset:
 
 		<li class="list-group-item list-group-item-flex">
 			<div class="autofit-col">
-				<div class="sticker sticker-secondary">
-					<span class="inline-item">
-						<aui:icon image="<%= assetRenderer.getIconCssClass() %>" markupView="lexicon" />
-					</span>
-				</div>
+				<clay:sticker
+					displayType="secondary"
+					icon="<%= assetRenderer.getIconCssClass() %>"
+					inline="true"
+				/>
 			</div>
 
 			<div class="autofit-col autofit-col-expand">
@@ -48,9 +48,11 @@ List<Tuple> assetLinkEntries = (List<Tuple>)request.getAttribute("liferay-asset:
 						<c:choose>
 							<c:when test="<%= assetRenderer.getStatus() == WorkflowConstants.STATUS_SCHEDULED %>">
 								<%= HtmlUtil.escape(assetLinkEntry.getTitle(locale)) %>
-								<span class="label label-<%= WorkflowConstants.getStatusStyle(assetRenderer.getStatus()) %> ml-2 text-uppercase">
-									<liferay-ui:message key="<%= WorkflowConstants.getStatusLabel(assetRenderer.getStatus()) %>" />
-								</span>
+								<clay:label
+									cssClass="ml-2"
+									displayType="%= WorkflowConstants.getStatusStyle(assetRenderer.getStatus()) %>"
+									label="<%= WorkflowConstants.getStatusLabel(assetRenderer.getStatus()) %>"
+								/>
 							</c:when>
 							<c:otherwise>
 								<aui:a cssClass="text-truncate" href="<%= (String)tuple.getObject(1) %>" target='<%= themeDisplay.isStatePopUp() ? "_blank" : "_self" %>'>

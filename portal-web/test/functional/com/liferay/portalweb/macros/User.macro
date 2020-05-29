@@ -17,6 +17,8 @@ definition {
 			value1 = "${password}");
 
 		Click(locator1 = "Button#SIGN_IN");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro _signInLocalization {
@@ -305,6 +307,8 @@ definition {
 				locator1 = "UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD",
 				value1 = "${userLastName}");
 		}
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro addCPWithTag {
@@ -847,11 +851,6 @@ definition {
 			locator1 = "UsersAndOrganizationsEditUser#ROLES_ORGANIZATION_ROLES_SELECT_LINK",
 			value1 = "Select");
 
-		LiferayEvent.waitForLiferayEvent(
-			attributeName = "src",
-			attributeValue = "dialog-iframe-popup",
-			eventName = "modalIframeLoaded");
-
 		SelectFrame(locator1 = "IFrame#SELECT_ORGANIZATION_ROLE");
 
 		var key_roleTitle = "${roleTitle}";
@@ -884,11 +883,6 @@ definition {
 
 		Pause(locator1 = "5000");
 
-		LiferayEvent.waitForLiferayEvent(
-			attributeName = "src",
-			attributeValue = "dialog-iframe-popup",
-			eventName = "modalIframeLoaded");
-
 		SelectFrame(locator1 = "IFrame#SELECT_REGULAR_ROLE");
 
 		var key_roleTitle = "${roleTitle}";
@@ -918,11 +912,6 @@ definition {
 		AssertClick(
 			locator1 = "UsersAndOrganizationsEditUser#ROLES_SITE_ROLES_SELECT_LINK",
 			value1 = "Select");
-
-		LiferayEvent.waitForLiferayEvent(
-			attributeName = "src",
-			attributeValue = "dialog-iframe-popup",
-			eventName = "modalIframeLoaded");
 
 		SelectFrame(locator1 = "IFrame#SELECT_SITE_ROLE");
 
@@ -1549,11 +1538,6 @@ definition {
 			locator1 = "UsersAndOrganizationsEditUser#DEPOT_SELECT_LINK",
 			value1 = "SELECT");
 
-		LiferayEvent.waitForLiferayEvent(
-			attributeName = "src",
-			attributeValue = "dialog-iframe-popup",
-			eventName = "modalIframeLoaded");
-
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		LexiconEntry.gotoEntry(rowEntry = "${depotName}");
@@ -1653,11 +1637,6 @@ definition {
 			locator1 = "UsersAndOrganizationsEditUser#ORGANIZATIONS_SELECT_LINK",
 			value1 = "Select");
 
-		LiferayEvent.waitForLiferayEvent(
-			attributeName = "src",
-			attributeValue = "dialog-iframe-popup",
-			eventName = "modalIframeLoaded");
-
 		SelectFrame(locator1 = "UsersAndOrganizationsSelectOrganization#SELECT_ORGANIZATION_IFRAME");
 
 		Search.searchCP(searchTerm = "${orgName}");
@@ -1689,11 +1668,6 @@ definition {
 		AssertClick(
 			locator1 = "UsersAndOrganizationsEditUser#SITES_SELECT_LINK",
 			value1 = "SELECT");
-
-		LiferayEvent.waitForLiferayEvent(
-			attributeName = "src",
-			attributeValue = "dialog-iframe-popup",
-			eventName = "modalIframeLoaded");
 
 		SelectFrame(locator1 = "IFrame#SELECT_USER_SITES");
 
@@ -1772,8 +1746,6 @@ definition {
 				specificURL = "${virtualHostsURL}",
 				userEmailAddress = "${userEmailAddress}");
 		}
-
-		LiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro forgotPasswordSendResetLink {
@@ -1910,8 +1882,6 @@ definition {
 				value1 = "${password}");
 
 			Button.click(button = "Sign In");
-
-			LiferayEvent.initializeLiferayEventLog();
 		}
 
 		Button.viewNotPresent(button = "Sign In");
@@ -1938,6 +1908,8 @@ definition {
 		}
 
 		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro loginUserInvalidPG {
@@ -2154,6 +2126,8 @@ definition {
 		}
 
 		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	@description = "Log into OpenAM as ${userScreenName} using the password ${password}."
@@ -2204,8 +2178,6 @@ definition {
 		}
 
 		UserBar.signOut();
-
-		LiferayEvent.initializeLiferayEventLog();
 	}
 
 	@description = "Log out of Liferay Portal."
@@ -2359,6 +2331,8 @@ definition {
 		AssertClick(
 			locator1 = "Button#VERIFY",
 			value1 = "Verify");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 
 		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#PASSWORD")) {
 			if ((isSet(syntaxCheckingEnabled)) && ("${syntaxCheckingEnabled}" == "true")) {

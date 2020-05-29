@@ -193,6 +193,7 @@ public class DataLayoutResourceImpl
 				dataLayout,
 				DataDefinitionUtil.toDDMForm(
 					DataDefinitionUtil.toDataDefinition(
+						_dataDefinitionContentTypeTracker,
 						_ddmFormFieldTypeServicesTracker, ddmStructure,
 						_spiDDMFormRuleConverter),
 					_ddmFormFieldTypeServicesTracker),
@@ -220,6 +221,7 @@ public class DataLayoutResourceImpl
 				dataLayout,
 				DataDefinitionUtil.toDDMForm(
 					DataDefinitionUtil.toDataDefinition(
+						_dataDefinitionContentTypeTracker,
 						_ddmFormFieldTypeServicesTracker,
 						_ddmStructureLocalService.getStructure(
 							ddmStructureLayout.getDDMStructureId()),

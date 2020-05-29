@@ -76,8 +76,8 @@ ViewAccountEntriesManagementToolbarDisplayContext viewAccountEntriesManagementTo
 				<liferay-ui:search-container-column-text
 					cssClass="table-cell-expand"
 					href="<%= rowURL %>"
-					name="account-owner"
-					value=""
+					name="organizations"
+					property="organizationNames"
 				/>
 
 				<liferay-ui:search-container-column-text
@@ -85,8 +85,8 @@ ViewAccountEntriesManagementToolbarDisplayContext viewAccountEntriesManagementTo
 					name="status"
 				>
 					<clay:label
-						label="<%= StringUtil.toUpperCase(LanguageUtil.get(request, accountEntryDisplay.getStatusLabel()), locale) %>"
-						style="<%= accountEntryDisplay.getStatusLabelStyle() %>"
+						displayType="<%= accountEntryDisplay.getStatusLabelStyle() %>"
+						label="<%= accountEntryDisplay.getStatusLabel() %>"
 					/>
 				</liferay-ui:search-container-column-text>
 

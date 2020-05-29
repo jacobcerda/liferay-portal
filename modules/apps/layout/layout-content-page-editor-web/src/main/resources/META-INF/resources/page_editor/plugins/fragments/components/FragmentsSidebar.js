@@ -86,8 +86,14 @@ export default function FragmentsSidebar() {
 											imagePreviewURL={
 												fragmentEntry.imagePreviewURL
 											}
-											key={fragmentEntry.fragmentEntryKey}
-											name={fragmentEntry.name}
+											key={
+												fragmentEntry.fragmentEntryKey ||
+												fragmentEntry.itemId
+											}
+											name={
+												fragmentEntry.label ||
+												fragmentEntry.name
+											}
 											type={fragmentEntry.type}
 										/>
 									)

@@ -88,14 +88,17 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 						<div class="info-bar-item">
 							<c:choose>
 								<c:when test="<%= (kaleoDefinition != null) && kaleoDefinition.isActive() %>">
-									<span class="label label-info label-lg">
-										<liferay-ui:message key="published" />
-									</span>
+									<clay:label
+										displayType="info"
+										label="published"
+										large="true"
+									/>
 								</c:when>
 								<c:otherwise>
-									<span class="label label-lg label-secondary">
-										<liferay-ui:message key="not-published" />
-									</span>
+									<clay:label
+										label="not-published"
+										large="true"
+									/>
 								</c:otherwise>
 							</c:choose>
 						</div>
@@ -149,14 +152,12 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 						</div>
 
 						<div class="sidebar-header">
-							<div class="autofit-row sidebar-section">
-								<div class="autofit-col autofit-col-expand">
-									<h4 class="component-title">
-										<span class="text-truncate-inline">
-											<span class="text-truncate"><%= HtmlUtil.escape(kaleoDefinitionVersion.getTitle(locale)) %></span>
-										</span>
-									</h4>
-								</div>
+							<div class="sidebar-section">
+								<h4 class="component-title">
+									<span class="text-truncate-inline">
+										<span class="text-truncate"><%= HtmlUtil.escape(kaleoDefinitionVersion.getTitle(locale)) %></span>
+									</span>
+								</h4>
 							</div>
 						</div>
 

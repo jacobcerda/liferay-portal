@@ -163,14 +163,14 @@ public class CTCollectionServiceImpl extends CTCollectionServiceBaseImpl {
 
 		PermissionChecker permissionChecker = getPermissionChecker();
 
-		_portletResourcePermission.check(
+		_ctCollectionModelResourcePermission.check(
 			permissionChecker, ctCollectionId, ActionKeys.VIEW);
 
 		_portletResourcePermission.check(
 			permissionChecker, null, CTActionKeys.ADD_PUBLICATION);
 
 		return ctCollectionLocalService.undoCTCollection(
-			userId, ctCollectionId, name, description);
+			ctCollectionId, userId, name, description);
 	}
 
 	@Override

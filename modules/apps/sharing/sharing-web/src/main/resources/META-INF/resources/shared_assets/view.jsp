@@ -45,7 +45,7 @@ sharedAssetsViewDisplayContext.populateResults(sharingEntriesSearchContainer);
 %>
 
 <clay:container-fluid
-	className="main-content-body"
+	cssClass="main-content-body"
 >
 	<liferay-ui:search-container
 		id="sharingEntries"
@@ -83,11 +83,10 @@ sharedAssetsViewDisplayContext.populateResults(sharingEntriesSearchContainer);
 				orderable="<%= false %>"
 			>
 				<c:if test="<%= !sharedAssetsViewDisplayContext.isVisible(sharingEntry) %>">
-					<span class="label label-info">
-						<span class="label-item label-item-expand">
-							<liferay-ui:message key="not-visible" />
-						</span>
-					</span>
+					<clay:label
+						displayType="info"
+						label="not-visible"
+					/>
 				</c:if>
 			</liferay-ui:search-container-column-text>
 

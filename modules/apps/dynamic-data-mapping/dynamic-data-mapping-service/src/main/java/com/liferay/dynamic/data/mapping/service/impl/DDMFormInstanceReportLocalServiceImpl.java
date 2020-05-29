@@ -29,6 +29,7 @@ import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 
 import java.util.Date;
 
@@ -120,10 +121,28 @@ public class DDMFormInstanceReportLocalServiceImpl
 								ddmFormFieldValue.getType());
 
 				if (ddmFormFieldTypeReportProcessor != null) {
-					formInstanceReportDataJSONObject =
+					String fieldName = ddmFormFieldValue.getName();
+
+					JSONObject fieldJSONObject =
+						formInstanceReportDataJSONObject.getJSONObject(
+							fieldName);
+
+					if (fieldJSONObject == null) {
+						fieldJSONObject = JSONUtil.put(
+							"type", ddmFormFieldValue.getType()
+						).put(
+							"values", JSONFactoryUtil.createJSONObject()
+						);
+					}
+
+					JSONObject processedFieldJSONObject =
 						ddmFormFieldTypeReportProcessor.process(
-							ddmFormFieldValue, formInstanceReportDataJSONObject,
+							ddmFormFieldValue, fieldJSONObject,
+							formInstanceRecordVersion.getFormInstanceRecordId(),
 							formInstanceReportEvent);
+
+					formInstanceReportDataJSONObject.put(
+						fieldName, processedFieldJSONObject);
 				}
 			}
 
