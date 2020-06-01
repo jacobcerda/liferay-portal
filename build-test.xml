@@ -3446,7 +3446,7 @@ ${tomcat-gc-log}
 				</then>
 			</if>
 
-			<echo append="true" file="app.server.${user.name}.properties">
+			<echo append="true" file="app.server.${env.COMPUTERNAME}.properties">
 				app.server.@{app.server.type}.dir=${app.server.dir}
 				app.server.@{app.server.type}.bin.dir=${app.server.bin.dir}
 				app.server.@{app.server.type}.classes.portal.dir=${app.server.classes.portal.dir}
@@ -3458,19 +3458,19 @@ ${tomcat-gc-log}
 			<if>
 				<equals arg1="@{app.server.type}" arg2="websphere" />
 				<then>
-					<echo append="true" file="app.server.${user.name}.properties">
+					<echo append="true" file="app.server.${env.COMPUTERNAME}.properties">
 						app.server.@{app.server.type}.custom.zip.name=${app.server.zip.name}
 					</echo>
 				</then>
 				<else>
-					<echo append="true" file="app.server.${user.name}.properties">
+					<echo append="true" file="app.server.${env.COMPUTERNAME}.properties">
 						app.server.@{app.server.type}.zip.name=${app.server.zip.name}
 						app.server.@{app.server.type}.zip.url=${app.server.zip.url}
 					</echo>
 				</else>
 			</if>
 
-			<print-file file.name="app.server.${user.name}.properties" />
+			<print-file file.name="app.server.${env.COMPUTERNAME}.properties" />
 		</sequential>
 	</macrodef>
 
@@ -8174,7 +8174,9 @@ web.server.http.port=8080
 
 admin.email.from.address=test@liferay.com
 
-announcements.email.to.address=noreply@liferay.com</echo>
+announcements.email.to.address=noreply@liferay.com
+
+login.secure.forgot.password=false</echo>
 
 		<if>
 			<equals arg1="${database.type}" arg2="oracle" />

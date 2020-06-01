@@ -17,8 +17,10 @@ package com.liferay.dynamic.data.mapping.form.report.web.internal.display.contex
 import com.liferay.dynamic.data.mapping.form.report.web.internal.portlet.DDMFormReportPortlet;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceReport;
+import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -36,6 +38,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.portlet.RenderRequest;
 
@@ -73,7 +76,11 @@ public class DDMFormReportDisplayContext {
 		ddmFormFields.forEach(
 			ddmFormField -> fieldsJSONArray.put(
 				JSONUtil.put(
+					"label", _getValue(ddmFormField.getLabel())
+				).put(
 					"name", ddmFormField.getName()
+				).put(
+					"options", _getFieldOptions(ddmFormField)
 				).put(
 					"type", ddmFormField.getType()
 				)));
@@ -128,6 +135,26 @@ public class DDMFormReportDisplayContext {
 			_ddmFormInstanceReport.getData());
 
 		return jsonObject.getInt("totalItems");
+	}
+
+	private JSONObject _getFieldOptions(DDMFormField ddmFormField) {
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+		DDMFormFieldOptions ddmFormFieldOptions =
+			ddmFormField.getDDMFormFieldOptions();
+
+		Set<String> optionsValues = ddmFormFieldOptions.getOptionsValues();
+
+		optionsValues.forEach(
+			optionValue -> jsonObject.put(
+				optionValue,
+				_getValue(ddmFormFieldOptions.getOptionLabels(optionValue))));
+
+		return jsonObject;
+	}
+
+	private String _getValue(Value value) {
+		return value.getString(value.getDefaultLocale());
 	}
 
 	private final DDMFormInstanceReport _ddmFormInstanceReport;

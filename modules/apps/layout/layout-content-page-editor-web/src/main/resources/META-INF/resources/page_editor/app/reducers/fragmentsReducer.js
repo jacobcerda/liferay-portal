@@ -12,7 +12,6 @@
  * details.
  */
 
-import {config} from '../../app/config/index';
 import {ADD_FRAGMENT_COMPOSITION, INIT} from '../actions/types';
 import {LAYOUT_DATA_ITEM_TYPES} from '../config/constants/layoutDataItemTypes';
 
@@ -66,34 +65,32 @@ export default function fragmentsReducer(fragments = [], action) {
 					CONTENT_DISPLAY_COLLECTION_ID
 			);
 
-			if (config.fragmentPanelEnabled) {
-				newFragments.unshift({
-					fragmentCollectionId: 'layout-elements',
-					fragmentEntries: [
-						{
-							data: {
-								itemType: LAYOUT_DATA_ITEM_TYPES.container,
-							},
-							icon: 'table',
-							itemId: 'container',
-							label: Liferay.Language.get('section'),
-							type: 'container',
+			newFragments.unshift({
+				fragmentCollectionId: 'layout-elements',
+				fragmentEntries: [
+					{
+						data: {
+							itemType: LAYOUT_DATA_ITEM_TYPES.container,
 						},
-						{
-							data: {
-								itemType: LAYOUT_DATA_ITEM_TYPES.row,
-							},
-							icon: 'table',
-							itemId: 'row',
-							label: Liferay.Language.get('row'),
-							type: 'row',
+						icon: 'table',
+						itemId: 'container',
+						label: Liferay.Language.get('section'),
+						type: 'container',
+					},
+					{
+						data: {
+							itemType: LAYOUT_DATA_ITEM_TYPES.row,
 						},
-					],
-					name: Liferay.Language.get('layout-elements'),
-				});
-			}
+						icon: 'table',
+						itemId: 'row',
+						label: Liferay.Language.get('row'),
+						type: 'row',
+					},
+				],
+				name: Liferay.Language.get('layout-elements'),
+			});
 
-			if (contentDisplayCollection && config.fragmentPanelEnabled) {
+			if (contentDisplayCollection) {
 				newFragments.splice(2, 0, {
 					...contentDisplayCollection,
 
@@ -111,9 +108,6 @@ export default function fragmentsReducer(fragments = [], action) {
 						},
 					],
 				});
-			}
-			else {
-				newFragments.splice(2, 0, contentDisplayCollection);
 			}
 
 			return newFragments;

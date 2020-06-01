@@ -12,6 +12,7 @@
  * details.
  */
 
+import {useMutation, useQuery} from '@apollo/client';
 import ClayButton from '@clayui/button';
 import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
@@ -34,11 +35,12 @@ import SectionLabel from '../../components/SectionLabel.es';
 import Subscription from '../../components/Subscription.es';
 import TagList from '../../components/TagList.es';
 import {
-	createAnswer,
-	deleteMessageBoardThread,
-	getMessages,
-	getThread,
-	markAsAnswerMessageBoardMessage,
+	client,
+	createAnswerQuery,
+	deleteMessageBoardThreadQuery,
+	getMessagesQuery,
+	getThreadQuery,
+	markAsAnswerMessageBoardMessageQuery,
 } from '../../utils/client.es';
 import lang from '../../utils/lang.es';
 import {
@@ -50,7 +52,6 @@ import {
 export default withRouter(
 	({
 		history,
-		location: key,
 		match: {
 			params: {questionId},
 			url,
@@ -58,62 +59,93 @@ export default withRouter(
 	}) => {
 		const context = useContext(AppContext);
 
-		const [answers, setAnswers] = useState({});
 		const [articleBody, setArticleBody] = useState();
 		const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 		const [page, setPage] = useState(1);
 		const [pageSize, setPageSize] = useState(20);
-		const [question, setQuestion] = useState();
 		const [sort, setSort] = useState('active');
 
-		useEffect(() => {
-			getThread(questionId, context.siteKey).then((data) => {
-				setQuestion(data);
-
-				return data;
-			});
-		}, [key, context.siteKey, questionId]);
-
-		useEffect(() => {
-			if (question) {
-				getMessages(question.id, page, pageSize, sort).then((data) => {
-					setAnswers(data);
-				});
-			}
-		}, [question, page, pageSize, sort]);
-
-		const postAnswer = () => {
-			createAnswer(articleBody, question.id)
-				.then(() => {
-					setArticleBody('');
-
-					return getMessages(question.id, page, pageSize, sort);
-				})
-				.then((data) => {
-					setAnswers(data);
-				});
-		};
-
-		const updateMarkAsAnswer = useCallback(
-			(answerId) => {
-				setAnswers({
-					...answers,
-					items: [
-						...answers.items.map((otherAnswer) => {
-							otherAnswer.showAsAnswer =
-								otherAnswer.id === answerId;
-
-							return otherAnswer;
-						}),
-					],
-				});
+		const {
+			loading,
+			data: {messageBoardThreadByFriendlyUrlPath: question = {}} = {},
+		} = useQuery(getThreadQuery, {
+			context: {
+				uri: '/o/graphql?nestedFields=lastPostDate',
 			},
-			[answers]
-		);
+			variables: {
+				friendlyUrlPath: questionId,
+				siteKey: context.siteKey,
+			},
+		});
 
-		const deleteThread = () => {
-			deleteMessageBoardThread(question.id).then(() => history.goBack());
-		};
+		const {
+			data: {messageBoardThreadMessageBoardMessages = {}} = {},
+			refetch,
+		} = useQuery(getMessagesQuery, {
+			context: {
+				uri: '/o/graphql?nestedFields=lastPostDate',
+			},
+			skip: !question || !question.id,
+			variables: {
+				messageBoardThreadId: question.id,
+				page: sort === 'votes' ? 1 : page,
+				pageSize: sort === 'votes' ? 100 : pageSize,
+				sort:
+					sort === 'votes' || sort === 'active'
+						? 'dateModified:desc'
+						: 'dateCreated:desc',
+			},
+		});
+
+		const [answers, setAnswers] = useState({});
+
+		useEffect(() => {
+			if (messageBoardThreadMessageBoardMessages.totalCount) {
+				if (pageSize !== 100) {
+					setAnswers({...messageBoardThreadMessageBoardMessages});
+				}
+				else {
+					setAnswers({
+						...messageBoardThreadMessageBoardMessages,
+						items: [
+							...messageBoardThreadMessageBoardMessages.items,
+						].sort((answer1, answer2) => {
+							if (answer2.showAsAnswer) {
+								return 1;
+							}
+							if (answer1.showAsAnswer) {
+								return -1;
+							}
+
+							const ratingValue1 =
+								(answer1.aggregateRating &&
+									answer1.aggregateRating.ratingValue) ||
+								0;
+							const ratingValue2 =
+								(answer2.aggregateRating &&
+									answer2.aggregateRating.ratingValue) ||
+								0;
+
+							return ratingValue2 - ratingValue1;
+						}),
+					});
+				}
+			}
+		}, [messageBoardThreadMessageBoardMessages, pageSize]);
+
+		const [createAnswer] = useMutation(createAnswerQuery, {
+			onCompleted() {
+				setArticleBody('');
+				refetch();
+			},
+		});
+
+		const [deleteThread] = useMutation(deleteMessageBoardThreadQuery, {
+			onCompleted() {
+				client.resetStore();
+				history.goBack();
+			},
+		});
 
 		const deleteAnswer = useCallback(
 			(answer) => {
@@ -129,6 +161,15 @@ export default withRouter(
 			[answers]
 		);
 
+		const [markAsAnswerMessageBoardMessage] = useMutation(
+			markAsAnswerMessageBoardMessageQuery,
+			{
+				onCompleted() {
+					refetch();
+				},
+			}
+		);
+
 		const answerChange = useCallback(
 			(answerId) => {
 				const answer = answers.items.find(
@@ -136,23 +177,21 @@ export default withRouter(
 				);
 
 				if (answer) {
-					markAsAnswerMessageBoardMessage(answer.id, false).then(
-						() => {
-							updateMarkAsAnswer(answerId);
-						}
-					);
-				}
-				else {
-					updateMarkAsAnswer(answerId);
+					markAsAnswerMessageBoardMessage({
+						variables: {
+							messageBoardMessageId: answer.id,
+							showAsAnswer: false,
+						},
+					});
 				}
 			},
-			[answers, updateMarkAsAnswer]
+			[markAsAnswerMessageBoardMessage, answers.items]
 		);
 
 		return (
 			<section className="c-mt-5 questions-section questions-section-single">
 				<div className="questions-container">
-					{question && (
+					{!loading && (
 						<div className="row">
 							<div className="col-md-1 text-md-center">
 								<Rating
@@ -217,12 +256,9 @@ export default withRouter(
 												<Subscription
 													onSubscription={(
 														subscribed
-													) =>
-														setQuestion({
-															...question,
-															subscribed,
-														})
-													}
+													) => {
+														question.subscribed = subscribed;
+													}}
 													question={question}
 												/>
 											)}
@@ -233,7 +269,14 @@ export default withRouter(
 														body={Liferay.Language.get(
 															'do-you-want-to-delete–this-thread'
 														)}
-														callback={deleteThread}
+														callback={() => {
+															deleteThread({
+																variables: {
+																	messageBoardThreadId:
+																		question.id,
+																},
+															});
+														}}
 														onClose={() =>
 															setDeleteModalVisible(
 																false
@@ -407,7 +450,15 @@ export default withRouter(
 											<ClayButton
 												disabled={!articleBody}
 												displayType="primary"
-												onClick={postAnswer}
+												onClick={() => {
+													createAnswer({
+														variables: {
+															articleBody,
+															messageBoardThreadId:
+																question.id,
+														},
+													});
+												}}
 											>
 												{Liferay.Language.get(
 													'post-answer'
