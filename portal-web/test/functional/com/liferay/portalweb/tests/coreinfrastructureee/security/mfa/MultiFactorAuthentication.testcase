@@ -53,18 +53,6 @@ definition {
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
-			portlet = "System Settings");
-
-		SystemSettings.gotoConfiguration(
-			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Multi-Factor Authentication System Configuration",
-			configurationScope = "Virtual Instance Scope");
-
-		MultiFactorAuthentication.assertDescriptions();
-
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
 			portlet = "Instance Settings");
 
 		SystemSettings.gotoConfiguration(
@@ -150,7 +138,7 @@ definition {
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
-			configurationName = "Email One-Time Password Configuration",
+			configurationName = "Multi-Factor Authentication: Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
 		MultiFactorAuthentication.configureOTP(enableOTP = "true");
@@ -426,7 +414,7 @@ definition {
 		Audit.viewAuditDetails(
 			additionalInformation = "Incorrect email one-time password",
 			resourceAction = "MFA_EMAIL_OTP_VERIFICATION_FAILURE",
-			resourceName = "MFAEmailOTPChecker",
+			resourceName = "MFAEmailOTPMFABrowserChecker",
 			userName = "Test Test");
 	}
 

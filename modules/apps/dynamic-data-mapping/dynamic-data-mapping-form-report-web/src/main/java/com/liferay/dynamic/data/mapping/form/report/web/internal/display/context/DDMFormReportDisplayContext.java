@@ -41,6 +41,8 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
+import javax.portlet.ResourceURL;
 
 /**
  * @author Bruno Farache
@@ -49,10 +51,11 @@ public class DDMFormReportDisplayContext {
 
 	public DDMFormReportDisplayContext(
 		DDMFormInstanceReport ddmFormInstanceReport,
-		RenderRequest renderRequest) {
+		RenderRequest renderRequest, RenderResponse renderResponse) {
 
 		_ddmFormInstanceReport = ddmFormInstanceReport;
 		_renderRequest = renderRequest;
+		_renderResponse = renderResponse;
 	}
 
 	public DDMFormInstanceReport getDDMFormInstanceReport() {
@@ -86,6 +89,14 @@ public class DDMFormReportDisplayContext {
 				)));
 
 		return fieldsJSONArray;
+	}
+
+	public String getFormReportRecordsFieldValuesURL() {
+		ResourceURL resourceURL = _renderResponse.createResourceURL();
+
+		resourceURL.setResourceID("/form-report/get_records_field_values");
+
+		return resourceURL.toString();
 	}
 
 	public String getLastModifiedDate() {
@@ -159,5 +170,6 @@ public class DDMFormReportDisplayContext {
 
 	private final DDMFormInstanceReport _ddmFormInstanceReport;
 	private final RenderRequest _renderRequest;
+	private final RenderResponse _renderResponse;
 
 }

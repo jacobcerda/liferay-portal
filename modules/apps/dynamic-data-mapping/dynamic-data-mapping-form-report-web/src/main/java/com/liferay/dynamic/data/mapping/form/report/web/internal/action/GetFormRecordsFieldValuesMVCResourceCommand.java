@@ -12,33 +12,31 @@
  * details.
  */
 
-package com.liferay.sharing.web.internal.portlet.action;
+package com.liferay.dynamic.data.mapping.form.report.web.internal.action;
 
-import com.liferay.petra.string.StringPool;
+import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
+import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
+import com.liferay.dynamic.data.mapping.model.Value;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordService;
+import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
+import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.dynamic.data.mapping.util.comparator.DDMFormInstanceRecordModifiedDateComparator;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.kernel.util.comparator.UserScreenNameComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.sharing.constants.SharingPortletKeys;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -50,17 +48,17 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Alejandro Tardín
+ * @author Marcos André
  */
 @Component(
 	immediate = true,
 	property = {
-		"javax.portlet.name=" + SharingPortletKeys.SHARING,
-		"mvc.command.name=/sharing/users"
+		"javax.portlet.name=" + DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_REPORT,
+		"mvc.command.name=/form-report/get_records_field_values"
 	},
 	service = MVCResourceCommand.class
 )
-public class SharingUserAutocompleteMVCResourceCommand
+public class GetFormRecordsFieldValuesMVCResourceCommand
 	extends BaseMVCResourceCommand {
 
 	@Override
@@ -80,7 +78,8 @@ public class SharingUserAutocompleteMVCResourceCommand
 				themeDisplay.getUserId());
 		}
 
-		JSONArray usersJSONArray = _getUsersJSONArray(httpServletRequest);
+		JSONArray fieldValuesJSONArray = _getFieldValuesJSONArray(
+			httpServletRequest);
 
 		HttpServletResponse httpServletResponse =
 			_portal.getHttpServletResponse(resourceResponse);
@@ -88,79 +87,56 @@ public class SharingUserAutocompleteMVCResourceCommand
 		httpServletResponse.setContentType(ContentTypes.APPLICATION_JSON);
 
 		JSONPortletResponseUtil.writeJSON(
-			resourceRequest, resourceResponse, usersJSONArray);
+			resourceRequest, resourceResponse, fieldValuesJSONArray);
 	}
 
-	private List<User> _getUsers(
-		HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay) {
-
-		String query = ParamUtil.getString(httpServletRequest, "query");
-
-		PermissionChecker permissionChecker =
-			themeDisplay.getPermissionChecker();
-
-		if (permissionChecker.isCompanyAdmin()) {
-			return _userLocalService.search(
-				themeDisplay.getCompanyId(), query,
-				WorkflowConstants.STATUS_APPROVED, new LinkedHashMap<>(), 0, 20,
-				new UserScreenNameComparator());
-		}
-
-		User user = themeDisplay.getUser();
-
-		if (ArrayUtil.isEmpty(user.getGroupIds())) {
-			return Collections.emptyList();
-		}
-
-		return _userLocalService.searchSocial(
-			themeDisplay.getCompanyId(), user.getGroupIds(), query, 0, 20,
-			new UserScreenNameComparator());
-	}
-
-	private JSONArray _getUsersJSONArray(HttpServletRequest httpServletRequest)
+	private JSONArray _getFieldValuesJSONArray(
+			HttpServletRequest httpServletRequest)
 		throws Exception {
 
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
+		String fieldName = ParamUtil.getString(httpServletRequest, "fieldName");
 
-		for (User user : _getUsers(httpServletRequest, themeDisplay)) {
-			if (user.isDefaultUser() ||
-				(themeDisplay.getUserId() == user.getUserId())) {
+		long formInstanceId = ParamUtil.getLong(
+			httpServletRequest, "formInstanceId");
 
-				continue;
-			}
+		int start = ParamUtil.getInteger(
+			httpServletRequest, "start", QueryUtil.ALL_POS);
 
-			JSONObject jsonObject = JSONUtil.put(
-				"emailAddress", user.getEmailAddress()
-			).put(
-				"fullName", user.getFullName()
-			);
+		int end = start + _DEFAULT_DELTA;
 
-			String portraitURL = StringPool.BLANK;
+		List<DDMFormInstanceRecord> formInstanceRecords =
+			_ddmFormInstanceRecordService.getFormInstanceRecords(
+				formInstanceId, WorkflowConstants.STATUS_APPROVED, start, end,
+				new DDMFormInstanceRecordModifiedDateComparator(false));
 
-			if (user.getPortraitId() > 0) {
-				portraitURL = user.getPortraitURL(themeDisplay);
-			}
+		for (DDMFormInstanceRecord formInstanceRecord : formInstanceRecords) {
+			DDMFormValues ddmFormValues = formInstanceRecord.getDDMFormValues();
 
-			jsonObject.put(
-				"portraitURL", portraitURL
-			).put(
-				"userId", Long.valueOf(user.getUserId())
-			);
+			Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap =
+				ddmFormValues.getDDMFormFieldValuesMap();
 
-			jsonArray.put(jsonObject);
+			List<DDMFormFieldValue> ddmFormFieldValues =
+				ddmFormFieldValuesMap.get(fieldName);
+
+			ddmFormFieldValues.forEach(
+				ddmFormFieldValue -> {
+					Value value = ddmFormFieldValue.getValue();
+
+					jsonArray.put(value.getString(value.getDefaultLocale()));
+				});
 		}
 
 		return jsonArray;
 	}
 
-	@Reference
-	private Portal _portal;
+	private static final int _DEFAULT_DELTA = 20;
 
 	@Reference
-	private UserLocalService _userLocalService;
+	private DDMFormInstanceRecordService _ddmFormInstanceRecordService;
+
+	@Reference
+	private Portal _portal;
 
 }
