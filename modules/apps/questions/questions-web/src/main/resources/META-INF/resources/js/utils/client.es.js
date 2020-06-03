@@ -204,6 +204,7 @@ export const getThreadQuery = gql`
 			articleBody
 			creator {
 				id
+				image
 				name
 			}
 			creatorStatistics {
@@ -238,6 +239,7 @@ export const getMessageBoardThreadByIdQuery = gql`
 			friendlyUrlPath
 			id
 			messageBoardSection {
+				numberOfMessageBoardSections
 				title
 			}
 		}
@@ -284,6 +286,7 @@ export const getMessagesQuery = gql`
 				articleBody
 				creator {
 					id
+					image
 					name
 				}
 				creatorStatistics {
@@ -301,6 +304,7 @@ export const getMessagesQuery = gql`
 						articleBody
 						creator {
 							id
+							image
 							name
 						}
 						encodingFormat
@@ -450,6 +454,7 @@ export const getThreadsQuery = gql`
 				headline
 				id
 				messageBoardSection {
+					numberOfMessageBoardSections
 					title
 				}
 				numberOfMessageBoardMessages
@@ -551,6 +556,7 @@ export const getRankedThreadsQuery = gql`
 				id
 				keywords
 				messageBoardSection {
+					numberOfMessageBoardSections
 					title
 				}
 				numberOfMessageBoardMessages
@@ -580,6 +586,7 @@ export const getRelatedThreadsQuery = gql`
 				}
 				creator {
 					id
+					image
 					name
 				}
 				dateModified
@@ -587,6 +594,7 @@ export const getRelatedThreadsQuery = gql`
 				headline
 				id
 				messageBoardSection {
+					numberOfMessageBoardSections
 					title
 				}
 			}
@@ -650,9 +658,7 @@ export const getUserActivityQuery = gql`
 				id
 				keywords
 				messageBoardSection {
-					title
-				}
-				messageBoardSection {
+					numberOfMessageBoardSections
 					title
 				}
 				numberOfMessageBoardMessages

@@ -18,7 +18,6 @@ import com.liferay.content.dashboard.web.internal.item.ContentDashboardItem;
 import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactory;
 import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactoryTracker;
 import com.liferay.content.dashboard.web.internal.search.ContentDashboardSearcher;
-import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -54,25 +53,13 @@ import javax.portlet.RenderResponse;
 public class ContentDashboardItemSearchContainerFactory {
 
 	public static ContentDashboardItemSearchContainerFactory getInstance(
-		RenderRequest renderRequest, RenderResponse renderResponse,
 		ContentDashboardItemFactoryTracker contentDashboardItemFactoryTracker,
-		Portal portal) {
+		Portal portal, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
 
 		return new ContentDashboardItemSearchContainerFactory(
-			renderRequest, renderResponse, contentDashboardItemFactoryTracker,
-			portal);
-	}
-
-	public ContentDashboardItemSearchContainerFactory(
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		ContentDashboardItemFactoryTracker contentDashboardItemFactoryTracker,
-		Portal portal) {
-
-		_renderRequest = renderRequest;
-		_renderResponse = renderResponse;
-		_contentDashboardItemFactoryTracker =
-			contentDashboardItemFactoryTracker;
-		_portal = portal;
+			contentDashboardItemFactoryTracker, portal, renderRequest,
+			renderResponse);
 	}
 
 	public SearchContainer<ContentDashboardItem<?>> create()
@@ -95,9 +82,6 @@ public class ContentDashboardItemSearchContainerFactory {
 
 		searchContainer.setOrderByType(orderByType);
 
-		searchContainer.setRowChecker(
-			new EmptyOnClickRowChecker(_renderResponse));
-
 		Hits hits = _getHits(
 			orderByCol, orderByType, _portal.getLocale(_renderRequest),
 			searchContainer.getEnd(), searchContainer.getStart());
@@ -107,6 +91,18 @@ public class ContentDashboardItemSearchContainerFactory {
 		searchContainer.setTotal(hits.getLength());
 
 		return searchContainer;
+	}
+
+	private ContentDashboardItemSearchContainerFactory(
+		ContentDashboardItemFactoryTracker contentDashboardItemFactoryTracker,
+		Portal portal, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
+
+		_contentDashboardItemFactoryTracker =
+			contentDashboardItemFactoryTracker;
+		_portal = portal;
+		_renderRequest = renderRequest;
+		_renderResponse = renderResponse;
 	}
 
 	private List<ContentDashboardItem<?>> _getContentDashboardItems(

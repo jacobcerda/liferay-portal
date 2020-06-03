@@ -22,7 +22,7 @@ import java.util.Locale;
  */
 public interface ContentDashboardItem<T> {
 
-	public Date getExpiredDate();
+	public Date getExpirationDate();
 
 	public Date getModifiedDate();
 
@@ -37,5 +37,7 @@ public interface ContentDashboardItem<T> {
 	public String getType(Locale locale);
 
 	public long getUserId();
+
+	public String getUserName();
 
 }

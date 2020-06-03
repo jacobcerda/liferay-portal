@@ -45,7 +45,6 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,7 +82,6 @@ public class HistogramMetricResourceTest
 		_deleteInstances();
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testGetProcessHistogramMetric() throws Exception {
@@ -140,6 +138,10 @@ public class HistogramMetricResourceTest
 			testGroup.getCompanyId(), instance);
 
 		_instances.add(instance);
+
+		if (startLocalDateTime.equals(endLocalDateTime)) {
+			endLocalDateTime = endLocalDateTime.plusSeconds(1);
+		}
 
 		assertEquals(
 			_createHistogramMetric(

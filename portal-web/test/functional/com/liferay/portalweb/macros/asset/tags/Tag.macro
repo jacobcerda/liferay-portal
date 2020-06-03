@@ -85,11 +85,11 @@ definition {
 	}
 
 	macro mergeTagsSelectAdditionalTags {
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
 		Click(locator1 = "Button#SELECT");
 
 		SelectFrameTop();
-
-		WaitForLiferayEvent.initializeLiferayEventLog();
 
 		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
@@ -102,7 +102,7 @@ definition {
 
 	macro tearDownCP {
 		if ("${stagingSite}" == "true") {
-			ProductMenu.gotoStagingSite();
+			ProductMenu.gotoStagingSite(site = "${site}");
 		}
 		else {
 			Navigator.openURL();

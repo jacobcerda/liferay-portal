@@ -16,9 +16,7 @@ import {useMutation, useQuery} from '@apollo/client';
 import ClayButton from '@clayui/button';
 import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
-import ClayLink from '@clayui/link';
 import ClayNavigationBar from '@clayui/navigation-bar';
-import {Editor} from 'frontend-editor-ckeditor-web';
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {withRouter} from 'react-router-dom';
 
@@ -29,11 +27,13 @@ import CreatorRow from '../../components/CreatorRow.es';
 import Link from '../../components/Link.es';
 import Modal from '../../components/Modal.es';
 import PaginatedList from '../../components/PaginatedList.es';
+import QuestionsEditor from '../../components/QuestionsEditor';
 import Rating from '../../components/Rating.es';
 import RelatedQuestions from '../../components/RelatedQuestions.es';
 import SectionLabel from '../../components/SectionLabel.es';
 import Subscription from '../../components/Subscription.es';
 import TagList from '../../components/TagList.es';
+import useQueryParams from '../../hooks/useQueryParams.es';
 import {
 	client,
 	createAnswerQuery,
@@ -43,15 +43,12 @@ import {
 	markAsAnswerMessageBoardMessageQuery,
 } from '../../utils/client.es';
 import lang from '../../utils/lang.es';
-import {
-	dateToBriefInternationalHuman,
-	getCKEditorConfig,
-	onBeforeLoadCKEditor,
-} from '../../utils/utils.es';
+import {dateToBriefInternationalHuman} from '../../utils/utils.es';
 
 export default withRouter(
 	({
 		history,
+		location,
 		match: {
 			params: {questionId},
 			url,
@@ -59,11 +56,14 @@ export default withRouter(
 	}) => {
 		const context = useContext(AppContext);
 
+		const queryParams = useQueryParams(location);
+
+		const sort = queryParams.get('sort') || 'active';
+
 		const [articleBody, setArticleBody] = useState();
 		const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 		const [page, setPage] = useState(1);
 		const [pageSize, setPageSize] = useState(20);
-		const [sort, setSort] = useState('active');
 
 		const {
 			loading,
@@ -101,13 +101,12 @@ export default withRouter(
 
 		useEffect(() => {
 			if (messageBoardThreadMessageBoardMessages.totalCount) {
-				if (pageSize !== 100) {
+				if (sort !== 'votes') {
 					setAnswers({...messageBoardThreadMessageBoardMessages});
 				}
 				else {
-					setAnswers({
-						...messageBoardThreadMessageBoardMessages,
-						items: [
+					const items = [
+						...[
 							...messageBoardThreadMessageBoardMessages.items,
 						].sort((answer1, answer2) => {
 							if (answer2.showAsAnswer) {
@@ -128,10 +127,15 @@ export default withRouter(
 
 							return ratingValue2 - ratingValue1;
 						}),
+					];
+
+					setAnswers({
+						...messageBoardThreadMessageBoardMessages,
+						items,
 					});
 				}
 			}
-		}, [messageBoardThreadMessageBoardMessages, pageSize]);
+		}, [messageBoardThreadMessageBoardMessages, pageSize, sort]);
 
 		const [createAnswer] = useMutation(createAnswerQuery, {
 			onCompleted() {
@@ -156,6 +160,7 @@ export default withRouter(
 							(otherAnswer) => answer.id !== otherAnswer.id
 						),
 					],
+					totalCount: answers.totalCount - 1,
 				});
 			},
 			[answers]
@@ -324,7 +329,13 @@ export default withRouter(
 								</div>
 
 								<div className="c-mt-4">
-									<TagList tags={question.keywords} />
+									<TagList
+										sectionTitle={
+											question.messageBoardSection &&
+											question.messageBoardSection.title
+										}
+										tags={question.keywords}
+									/>
 								</div>
 
 								<div className="c-mt-4 position-relative questions-creator text-center text-md-right">
@@ -342,49 +353,40 @@ export default withRouter(
 											<ClayNavigationBar.Item
 												active={sort === 'active'}
 											>
-												<ClayLink
-													className="nav-link"
-													displayType="unstyled"
-													onClick={() =>
-														setSort('active')
-													}
+												<Link
+													className="link-unstyled nav-link"
+													to={`${url}?sort=active`}
 												>
 													{Liferay.Language.get(
 														'active'
 													)}
-												</ClayLink>
+												</Link>
 											</ClayNavigationBar.Item>
 
 											<ClayNavigationBar.Item
 												active={sort === 'oldest'}
 											>
-												<ClayLink
-													className="nav-link"
-													displayType="unstyled"
-													onClick={() =>
-														setSort('oldest')
-													}
+												<Link
+													className="link-unstyled nav-link"
+													to={`${url}?sort=oldest`}
 												>
 													{Liferay.Language.get(
 														'oldest'
 													)}
-												</ClayLink>
+												</Link>
 											</ClayNavigationBar.Item>
 
 											<ClayNavigationBar.Item
 												active={sort === 'votes'}
 											>
-												<ClayLink
-													className="nav-link"
-													displayType="unstyled"
-													onClick={() =>
-														setSort('votes')
-													}
+												<Link
+													className="link-unstyled nav-link"
+													to={`${url}?sort=votes`}
 												>
 													{Liferay.Language.get(
 														'votes'
 													)}
-												</ClayLink>
+												</Link>
 											</ClayNavigationBar.Item>
 										</ClayNavigationBar>
 									</div>
@@ -426,22 +428,17 @@ export default withRouter(
 													</label>
 
 													<div className="c-mt-2">
-														<Editor
-															config={getCKEditorConfig()}
-															data={articleBody}
-															onBeforeLoad={(
-																editor
-															) =>
-																onBeforeLoadCKEditor(
-																	editor,
-																	context.imageBrowseURL
-																)
+														<QuestionsEditor
+															contents={
+																articleBody
 															}
-															onChange={(event) =>
+															onChange={(
+																event
+															) => {
 																setArticleBody(
 																	event.editor.getData()
-																)
-															}
+																);
+															}}
 														/>
 													</div>
 												</ClayForm.Group>

@@ -52,7 +52,6 @@ ContentDashboardAdminManagementToolbarDisplayContext contentDashboardAdminManage
 
 		<clay:management-toolbar
 			displayContext="<%= contentDashboardAdminManagementToolbarDisplayContext %>"
-			selectable="<%= false %>"
 		/>
 
 		<div class="sheet-section">
@@ -68,15 +67,21 @@ ContentDashboardAdminManagementToolbarDisplayContext contentDashboardAdminManage
 					<liferay-ui:search-container-column-text
 						name="author"
 					>
-						<liferay-ui:user-portrait
-							userId="<%= contentDashboardItem.getUserId() %>"
-						/>
+						<span class="lfr-portal-tooltip" title="<%= HtmlUtil.escape(contentDashboardItem.getUserName()) %>">
+							<liferay-ui:user-portrait
+								userId="<%= contentDashboardItem.getUserId() %>"
+							/>
+						</span>
 					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-text
+						cssClass="table-cell-expand table-title"
 						name="title"
-						value="<%= HtmlUtil.escape(contentDashboardItem.getTitle(locale)) %>"
-					/>
+					>
+						<span class="lfr-portal-tooltip text-truncate-inline" title="<%= HtmlUtil.escape(contentDashboardItem.getTitle(locale)) %>">
+							<span class="text-truncate"><%= HtmlUtil.escape(contentDashboardItem.getTitle(locale)) %></span>
+						</span>
+					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-text
 						name="type"
@@ -104,7 +109,7 @@ ContentDashboardAdminManagementToolbarDisplayContext contentDashboardAdminManage
 
 					<liferay-ui:search-container-column-date
 						name="expiration-date"
-						value="<%= contentDashboardItem.getExpiredDate() %>"
+						value="<%= contentDashboardItem.getExpirationDate() %>"
 					/>
 				</liferay-ui:search-container-row>
 

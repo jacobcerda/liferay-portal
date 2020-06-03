@@ -138,18 +138,18 @@ export default withRouter(
 						</div>
 
 						{!!search && (
-							<div className="c-mt-5 c-mt-md-1 c-mx-auto c-px-0 col-xl-10">
+							<div className="c-mt-5 c-mt-md-1 c-px-0 col-xl-12">
 								<ClayResultsBar>
 									<ClayResultsBar.Item expand>
 										<span className="component-text text-truncate-inline">
 											<span className="text-truncate">
 												{lang.sub(
 													Liferay.Language.get(
-														'x-results-for-query-with-terms-x'
+														'found-x-results-for-x'
 													),
 													[
 														questions.totalCount,
-														search,
+														slugToText(search),
 													]
 												)}
 											</span>
