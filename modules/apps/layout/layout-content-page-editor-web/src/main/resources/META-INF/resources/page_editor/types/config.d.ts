@@ -77,6 +77,7 @@ export interface Config {
 	plid: string;
 	pluginsRootPath: string;
 	portletNamespace: string;
+	previewPageURL: string;
 	publishURL: string;
 	redirectURL: string;
 	renderFragmentEntryURL: string;

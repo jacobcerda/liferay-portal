@@ -13,6 +13,7 @@
  */
 
 import ClayButton from '@clayui/button';
+import {useModal} from '@clayui/modal';
 import classNames from 'classnames';
 import {useIsMounted} from 'frontend-js-react-web';
 import React, {useEffect, useState} from 'react';
@@ -21,6 +22,7 @@ import ReactDOM from 'react-dom';
 import useLazy from '../../core/hooks/useLazy';
 import useLoad from '../../core/hooks/useLoad';
 import usePlugins from '../../core/hooks/usePlugins';
+import selectExperience from '../../plugins/experience/actions/selectExperience';
 import * as Actions from '../actions/index';
 import {PAGE_TYPES} from '../config/constants/pageTypes';
 import {config} from '../config/index';
@@ -30,6 +32,7 @@ import {useDropClear} from '../utils/useDragAndDrop';
 import {useSelectItem} from './Controls';
 import ExperimentsLabel from './ExperimentsLabel';
 import NetworkStatusBar from './NetworkStatusBar';
+import PreviewModal from './PreviewModal';
 import Translation from './Translation';
 import UnsafeHTML from './UnsafeHTML';
 import ViewportSizeSelector from './ViewportSizeSelector';
@@ -54,6 +57,27 @@ function ToolbarBody() {
 	} = store;
 
 	const [enableDiscard, setEnableDiscard] = useState(false);
+
+	const [openPreviewModal, setOpenPreviewModal] = useState(false);
+
+	const [
+		currentSegmentsExperienceId,
+		setCurrentSegmentsExperienceId,
+	] = useState('');
+
+	const {observer} = useModal({
+		onClose: () => {
+			if (isMounted()) {
+				setOpenPreviewModal(false);
+
+				dispatch(
+					selectExperience({
+						segmentsExperienceId: currentSegmentsExperienceId,
+					})
+				);
+			}
+		},
+	});
 
 	useEffect(() => {
 		const isConversionPage = config.pageType === PAGE_TYPES.conversion;
@@ -126,6 +150,12 @@ function ToolbarBody() {
 		) {
 			event.preventDefault();
 		}
+	};
+
+	const handlePreviewPage = () => {
+		setCurrentSegmentsExperienceId(segmentsExperienceId);
+
+		setOpenPreviewModal(true);
 	};
 
 	const handleSubmit = (event) => {
@@ -219,6 +249,9 @@ function ToolbarBody() {
 				{config.responsiveEnabled && (
 					<li className="nav-item">
 						<ViewportSizeSelector
+							onSizeSelected={(size) =>
+								dispatch(Actions.switchViewportSize({size}))
+							}
 							selectedSize={selectedViewportSize}
 						/>
 					</li>
@@ -238,6 +271,17 @@ function ToolbarBody() {
 				<NetworkStatusBar {...network} />
 				{config.undoEnabled && <Undo onUndo={onUndo} />}
 
+				<li className="nav-item">
+					<ClayButton
+						className="btn btn-secondary mr-3"
+						displayType="secondary"
+						onClick={handlePreviewPage}
+						small
+						type="button"
+					>
+						{Liferay.Language.get('preview')}
+					</ClayButton>
+				</li>
 				<li className="nav-item">
 					<form action={config.discardDraftURL} method="POST">
 						<input
@@ -279,6 +323,8 @@ function ToolbarBody() {
 					</form>
 				</li>
 			</ul>
+
+			{openPreviewModal && <PreviewModal observer={observer} />}
 		</div>
 	);
 }

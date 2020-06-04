@@ -14,6 +14,7 @@
 
 package com.liferay.segments.asah.connector.internal.messaging;
 
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -22,7 +23,6 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserModel;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
-import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -30,11 +30,13 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.segments.asah.connector.internal.cache.AsahSegmentsEntryCache;
 import com.liferay.segments.asah.connector.internal.client.AsahFaroBackendClient;
-import com.liferay.segments.asah.connector.internal.client.AsahFaroBackendClientFactory;
+import com.liferay.segments.asah.connector.internal.client.AsahFaroBackendClientImpl;
+import com.liferay.segments.asah.connector.internal.client.JSONWebServiceClient;
 import com.liferay.segments.asah.connector.internal.client.model.Individual;
 import com.liferay.segments.asah.connector.internal.client.model.IndividualSegment;
 import com.liferay.segments.asah.connector.internal.client.model.Results;
 import com.liferay.segments.asah.connector.internal.client.util.OrderByField;
+import com.liferay.segments.asah.connector.internal.util.AsahUtil;
 import com.liferay.segments.constants.SegmentsEntryConstants;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.model.SegmentsEntryModel;
@@ -49,7 +51,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -59,16 +63,7 @@ import org.osgi.service.component.annotations.Reference;
 public class IndividualSegmentsChecker {
 
 	public void checkIndividualSegments() {
-		Optional<AsahFaroBackendClient> asahFaroBackendClientOptional =
-			_asahFaroBackendClientFactory.createAsahFaroBackendClient();
-
-		if (!asahFaroBackendClientOptional.isPresent()) {
-			return;
-		}
-
-		_asahFaroBackendClient = asahFaroBackendClientOptional.get();
-
-		_checkIndividualSegments(_portal.getDefaultCompanyId());
+		_checkIndividualSegments();
 		_checkIndividualSegmentsMemberships();
 	}
 
@@ -79,15 +74,8 @@ public class IndividualSegmentsChecker {
 			return;
 		}
 
-		if (_asahFaroBackendClient == null) {
-			Optional<AsahFaroBackendClient> asahFaroBackendClientOptional =
-				_asahFaroBackendClientFactory.createAsahFaroBackendClient();
-
-			if (!asahFaroBackendClientOptional.isPresent()) {
-				return;
-			}
-
-			_asahFaroBackendClient = asahFaroBackendClientOptional.get();
+		if (!AsahUtil.isAnalyticsEnabled(companyId)) {
+			return;
 		}
 
 		Individual individual = _asahFaroBackendClient.getIndividual(
@@ -123,6 +111,17 @@ public class IndividualSegmentsChecker {
 
 		_asahSegmentsEntryCache.putSegmentsEntryIds(
 			individualPK, segmentsEntryIds);
+	}
+
+	@Activate
+	protected void activate() {
+		_asahFaroBackendClient = new AsahFaroBackendClientImpl(
+			_jsonWebServiceClient);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_asahFaroBackendClient = null;
 	}
 
 	private void _addSegmentsEntry(
@@ -249,6 +248,25 @@ public class IndividualSegmentsChecker {
 		}
 	}
 
+	private void _checkIndividualSegments() {
+		ActionableDynamicQuery actionableDynamicQuery =
+			_companyLocalService.getActionableDynamicQuery();
+
+		actionableDynamicQuery.setPerformActionMethod(
+			(Company company) -> {
+				if (AsahUtil.isAnalyticsEnabled(company.getCompanyId())) {
+					_checkIndividualSegments(company.getCompanyId());
+				}
+			});
+
+		try {
+			actionableDynamicQuery.performActions();
+		}
+		catch (PortalException portalException) {
+			_log.error("Unable to check individual segments", portalException);
+		}
+	}
+
 	private void _checkIndividualSegments(long companyId) {
 		Results<IndividualSegment> individualSegmentResults = new Results<>();
 
@@ -356,16 +374,13 @@ public class IndividualSegmentsChecker {
 	private volatile AsahFaroBackendClient _asahFaroBackendClient;
 
 	@Reference
-	private AsahFaroBackendClientFactory _asahFaroBackendClientFactory;
-
-	@Reference
 	private AsahSegmentsEntryCache _asahSegmentsEntryCache;
 
 	@Reference
-	private ClassNameLocalService _classNameLocalService;
+	private CompanyLocalService _companyLocalService;
 
 	@Reference
-	private CompanyLocalService _companyLocalService;
+	private JSONWebServiceClient _jsonWebServiceClient;
 
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED)
 	private ModuleServiceLifecycle _moduleServiceLifecycle;

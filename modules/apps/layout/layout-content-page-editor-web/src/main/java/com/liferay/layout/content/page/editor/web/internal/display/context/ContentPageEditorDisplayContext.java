@@ -359,6 +359,9 @@ public class ContentPageEditorDisplayContext {
 			).put(
 				"portletNamespace", getPortletNamespace()
 			).put(
+				"previewPageURL",
+				getResourceURL("/content_layout/get_page_preview")
+			).put(
 				"publishURL", getPublishURL()
 			).put(
 				"redirectURL", _getRedirect()

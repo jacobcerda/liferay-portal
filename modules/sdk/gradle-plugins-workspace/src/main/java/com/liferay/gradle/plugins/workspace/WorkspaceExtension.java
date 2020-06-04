@@ -54,6 +54,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.logging.Logger;
 
 /**
  * @author David Truong
@@ -146,6 +147,76 @@ public class WorkspaceExtension {
 			_getDefaultTargetplatformVersion());
 
 		_rootProjectConfigurator = new RootProjectConfigurator(settings);
+
+		_gradle.afterProject(
+			new Closure<Void>(_gradle) {
+
+				@SuppressWarnings("unused")
+				public void doCall() {
+					Project rootProject = _gradle.getRootProject();
+
+					Logger logger = rootProject.getLogger();
+
+					if (!logger.isLifecycleEnabled()) {
+						return;
+					}
+
+					if (_product == null) {
+						logger.lifecycle(
+							"The property `liferay.workspace.product` has " +
+								"not been set. It is recommended to set this " +
+									"property in gradle.properties in the " +
+										"workspace directory. See LPS-111700.");
+
+						return;
+					}
+
+					String overridePropertyInfo =
+						"The %s property is currently overriding the default " +
+							"value managed by the liferay.workspace.product " +
+								"setting.";
+
+					if (!Objects.equals(
+							getAppServerTomcatVersion(),
+							_getDefaultAppServerVersion())) {
+
+						logger.lifecycle(
+							String.format(
+								overridePropertyInfo,
+								"app.server.tomcat.version"));
+					}
+
+					if (!Objects.equals(
+							getBundleUrl(), _getDefaultProductBundleUrl())) {
+
+						logger.lifecycle(
+							String.format(
+								overridePropertyInfo,
+								"liferay.workspace.bundle.url"));
+					}
+
+					if (!Objects.equals(
+							getDockerImageLiferay(),
+							_getDefaultDockerImage())) {
+
+						logger.lifecycle(
+							String.format(
+								overridePropertyInfo,
+								"liferay.workspace.docker.image.liferay"));
+					}
+
+					if (!Objects.equals(
+							getTargetPlatformVersion(),
+							_getDefaultTargetplatformVersion())) {
+
+						logger.lifecycle(
+							String.format(
+								overridePropertyInfo,
+								"liferay.workspace.target.platform.version"));
+					}
+				}
+
+			});
 	}
 
 	public String getAppServerTomcatVersion() {

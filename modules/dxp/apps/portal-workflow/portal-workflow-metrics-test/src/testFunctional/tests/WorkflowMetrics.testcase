@@ -522,7 +522,8 @@ definition {
 
 		WorkflowMetrics.createUsersAndAssignInstances(
 			numberOfBlogInstances = "4",
-			numberOfUsers = "3");
+			numberOfUsers = "3",
+			site = "Guest");
 
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 
@@ -649,7 +650,7 @@ definition {
 		property test.name.skip.portal.instance = "WorkflowMetrics#BulkReassignWorkflowModalExceptions";
 
 		WorkflowMetrics.bulkReassignSetup();
-		WorkflowMetrics.bulkReassignExceptionsSetup();
+		WorkflowMetrics.bulkReassignExceptionsSetup(site = "Guest");
 		WorkflowMetrics.goToWorkflowAllItems();
 		WorkflowMetrics.assertBulkCount();
 		WorkflowMetrics.goToBulkReassignSelectTasks();
@@ -1004,8 +1005,9 @@ definition {
 	@priority = "5"
 	test ReassignWorkflowInstance {
 		property portal.acceptance = "true";
+		property portal.upstream = "quarantine";
 
-		WorkflowMetrics.singleReassignSetup();
+		WorkflowMetrics.singleReassignSetup(site = "Guest");
 		WorkflowMetrics.goToWorkflowAllItems();
 		WorkflowMetrics.goToReassignSelectTask();
 		WorkflowMetrics.assertBulkModalTable();
@@ -1291,7 +1293,6 @@ definition {
 	@priority = "5"
 	test VerifyAllItemsFilterFromMetrics {
 		property portal.acceptance = "true";
-		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "WorkflowMetrics#VerifyAllItemsFilterFromMetrics";
 
 		var key_workflowInstanceName = "Blog Entry Title";
@@ -1390,7 +1391,6 @@ definition {
 	@priority = "5"
 	test VerifyCustomRangeDateInput {
 		property portal.acceptance = "true";
-		property portal.upstream = "quarantine";
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
@@ -1545,7 +1545,6 @@ definition {
 	@priority = "5"
 	test ViewPendingItems {
 		property portal.acceptance = "true";
-		property portal.upstream = "quarantine";
 
 		property test.name.skip.portal.instance = "WorkflowMetrics#ViewPendingItems";
 
@@ -1634,7 +1633,6 @@ definition {
 	@priority = "5"
 	test ViewPerformanceByAssigneePage {
 		property portal.acceptance = "true";
-		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "WorkflowMetrics#ViewPerformanceByAssigneePage";
 
 		WorkflowMetrics.createUsersAndAssignInstances(

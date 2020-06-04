@@ -216,7 +216,8 @@ definition {
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Site Administration",
-			portlet = "Workflow");
+			portlet = "Workflow",
+			site = "${site}");
 
 		Workflow.configureWorkflow(
 			workflowDefinition = "Single Approver Alternative",
@@ -246,7 +247,8 @@ definition {
 
 		WorkflowMetrics.createUsersAndInstancesWithGroovy(
 			numberOfBlogInstances = "3",
-			numberOfUsers = "3");
+			numberOfUsers = "3",
+			site = "Guest");
 	}
 
 	macro checkPendingWorkflowValues {
@@ -375,7 +377,8 @@ definition {
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Site Administration",
-			portlet = "Workflow");
+			portlet = "Workflow",
+			site = "${site}");
 
 		Workflow.configureWorkflow(
 			workflowDefinition = "Single Approver",
@@ -783,7 +786,8 @@ definition {
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Site Administration",
-			portlet = "Workflow");
+			portlet = "Workflow",
+			site = "${site}");
 
 		Workflow.configureWorkflow(
 			workflowDefinition = "Single Approver",
@@ -842,10 +846,15 @@ definition {
 				locator1 = "WorkflowAllItems#DETAIL_PAGE_CREATED_BY",
 				value1 = "${key_createdBy}");
 
-			if (!IsTextEqual.isPartialText(locator1 = "WorkflowAllItems#DETAIL_PAGE_CREATION_DATE", value1 = "${key_currentDate}")) {
+			if (!(IsTextEqual.isPartialText(locator1 = "WorkflowAllItems#DETAIL_PAGE_CREATION_DATE", value1 = "${key_currentDate}"))) {
 
 				var key_currentDateDay = MathUtil.sum("${key_currentDateDay}", "1");
 				var key_currentDate = "${key_currentDateMonthShort} ${key_currentDateDay}, ${key_currentDateYear}";
+
+				var isLessThan10 = MathUtil.isLessThan("${key_currentDateDay}", "10");
+				if ("${isLessThan10}" == "true") {
+					var key_currentDateDay = "0${key_currentDateDay}";
+				}
 			}
 
 			AssertTextEquals.assertPartialText(
@@ -875,10 +884,15 @@ definition {
 				locator1 = "WorkflowAllItems#DETAIL_PAGE_PROCESS_STATUS",
 				value1 = "Completed");
 
-			if (!IsTextEqual.isPartialText(locator1 = "WorkflowAllItems#DETAIL_PAGE_END_DATE", value1 = "${key_currentDate}")) {
+			if (!(IsTextEqual.isPartialText(locator1 = "WorkflowAllItems#DETAIL_PAGE_END_DATE", value1 = "${key_currentDate}"))) {
 
 				var key_currentDateDay = MathUtil.sum("${key_currentDateDay}", "1");
 				var key_currentDate = "${key_currentDateMonthShort} ${key_currentDateDay}, ${key_currentDateYear}";
+
+				var isLessThan10 = MathUtil.isLessThan("${key_currentDateDay}", "10");
+				if ("${isLessThan10}" == "true") {
+					var key_currentDateDay = "0${key_currentDateDay}";
+				}
 			}
 
 			AssertTextEquals.assertPartialText(

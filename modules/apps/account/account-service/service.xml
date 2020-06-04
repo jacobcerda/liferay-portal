@@ -25,6 +25,7 @@
 		<column name="domains" type="String" />
 		<column name="logoId" type="long" />
 		<column name="taxIdNumber" type="String" />
+		<column name="type" type="String" />
 		<column name="status" type="int" />
 
 		<!-- Order -->
@@ -153,6 +154,7 @@
 	<exceptions>
 		<exception>AccountEntryDomains</exception>
 		<exception>AccountEntryName</exception>
+		<exception>AccountEntryType</exception>
 		<exception>DuplicateAccountEntryId</exception>
 		<exception>DuplicateAccountEntryOrganizationRel</exception>
 		<exception>DuplicateAccountEntryUserRel</exception>

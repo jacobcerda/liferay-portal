@@ -14,24 +14,29 @@
 
 package com.liferay.multi.factor.authentication.web.internal.policy;
 
-import com.liferay.multi.factor.authentication.spi.checker.browser.MFABrowserChecker;
+import com.liferay.multi.factor.authentication.email.otp.configuration.MFAEmailOTPConfiguration;
+import com.liferay.multi.factor.authentication.spi.checker.browser.BrowserMFAChecker;
+import com.liferay.multi.factor.authentication.spi.checker.headless.HeadlessMFAChecker;
 import com.liferay.multi.factor.authentication.web.internal.system.configuration.MFASystemConfiguration;
 import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceMapper;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
-import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Marta Medio
@@ -39,16 +44,39 @@ import org.osgi.service.component.annotations.Deactivate;
 @Component(service = MFAPolicy.class)
 public class MFAPolicy {
 
-	public List<MFABrowserChecker> getAvailableMFABrowserCheckers(
+	public List<BrowserMFAChecker> getAvailableBrowserMFACheckers(
 		long companyId, long userId) {
 
-		List<MFABrowserChecker> mfaBrowserCheckers =
-			_mfaBrowserCheckerServiceTrackerMap.getService(companyId);
+		List<BrowserMFAChecker> browserMFACheckers =
+			_browserMFACheckerServiceTrackerMap.getService(companyId);
 
-		Stream<MFABrowserChecker> stream = mfaBrowserCheckers.stream();
+		if (browserMFACheckers == null) {
+			return Collections.emptyList();
+		}
+
+		Stream<BrowserMFAChecker> stream = browserMFACheckers.stream();
 
 		return stream.filter(
-			mfaBrowserChecker -> mfaBrowserChecker.isAvailable(userId)
+			browserMFAChecker -> browserMFAChecker.isAvailable(userId)
+		).collect(
+			Collectors.toList()
+		);
+	}
+
+	public List<HeadlessMFAChecker> getAvailableHeadlessMFACheckers(
+		long companyId, long userId) {
+
+		List<HeadlessMFAChecker> headlessMFACheckers =
+			_headlessMFACheckerServiceTrackerMap.getService(companyId);
+
+		if (headlessMFACheckers == null) {
+			return Collections.emptyList();
+		}
+
+		Stream<HeadlessMFAChecker> stream = headlessMFACheckers.stream();
+
+		return stream.filter(
+			headlessMFAChecker -> headlessMFAChecker.isAvailable(userId)
 		).collect(
 			Collectors.toList()
 		);
@@ -57,12 +85,15 @@ public class MFAPolicy {
 	public boolean isMFAEnabled(long companyId) {
 		try {
 			MFASystemConfiguration mfaSystemConfiguration =
-				ConfigurationProviderUtil.getSystemConfiguration(
+				_configurationProvider.getSystemConfiguration(
 					MFASystemConfiguration.class);
 
 			if (!mfaSystemConfiguration.disableGlobally()) {
-				return !ListUtil.isEmpty(
-					_mfaBrowserCheckerServiceTrackerMap.getService(companyId));
+				MFAEmailOTPConfiguration mfaEmailOTPConfiguration =
+					_configurationProvider.getCompanyConfiguration(
+						MFAEmailOTPConfiguration.class, companyId);
+
+				return mfaEmailOTPConfiguration.enabled();
 			}
 
 			return false;
@@ -72,20 +103,56 @@ public class MFAPolicy {
 		}
 	}
 
+	public boolean isSatisfied(
+		long companyId, HttpServletRequest httpServletRequest, long userId) {
+
+		for (HeadlessMFAChecker headlessMFAChecker :
+				getAvailableHeadlessMFACheckers(companyId, userId)) {
+
+			if (headlessMFAChecker.verifyHeadlessRequest(
+					httpServletRequest, userId)) {
+
+				return true;
+			}
+		}
+
+		for (BrowserMFAChecker browserMFAChecker :
+				getAvailableBrowserMFACheckers(companyId, userId)) {
+
+			if (browserMFAChecker.isBrowserVerified(
+					httpServletRequest, userId)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	@Activate
 	protected void activate(BundleContext bundleContext) {
-		_mfaBrowserCheckerServiceTrackerMap =
+		_browserMFACheckerServiceTrackerMap =
 			ServiceTrackerMapFactory.openMultiValueMap(
-				bundleContext, MFABrowserChecker.class, "(companyId=*)",
+				bundleContext, BrowserMFAChecker.class, "(companyId=*)",
+				new PropertyServiceReferenceMapper<>("companyId"));
+		_headlessMFACheckerServiceTrackerMap =
+			ServiceTrackerMapFactory.openMultiValueMap(
+				bundleContext, HeadlessMFAChecker.class, "(companyId=*)",
 				new PropertyServiceReferenceMapper<>("companyId"));
 	}
 
 	@Deactivate
 	protected void deactivate() {
-		_mfaBrowserCheckerServiceTrackerMap.close();
+		_browserMFACheckerServiceTrackerMap.close();
 	}
 
-	private ServiceTrackerMap<Long, List<MFABrowserChecker>>
-		_mfaBrowserCheckerServiceTrackerMap;
+	private ServiceTrackerMap<Long, List<BrowserMFAChecker>>
+		_browserMFACheckerServiceTrackerMap;
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
+
+	private ServiceTrackerMap<Long, List<HeadlessMFAChecker>>
+		_headlessMFACheckerServiceTrackerMap;
 
 }

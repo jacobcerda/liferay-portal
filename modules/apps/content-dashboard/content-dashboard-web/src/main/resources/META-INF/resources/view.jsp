@@ -65,6 +65,15 @@ ContentDashboardAdminManagementToolbarDisplayContext contentDashboardAdminManage
 					modelVar="contentDashboardItem"
 				>
 					<liferay-ui:search-container-column-text
+						cssClass="table-cell-expand table-title"
+						name="title"
+					>
+						<span class="lfr-portal-tooltip text-truncate-inline" title="<%= HtmlUtil.escape(contentDashboardItem.getTitle(locale)) %>">
+							<span class="text-truncate"><%= HtmlUtil.escape(contentDashboardItem.getTitle(locale)) %></span>
+						</span>
+					</liferay-ui:search-container-column-text>
+
+					<liferay-ui:search-container-column-text
 						name="author"
 					>
 						<span class="lfr-portal-tooltip" title="<%= HtmlUtil.escape(contentDashboardItem.getUserName()) %>">
@@ -75,17 +84,8 @@ ContentDashboardAdminManagementToolbarDisplayContext contentDashboardAdminManage
 					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-text
-						cssClass="table-cell-expand table-title"
-						name="title"
-					>
-						<span class="lfr-portal-tooltip text-truncate-inline" title="<%= HtmlUtil.escape(contentDashboardItem.getTitle(locale)) %>">
-							<span class="text-truncate"><%= HtmlUtil.escape(contentDashboardItem.getTitle(locale)) %></span>
-						</span>
-					</liferay-ui:search-container-column-text>
-
-					<liferay-ui:search-container-column-text
-						name="type"
-						value="<%= HtmlUtil.escape(contentDashboardItem.getType(locale)) %>"
+						name="subtype"
+						value="<%= HtmlUtil.escape(contentDashboardItem.getSubtype(locale)) %>"
 					/>
 
 					<liferay-ui:search-container-column-text

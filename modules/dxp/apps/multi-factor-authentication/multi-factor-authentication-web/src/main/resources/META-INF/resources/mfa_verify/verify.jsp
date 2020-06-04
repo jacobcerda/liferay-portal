@@ -19,9 +19,9 @@
 <%
 String redirect = ParamUtil.getString(request, "redirect");
 
-MFABrowserChecker mfaBrowserChecker = (MFABrowserChecker)request.getAttribute(MFAWebKeys.MFA_BROWSER_CHECKER);
-String mfaBrowserCheckerName = (String)request.getAttribute(MFAWebKeys.MFA_BROWSER_CHECKER_NAME);
-List<MFABrowserChecker> mfaBrowserCheckers = (List<MFABrowserChecker>)request.getAttribute(MFAWebKeys.MFA_BROWSER_CHECKERS);
+BrowserMFAChecker browserMFAChecker = (BrowserMFAChecker)request.getAttribute(MFAWebKeys.BROWSER_MFA_CHECKER);
+String browserMFACheckerName = (String)request.getAttribute(MFAWebKeys.BROWSER_MFA_CHECKER_NAME);
+List<BrowserMFAChecker> browserMFACheckers = (List<BrowserMFAChecker>)request.getAttribute(MFAWebKeys.BROWSER_MFA_CHECKERS);
 long mfaUserId = (Long)request.getAttribute(MFAWebKeys.MFA_USER_ID);
 
 int mfaCheckerIndex = ParamUtil.getInteger(request, "mfaCheckerIndex");
@@ -39,18 +39,18 @@ int mfaCheckerIndex = ParamUtil.getInteger(request, "mfaCheckerIndex");
 	<liferay-ui:error key="mfaVerificationFailed" message="multi-factor-authentication-has-failed" />
 
 	<%
-	mfaBrowserChecker.includeBrowserVerification(request, response, mfaUserId);
+	browserMFAChecker.includeBrowserVerification(request, response, mfaUserId);
 	%>
 
-	<c:if test="<%= mfaBrowserCheckers.size() > 1 %>">
-		<portlet:renderURL copyCurrentRenderParameters="<%= true %>" var="useAnotherMFABrowserChecker">
+	<c:if test="<%= browserMFACheckers.size() > 1 %>">
+		<portlet:renderURL copyCurrentRenderParameters="<%= true %>" var="useAnotherBrowserMFAChecker">
 			<portlet:param name="saveLastPath" value="<%= Boolean.FALSE.toString() %>" />
 			<portlet:param name="mvcRenderCommandName" value="/mfa_verify/view" />
 			<portlet:param name="redirect" value='<%= ParamUtil.getString(request, "redirect") %>' />
-			<portlet:param name="mfaCheckerIndex" value='<%= ((mfaCheckerIndex + 1) < mfaBrowserCheckers.size()) ? String.valueOf(mfaCheckerIndex + 1) : "0" %>' />
+			<portlet:param name="mfaCheckerIndex" value='<%= ((mfaCheckerIndex + 1) < browserMFACheckers.size()) ? String.valueOf(mfaCheckerIndex + 1) : "0" %>' />
 		</portlet:renderURL>
 
-		<b><a href="<%= HtmlUtil.escapeAttribute(useAnotherMFABrowserChecker) %>"><liferay-ui:message key="use-another-mfa-checker" />: <%= mfaBrowserCheckerName %></a></b>
+		<b><a href="<%= HtmlUtil.escapeAttribute(useAnotherBrowserMFAChecker) %>"><liferay-ui:message key="use-another-mfa-checker" />: <%= browserMFACheckerName %></a></b>
 	</c:if>
 
 	<aui:button-row>

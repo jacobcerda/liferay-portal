@@ -31,6 +31,10 @@ public class PortalTopLevelBuild extends DefaultTopLevelBuild {
 		return getBranchInformation("osb.faro");
 	}
 
+	public BranchInformation getPluginsBranchInformation() {
+		return getBranchInformation("plugins");
+	}
+
 	public BranchInformation getPortalBaseBranchInformation() {
 		BranchInformation portalBranchInformation =
 			getPortalBranchInformation();

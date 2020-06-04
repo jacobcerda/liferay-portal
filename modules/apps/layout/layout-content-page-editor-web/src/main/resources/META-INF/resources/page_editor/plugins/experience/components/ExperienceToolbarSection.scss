@@ -1,3 +1,4 @@
+@import '../../../app/components/variables';
 @import 'atlas-variables';
 
 .page-editor__toolbar-experience {
@@ -12,12 +13,6 @@
 		display: inline-block;
 		max-width: 100%;
 		width: 12em;
-	}
-
-	.dropdown-menu.toggled {
-		display: block;
-		max-width: 100vw;
-		width: 808px;
 	}
 
 	p {
@@ -46,4 +41,14 @@
 			border-color: $primary-l1;
 		}
 	}
+}
+
+.page-editor__toolbar-experience__dropdown-menu.toggled {
+	display: block;
+	left: 0;
+	max-width: 100vw;
+	position: absolute;
+	top: 0;
+	width: 808px;
+	z-index: $modalZIndex + 1;
 }

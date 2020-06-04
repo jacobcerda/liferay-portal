@@ -30,10 +30,12 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -259,6 +261,35 @@ public class BundleSupportCommandsTest {
 	@Test
 	public void testDistBundleZip() throws Exception {
 		_testDistBundle("zip");
+	}
+
+	@Test
+	public void testDownloadCommandQuiet() throws Exception {
+		DownloadCommand downloadCommand = new DownloadCommand();
+
+		downloadCommand.setCacheDir(temporaryFolder.newFolder("cacheDir"));
+		downloadCommand.setPassword(_HTTP_SERVER_PASSWORD);
+		downloadCommand.setQuiet(true);
+		downloadCommand.setUrl(_getHttpServerUrl(_CONTEXT_PATH_ZIP));
+		downloadCommand.setUserName(_HTTP_SERVER_USER_NAME);
+
+		PrintStream printStream = System.out;
+
+		try {
+			ByteArrayOutputStream byteArrayOutputStream =
+				new ByteArrayOutputStream();
+
+			System.setOut(new PrintStream(byteArrayOutputStream));
+
+			downloadCommand.execute();
+
+			String output = new String(byteArrayOutputStream.toByteArray());
+
+			Assert.assertTrue(output, output.isEmpty());
+		}
+		finally {
+			System.setOut(printStream);
+		}
 	}
 
 	@Test

@@ -580,10 +580,12 @@ definition {
 		Form.save();
 	}
 
-	@ignore = "true"
 	@priority = "5"
 	test AddFormWithSpanishAsDefaultPortalLanguage {
 		property test.name.skip.portal.instance = "Forms#AddFormWithSpanishAsDefaultPortalLanguage";
+		property portal.acceptance = "true";
+
+		Navigator.openURL();
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Localization",
@@ -663,13 +665,22 @@ definition {
 			fieldLabel = "Text Field On Spanish Portal",
 			fieldName = "TextFieldOnSpanishPortal",
 			fieldValue = "Text Field Value");
+
+		Navigator.openURL();
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Language",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.configureCurrentLanguagesCP(defaultPortalLanguage = "English (United States)");
 	}
 
 	@description = "This is a use case for LPS-75116 and LPS-79101."
 	@priority = "4"
 	test ChangeFieldType {
 		property test.name.skip.portal.instance = "Forms#ChangeFieldType";
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 
 		Navigator.openURL();
 
@@ -723,6 +734,8 @@ definition {
 
 		FormFields.viewRequiredAsterisk();
 
+		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
+
 		FormFields.changeFieldType(selectOption = "Select from List");
 
 		FormFields.viewTextLabel(
@@ -748,6 +761,8 @@ definition {
 				rowNumber = "${number}");
 		}
 
+		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
+
 		FormFields.changeFieldType(selectOption = "Single Selection");
 
 		FormFields.viewTextLabel(
@@ -765,6 +780,8 @@ definition {
 				fieldValue = "Select ${number}",
 				rowNumber = "${number}");
 		}
+
+		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
 
 		FormFields.changeFieldType(selectOption = "Date");
 
@@ -778,6 +795,8 @@ definition {
 
 		FormFields.viewRequiredAsterisk();
 
+		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
+
 		FormFields.changeFieldType(selectOption = "Single Selection");
 
 		FormFields.viewTextLabel(
@@ -803,6 +822,8 @@ definition {
 				rowNumber = "${number}");
 		}
 
+		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
+
 		FormFields.changeFieldType(selectOption = "Multiple Selection");
 
 		FormFields.viewTextLabel(
@@ -821,6 +842,8 @@ definition {
 				rowNumber = "${number}");
 		}
 
+		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
+
 		FormFields.changeFieldType(selectOption = "Grid");
 
 		FormFields.viewTextLabel(
@@ -833,6 +856,8 @@ definition {
 
 		FormFields.viewRequiredAsterisk();
 
+		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
+
 		FormFields.changeFieldType(selectOption = "Numeric");
 
 		FormFields.viewTextLabel(
@@ -842,6 +867,8 @@ definition {
 		FormFields.viewRadioValue(
 			fieldName = "dataType",
 			fieldValue = "Integer");
+
+		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
 
 		FormFields.changeFieldType(selectOption = "Multiple Selection");
 
@@ -867,6 +894,8 @@ definition {
 				optionValue = "Select ${number}",
 				rowNumber = "${number}");
 		}
+
+		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
 
 		FormFields.changeFieldType(selectOption = "Select from List");
 
@@ -961,6 +990,7 @@ definition {
 			fieldValue = "Test");
 	}
 
+	@ignore
 	@description = "This is a use case for LPS-68418."
 	@priority = "3"
 	test ConfigureAutosave {
@@ -979,6 +1009,8 @@ definition {
 			configurationName = "Forms",
 			configurationScope = "Site Scope");
 
+		Pause(locator1 = "2000");
+
 		FormFields.viewTextLabel(
 			fieldLabel = "Autosave Interval",
 			fieldName = "autosaveInterval");
@@ -988,6 +1020,8 @@ definition {
 			fieldValue = "2");
 
 		SystemSettings.saveConfiguration();
+
+		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
@@ -1385,7 +1419,7 @@ definition {
 	@priority = "4"
 	test EditAllFormFieldNames {
 		property test.name.skip.portal.instance = "Forms#EditAllFormFieldNames";
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 		property portal.upstream = "quarantine";
 
 		Navigator.openURL();

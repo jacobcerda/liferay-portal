@@ -82,6 +82,15 @@ public abstract class FileEntryBasicListInfoListRenderer
 
 		infoListBasicListTag.setListStyleKey(getListStyle());
 
+		Optional<String> templateKeyOptional =
+			infoListRendererContext.getTemplateKeyOptional();
+
+		if (templateKeyOptional.isPresent() &&
+			Validator.isNotNull(templateKeyOptional.get())) {
+
+			infoListBasicListTag.setTemplateKey(templateKeyOptional.get());
+		}
+
 		try {
 			infoListBasicListTag.doTag(
 				infoListRendererContext.getHttpServletRequest(),

@@ -17,7 +17,8 @@ import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import {useModal} from '@clayui/modal';
 import {useIsMounted} from 'frontend-js-react-web';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
+import {createPortal} from 'react-dom';
 
 import {config} from '../../../app/config/index';
 import {useDispatch, useSelector} from '../../../app/store/index';
@@ -86,6 +87,12 @@ const ExperienceSelector = ({
 		({permissions}) => permissions.UPDATE
 	);
 
+	const buttonRef = useRef();
+	const [buttonBoundingClientRect, setButtonBoundingClientRect] = useState({
+		bottom: 0,
+		left: 0,
+	});
+
 	const isMounted = useIsMounted();
 	const [open, setOpen] = useState(false);
 	const [openModal, setOpenModal] = useState(false);
@@ -98,7 +105,11 @@ const ExperienceSelector = ({
 	});
 
 	const [debouncedSetOpen] = useDebounceCallback((value) => {
-		if (isMounted()) {
+		if (isMounted() && buttonRef.current) {
+			setButtonBoundingClientRect(
+				buttonRef.current.getBoundingClientRect()
+			);
+
 			setOpen(value);
 		}
 	}, 100);
@@ -276,6 +287,7 @@ const ExperienceSelector = ({
 				id={selectId}
 				onBlur={handleDropdownButtonBlur}
 				onClick={handleDropdownButtonClick}
+				ref={buttonRef}
 				small
 				type="button"
 			>
@@ -286,38 +298,43 @@ const ExperienceSelector = ({
 				)}
 			</ClayButton>
 
-			{/** render this via createPortal **/}
-			{open && (
-				<div
-					className="dropdown-menu p-4 rounded toggled"
-					onBlur={handleDropdownBlur}
-					onFocus={handleDropdownFocus}
-					tabIndex="-1"
-				>
-					<ExperiencesSelectorHeader
-						canCreateExperiences={true}
-						onNewExperience={handleOnNewExperiecneClick}
-						showEmptyStateMessage={experiences.length <= 1}
-					/>
-
-					{experiences.length > 1 && (
-						<ExperiencesList
-							activeExperienceId={
-								selectedExperience.segmentsExperienceId
-							}
-							defaultExperienceId={
-								config.defaultSegmentsExperienceId
-							}
-							experiences={experiences}
-							hasUpdatePermissions={hasUpdatePermissions}
-							onDeleteExperience={deleteExperience}
-							onEditExperience={handleEditExperienceClick}
-							onPriorityDecrease={decreasePriority}
-							onPriorityIncrease={increasePriority}
+			{open &&
+				createPortal(
+					<div
+						className="dropdown-menu p-4 page-editor__toolbar-experience__dropdown-menu rounded toggled"
+						onBlur={handleDropdownBlur}
+						onFocus={handleDropdownFocus}
+						style={{
+							left: buttonBoundingClientRect.left,
+							top: buttonBoundingClientRect.bottom,
+						}}
+						tabIndex="-1"
+					>
+						<ExperiencesSelectorHeader
+							canCreateExperiences={true}
+							onNewExperience={handleOnNewExperiecneClick}
+							showEmptyStateMessage={experiences.length <= 1}
 						/>
-					)}
-				</div>
-			)}
+
+						{experiences.length > 1 && (
+							<ExperiencesList
+								activeExperienceId={
+									selectedExperience.segmentsExperienceId
+								}
+								defaultExperienceId={
+									config.defaultSegmentsExperienceId
+								}
+								experiences={experiences}
+								hasUpdatePermissions={hasUpdatePermissions}
+								onDeleteExperience={deleteExperience}
+								onEditExperience={handleEditExperienceClick}
+								onPriorityDecrease={decreasePriority}
+								onPriorityIncrease={increasePriority}
+							/>
+						)}
+					</div>,
+					document.body
+				)}
 
 			{openModal && (
 				<ExperienceModal
