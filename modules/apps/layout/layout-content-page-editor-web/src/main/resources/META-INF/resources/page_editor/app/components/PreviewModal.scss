@@ -15,10 +15,19 @@
 		&:last-child {
 			justify-content: flex-end;
 		}
+
+		label {
+			font-size: 14px;
+		}
+
+		select {
+			min-width: 200px;
+			padding: 0.25rem 2em 0.25em 0.75rem;
+		}
 	}
 
 	.modal-body {
-		background-color: $gray-400;
+		background-color: red;
 		display: flex;
 		justify-content: center;
 

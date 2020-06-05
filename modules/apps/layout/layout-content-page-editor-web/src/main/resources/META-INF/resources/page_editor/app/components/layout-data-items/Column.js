@@ -18,37 +18,31 @@ import React from 'react';
 
 import {getLayoutDataItemPropTypes} from '../../../prop-types/index';
 import {useSelector} from '../../store/index';
-import {getResponsiveConfig} from '../../utils/getResponsiveConfig';
+import {getResponsiveColumnSize} from '../../utils/getResponsiveColumnSize';
+import {useUpdatedLayoutDataContext} from '../ResizeContext';
 
 const Column = React.forwardRef(
 	({children, className, item, ...props}, ref) => {
-		const layoutData = useSelector((state) => state.layoutData);
-		const parentItem = layoutData.items[item.parentId];
 		const selectedViewportSize = useSelector(
 			(state) => state.selectedViewportSize
 		);
+		const updatedLayoutData = useUpdatedLayoutDataContext();
 
-		const parentItemConfig = getResponsiveConfig(
-			parentItem.config,
+		const itemConfig = updatedLayoutData
+			? updatedLayoutData.items[item.itemId].config
+			: item.config;
+
+		const columnSize = getResponsiveColumnSize(
+			itemConfig,
 			selectedViewportSize
 		);
-
-		const {modulesPerRow, numberOfColumns} = parentItemConfig;
-
-		let columnSize = (item.config.size * numberOfColumns) / modulesPerRow;
-
-		if (numberOfColumns === 5 && modulesPerRow !== numberOfColumns) {
-			columnSize = parentItem.children.indexOf(item.itemId) > 2 ? 6 : 4;
-		}
 
 		return (
 			<div
 				{...props}
 				className={classNames(className, 'col', {
 					[`col-${columnSize}`]: columnSize,
-					empty:
-						modulesPerRow !== numberOfColumns &&
-						!item.children.length,
+					empty: !item.children.length,
 				})}
 				ref={ref}
 			>

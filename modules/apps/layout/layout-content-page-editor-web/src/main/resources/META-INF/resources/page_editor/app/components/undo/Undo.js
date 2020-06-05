@@ -42,7 +42,10 @@ const isWithinIframe = () => {
 };
 
 const isUndoCombination = (event) => {
-	return event.keyCode === Z_KEYCODE && (event.ctrlKey || event.metaKey);
+	const ctrlOrMeta =
+		(event.ctrlKey && !event.metaKey) || (!event.ctrlKey && event.metaKey);
+
+	return event.keyCode === Z_KEYCODE && ctrlOrMeta && !event.altKey;
 };
 
 export default function Undo({onRedo = () => {}, onUndo = () => {}}) {
@@ -57,7 +60,12 @@ export default function Undo({onRedo = () => {}, onUndo = () => {}}) {
 			) {
 				event.preventDefault();
 
-				onUndo();
+				if (event.shiftKey) {
+					onRedo();
+				}
+				else {
+					onUndo();
+				}
 			}
 		},
 		true,
@@ -65,6 +73,7 @@ export default function Undo({onRedo = () => {}, onUndo = () => {}}) {
 	);
 
 	const undoHistory = useSelector((state) => state.undoHistory);
+	const redoHistory = useSelector((state) => state.redoHistory);
 
 	return (
 		<>
@@ -82,7 +91,7 @@ export default function Undo({onRedo = () => {}, onUndo = () => {}}) {
 				<ClayButtonWithIcon
 					aria-label={Liferay.Language.get('redo')}
 					className="btn-monospaced"
-					disabled
+					disabled={!redoHistory || !redoHistory.length}
 					displayType="secondary"
 					onClick={onRedo}
 					small

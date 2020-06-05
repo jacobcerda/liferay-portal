@@ -13,19 +13,15 @@
  */
 
 import selectExperience from '../../../plugins/experience/thunks/selectExperience';
-import getSegmentsExperienceName from '../../utils/getSegmentsExperienceName';
 
 function undoAction({action}) {
-	return selectExperience({id: action.segmentsExperienceId, isUndo: true});
+	return selectExperience({id: action.segmentsExperienceId});
 }
 
 function getDerivedStateForUndo({action, state}) {
 	return {
+		nextSegmentsExperienceId: action.payload.segmentsExperienceId,
 		segmentsExperienceId: state.segmentsExperienceId,
-		segmentsExperienceName: getSegmentsExperienceName(
-			action.payload.segmentsExperienceId,
-			state.availableSegmentsExperiences
-		),
 	};
 }
 

@@ -14,11 +14,15 @@
 
 package com.liferay.layout.util.structure;
 
+import com.liferay.layout.responsive.ViewportSize;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
 import com.liferay.petra.lang.HashUtil;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -52,7 +56,25 @@ public class ColumnLayoutStructureItem extends LayoutStructureItem {
 
 	@Override
 	public JSONObject getItemConfigJSONObject() {
-		return JSONUtil.put("size", _size);
+		JSONObject jsonObject = JSONUtil.put("size", _size);
+
+		for (ViewportSize viewportSize : ViewportSize.values()) {
+			if (viewportSize.equals(ViewportSize.DESKTOP)) {
+				continue;
+			}
+
+			JSONObject viewportSizeConfigurationJSONObject =
+				_viewportSizeConfigurations.getOrDefault(
+					viewportSize.getViewportSizeId(),
+					JSONFactoryUtil.createJSONObject());
+
+			jsonObject.put(
+				viewportSize.getViewportSizeId(),
+				JSONUtil.put(
+					"size", viewportSizeConfigurationJSONObject.get("size")));
+		}
+
+		return jsonObject;
 	}
 
 	@Override
@@ -64,6 +86,10 @@ public class ColumnLayoutStructureItem extends LayoutStructureItem {
 		return _size;
 	}
 
+	public Map<String, JSONObject> getViewportSizeConfigurations() {
+		return _viewportSizeConfigurations;
+	}
+
 	@Override
 	public int hashCode() {
 		return HashUtil.hash(0, getItemId());
@@ -73,13 +99,44 @@ public class ColumnLayoutStructureItem extends LayoutStructureItem {
 		_size = size;
 	}
 
+	public void setViewportSizeConfiguration(
+		String viewportSizeId, JSONObject configurationJSONObject) {
+
+		JSONObject currentConfigurationJSONObject =
+			_viewportSizeConfigurations.getOrDefault(
+				viewportSizeId, JSONFactoryUtil.createJSONObject());
+
+		if (configurationJSONObject.has("size")) {
+			currentConfigurationJSONObject.put(
+				"size", configurationJSONObject.getInt("size"));
+		}
+
+		_viewportSizeConfigurations.put(
+			viewportSizeId, currentConfigurationJSONObject);
+	}
+
 	@Override
 	public void updateItemConfig(JSONObject itemConfigJSONObject) {
 		if (itemConfigJSONObject.has("size")) {
 			setSize(itemConfigJSONObject.getInt("size"));
 		}
+
+		for (ViewportSize viewportSize : ViewportSize.values()) {
+			if (viewportSize.equals(ViewportSize.DESKTOP)) {
+				continue;
+			}
+
+			if (itemConfigJSONObject.has(viewportSize.getViewportSizeId())) {
+				setViewportSizeConfiguration(
+					viewportSize.getViewportSizeId(),
+					itemConfigJSONObject.getJSONObject(
+						viewportSize.getViewportSizeId()));
+			}
+		}
 	}
 
 	private int _size;
+	private Map<String, JSONObject> _viewportSizeConfigurations =
+		new HashMap<>();
 
 }

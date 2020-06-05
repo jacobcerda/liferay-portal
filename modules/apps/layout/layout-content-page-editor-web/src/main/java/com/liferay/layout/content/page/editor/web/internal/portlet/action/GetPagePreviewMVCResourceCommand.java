@@ -19,8 +19,10 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -71,10 +73,12 @@ public class GetPagePreviewMVCResourceCommand extends BaseMVCResourceCommand {
 			WebKeys.THEME_DISPLAY);
 
 		Locale currentLocale = themeDisplay.getLocale();
+
 		long[] currentSegmentsExperienceIds = GetterUtil.getLongValues(
 			resourceRequest.getAttribute(
 				SegmentsWebKeys.SEGMENTS_EXPERIENCE_IDS),
 			new long[] {SegmentsExperienceConstants.ID_DEFAULT});
+		User currentUser = (User)resourceRequest.getAttribute(WebKeys.USER);
 
 		try {
 			long segmentsExperienceId = ParamUtil.getLong(
@@ -90,7 +94,16 @@ public class GetPagePreviewMVCResourceCommand extends BaseMVCResourceCommand {
 
 			themeDisplay.setLocale(LocaleUtil.fromLanguageId(languageId));
 
+			themeDisplay.setSignedIn(false);
+
+			User defaultUser = _userLocalService.getDefaultUser(
+				themeDisplay.getCompanyId());
+
+			themeDisplay.setUser(defaultUser);
+
 			Layout layout = themeDisplay.getLayout();
+
+			layout.setClassNameId(0);
 
 			HttpServletRequest httpServletRequest =
 				_portal.getHttpServletRequest(resourceRequest);
@@ -109,12 +122,12 @@ public class GetPagePreviewMVCResourceCommand extends BaseMVCResourceCommand {
 					servletContext, httpServletRequest, httpServletResponse,
 					"portal_normal.ftl", layoutSet.getTheme(), false));
 
-			Element bodyElement = document.body();
+			Element contentElement = document.getElementById("content");
 
 			StringBundler sb = (StringBundler)httpServletRequest.getAttribute(
 				WebKeys.LAYOUT_CONTENT);
 
-			bodyElement.html(sb.toString());
+			contentElement.html(sb.toString());
 
 			ServletResponseUtil.write(httpServletResponse, document.toString());
 		}
@@ -124,10 +137,15 @@ public class GetPagePreviewMVCResourceCommand extends BaseMVCResourceCommand {
 				currentSegmentsExperienceIds);
 
 			themeDisplay.setLocale(currentLocale);
+			themeDisplay.setSignedIn(true);
+			themeDisplay.setUser(currentUser);
 		}
 	}
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }

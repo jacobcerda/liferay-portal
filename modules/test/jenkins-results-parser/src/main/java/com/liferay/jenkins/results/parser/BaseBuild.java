@@ -2494,7 +2494,7 @@ public abstract class BaseBuild implements Build {
 		for (Build downstreamBuild : downstreamBuilds) {
 			String downstreamBuildResult = downstreamBuild.getResult();
 
-			if (downstreamBuildResult.equals(result)) {
+			if (Objects.equals(downstreamBuildResult, result)) {
 				count++;
 			}
 		}

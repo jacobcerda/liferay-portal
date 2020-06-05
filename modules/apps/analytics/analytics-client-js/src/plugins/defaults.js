@@ -15,13 +15,23 @@
 import blogs from './blogs';
 import custom from './custom';
 import documents from './documents';
+import dxp from './dxp';
 import forms from './forms';
 import resolution from './resolution';
 import scrolling from './scrolling';
 import timing from './timing';
 import webContents from './web-contents';
 
-export {blogs, documents, forms, resolution, scrolling, timing, webContents};
+export {
+	blogs,
+	documents,
+	dxp,
+	forms,
+	resolution,
+	scrolling,
+	timing,
+	webContents,
+};
 export default [
 
 	// Resolution should come first, because it chages the context
@@ -31,6 +41,7 @@ export default [
 	blogs,
 	custom,
 	documents,
+	dxp,
 	forms,
 	scrolling,
 	timing,

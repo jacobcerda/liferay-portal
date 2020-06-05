@@ -46,9 +46,9 @@ export default (props) => {
 		icon,
 		label,
 		name,
-		onClick = () => {},
+		onClick,
 		onDelete,
-		onDoubleClick = () => {},
+		onDoubleClick,
 	} = props;
 
 	const [{dragging}, drag, preview] = useDrag({
@@ -68,10 +68,6 @@ export default (props) => {
 	}, [preview]);
 
 	const handleOnClick = () => {
-		if (disabled) {
-			return;
-		}
-
 		onClick({...props});
 	};
 
@@ -102,8 +98,8 @@ export default (props) => {
 				}
 			)}
 			data-field-type-name={name}
-			onClick={() => handleOnClick()}
-			onDoubleClick={() => handleOnDoubleClick()}
+			onClick={onClick && handleOnClick}
+			onDoubleClick={onDoubleClick && handleOnDoubleClick}
 			ref={drag}
 		>
 			{dragAlignment === 'left' && (

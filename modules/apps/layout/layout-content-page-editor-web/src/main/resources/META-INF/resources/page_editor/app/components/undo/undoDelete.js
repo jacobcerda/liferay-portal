@@ -12,12 +12,11 @@
  * details.
  */
 
-import addUsedWigets from '../../actions/addUsedWidgets';
-import {updateLayoutData} from '../../actions/index';
+import addItem from '../../actions/addItem';
 import LayoutService from '../../services/LayoutService';
 
 function undoAction({action, store}) {
-	const {layoutData, portletIds} = action;
+	const {itemId, layoutData, portletIds} = action;
 
 	return (dispatch) => {
 		return LayoutService.updateLayoutData({
@@ -25,8 +24,7 @@ function undoAction({action, store}) {
 			onNetworkStatus: dispatch,
 			segmentsExperienceId: store.segmentsExperienceId,
 		}).then(() => {
-			dispatch(updateLayoutData({isUndo: true, layoutData}));
-			dispatch(addUsedWigets({portletIds}));
+			dispatch(addItem({itemId, layoutData, portletIds}));
 		});
 	};
 }

@@ -12,50 +12,40 @@
  * details.
  */
 
-import ClayForm, {ClayInput} from '@clayui/form';
-import React, {useState} from 'react';
+import React from 'react';
 
-import MappingPanel from './MappingPanel';
+import MappingField from './MappingField';
 
-function SeoMapping({fields, selectedSource}) {
-	const [source, setSource] = useState(selectedSource);
-	const [field, setField] = useState(fields[0]);
+function SeoMapping({
+	description,
+	fields,
+	portletNamespace,
+	selectedSource,
+	title,
+}) {
+	const ns = (obj) => Liferay.Util.ns(portletNamespace, obj);
 
 	return (
 		<>
-			<ClayForm.Group>
-				<label className="dpt-mapping-label" htmlFor="titleSelector">
-					<div className="control-label">
-						{Liferay.Language.get('html-title')}
-					</div>
-					<ClayInput.Group>
-						<ClayInput.GroupItem>
-							<ClayInput
-								className="dpt-mapping-input"
-								id="title"
-								readOnly
-								type="text"
-								value={`${source.classNameLabel}${
-									source.classTypeLabel
-										? ' - ' + source.classTypeLabel
-										: ''
-								}: ${field.label}`}
-							/>
-						</ClayInput.GroupItem>
-						<ClayInput.GroupItem shrink>
-							<MappingPanel
-								field={field}
-								fields={fields}
-								onChange={({field, source}) => {
-									setSource(source);
-									setField(field);
-								}}
-								source={source}
-							/>
-						</ClayInput.GroupItem>
-					</ClayInput.Group>
-				</label>
-			</ClayForm.Group>
+			<MappingField
+				fields={fields}
+				label={Liferay.Language.get('html-title')}
+				name={ns('title')}
+				selectedField={
+					fields.find(({key}) => key === title) || fields[0]
+				}
+				selectedSource={selectedSource}
+			/>
+
+			<MappingField
+				fields={fields}
+				label={Liferay.Language.get('description')}
+				name={ns('description')}
+				selectedField={
+					fields.find(({key}) => key === description) || fields[0]
+				}
+				selectedSource={selectedSource}
+			/>
 		</>
 	);
 }

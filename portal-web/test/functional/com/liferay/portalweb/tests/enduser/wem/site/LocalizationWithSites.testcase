@@ -246,7 +246,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "Usuarios",
-			panel = "Control Panel",
+			panel = "Panel de control",
 			portlet = "Usuarios y organizaciones");
 
 		Organization.addWithLocalizedCountryCP(
@@ -262,7 +262,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "Usuarios",
-			panel = "Control Panel",
+			panel = "Panel de control",
 			portlet = "Usuarios y organizaciones");
 
 		Organization.viewLocalizedCountryCP(
@@ -437,9 +437,11 @@ definition {
 			pageName = "Site Page 1",
 			siteName = "Site Name");
 
+		ProductMenuHelper.closeProductMenu();
+
 		GlobalMenu.gotoPortlet(
 			category = "Configuración",
-			panel = "Control Panel",
+			panel = "Panel de control",
 			portlet = "Configuración de instancia");
 
 		PortalSettings.viewCurrentDefaultPortalLanguageCP(

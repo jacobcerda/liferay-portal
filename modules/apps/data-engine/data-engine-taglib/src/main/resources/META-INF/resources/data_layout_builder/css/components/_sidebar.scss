@@ -28,6 +28,7 @@
 
 		.sidebar-body {
 			height: calc(100vh - 224px);
+			overflow: hidden;
 
 			.component-tbar {
 				height: auto;
@@ -47,5 +48,15 @@
 
 	.lfr-ddm-form-container .ddm-field-options-container .ddm-options-target {
 		margin: 2px 0;
+	}
+}
+
+.display-settings.data-layout-builder-sidebar {
+	.sidebar-header {
+		padding-top: 0;
+
+		.component-title {
+			display: none;
+		}
 	}
 }

@@ -875,6 +875,8 @@ definition {
 
 		UserNavigator.gotoRoles();
 
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
 		AssertClick(
 			locator1 = "UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_SELECT_LINK",
 			value1 = "Select");
@@ -1662,6 +1664,8 @@ definition {
 		UserNavigator.gotoMemberships();
 
 		var key_siteName = "${siteName}";
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 
 		AssertClick(
 			locator1 = "UsersAndOrganizationsEditUser#SITES_SELECT_LINK",

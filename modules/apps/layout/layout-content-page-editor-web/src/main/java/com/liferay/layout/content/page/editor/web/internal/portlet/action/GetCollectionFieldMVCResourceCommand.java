@@ -167,8 +167,9 @@ public class GetCollectionFieldMVCResourceCommand
 				}
 
 				InfoItemFormProvider<Object> infoItemFormProvider =
-					_infoItemFormProviderTracker.getInfoItemFormProvider(
-						itemType);
+					(InfoItemFormProvider<Object>)
+						_infoItemFormProviderTracker.getInfoItemFormProvider(
+							itemType);
 
 				if (infoItemFormProvider == null) {
 					if (_log.isWarnEnabled()) {
@@ -239,7 +240,7 @@ public class GetCollectionFieldMVCResourceCommand
 		InfoFormValues infoFormValues = infoItemFormProvider.getInfoFormValues(
 			object);
 
-		for (InfoFieldValue infoFieldValue :
+		for (InfoFieldValue<Object> infoFieldValue :
 				infoFormValues.getInfoFieldValues()) {
 
 			Object value = infoFieldValue.getValue(locale);

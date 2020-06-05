@@ -33,6 +33,7 @@ import com.liferay.item.selector.ItemSelectorCriterion;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
 import com.liferay.item.selector.criteria.image.criterion.ImageItemSelectorCriterion;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.seo.canonical.url.LayoutSEOCanonicalURLProvider;
@@ -59,6 +60,7 @@ import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -397,6 +399,10 @@ public class LayoutsSEODisplayContext {
 				fetchLayoutPageTemplateEntryByPlid(_selPlid);
 
 		return HashMapBuilder.<String, Object>put(
+			"description",
+			_selLayout.getDescription(
+				LocaleUtil.fromLanguageId(_selLayout.getDefaultLanguageId()))
+		).put(
 			"fields",
 			_infoItemFormProviderTracker.getInfoItemFormProvider(
 				layoutPageTemplateEntry.getClassName()
@@ -427,7 +433,26 @@ public class LayoutsSEODisplayContext {
 					layoutPageTemplateEntry.getClassName(),
 					layoutPageTemplateEntry.getClassTypeId())
 			)
+		).put(
+			"title",
+			_selLayout.getTitle(
+				LocaleUtil.fromLanguageId(_selLayout.getDefaultLanguageId()))
 		).build();
+	}
+
+	public boolean isDisplayPageTemplate() {
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				fetchLayoutPageTemplateEntryByPlid(_selPlid);
+
+		if ((layoutPageTemplateEntry != null) &&
+			(layoutPageTemplateEntry.getType() ==
+				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public boolean isPrivateLayout() {

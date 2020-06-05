@@ -21,6 +21,8 @@ public class QAWebsitesTopLevelBuild extends DefaultTopLevelBuild {
 
 	public QAWebsitesTopLevelBuild(String url, TopLevelBuild topLevelBuild) {
 		super(url, topLevelBuild);
+
+		findDownstreamBuilds();
 	}
 
 	public BranchInformation getQAWebsitesBranchInformation() {

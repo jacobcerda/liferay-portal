@@ -26,6 +26,7 @@ import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.InfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.field.type.URLInfoFieldType;
+import com.liferay.info.item.InfoItemClassPKReference;
 import com.liferay.info.item.NoSuchInfoItemException;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
@@ -101,9 +102,17 @@ public class InfoDisplayContributorWrapper
 		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
 
 		try {
-			return _convertToInfoFormValues(
+			InfoFormValues infoFormValues = _convertToInfoFormValues(
 				_infoDisplayContributor.getInfoDisplayFieldsValues(
 					itemObject, locale));
+
+			infoFormValues.setInfoItemClassPKReference(
+				new InfoItemClassPKReference(
+					_infoDisplayContributor.getClassName(),
+					_infoDisplayContributor.getInfoDisplayObjectClassPK(
+						itemObject)));
+
+			return infoFormValues;
 		}
 		catch (PortalException portalException) {
 			throw new RuntimeException(portalException);
@@ -135,7 +144,7 @@ public class InfoDisplayContributorWrapper
 			InfoFieldType infoFieldType = _getInfoFieldTypeType(
 				infoDisplayField.getType());
 
-			InfoLocalizedValue labelInfoLocalizedValue =
+			InfoLocalizedValue<String> labelInfoLocalizedValue =
 				InfoLocalizedValue.builder(
 				).addValue(
 					locale, infoDisplayField.getLabel()
@@ -173,7 +182,7 @@ public class InfoDisplayContributorWrapper
 				TextInfoFieldType.INSTANCE, fieldLabelLocalizedValue,
 				fieldName);
 
-			InfoFieldValue infoFormValue = new InfoFieldValue(
+			InfoFieldValue<Object> infoFormValue = new InfoFieldValue(
 				infoField, entry.getValue());
 
 			infoFormValues.add(infoFormValue);

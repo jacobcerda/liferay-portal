@@ -19,15 +19,18 @@ import {
 	DELETE_ITEM,
 	DUPLICATE_ITEM,
 	MOVE_ITEM,
-	UPDATE_COL_SIZE_START,
+	SWITCH_VIEWPORT_SIZE,
+	UPDATE_COL_SIZE,
 	UPDATE_EDITABLE_VALUES,
 	UPDATE_FRAGMENT_ENTRY_LINK_CONFIGURATION,
 	UPDATE_ITEM_CONFIG,
 	UPDATE_LANGUAGE_ID,
 } from '../../actions/types';
+import {UNDO_TYPES} from '../../config/constants/undoTypes';
+import getSegmentsExperienceName from '../../utils/getSegmentsExperienceName';
 
-export function getActionLabel(action) {
-	switch (action.type) {
+export function getActionLabel(action, type, {availableSegmentsExperiences}) {
+	switch (action.originalType || action.type) {
 		case ADD_FRAGMENT_ENTRY_LINKS:
 		case ADD_ITEM:
 			return Liferay.Util.sub(
@@ -50,12 +53,28 @@ export function getActionLabel(action) {
 				action.itemName
 			);
 		case SELECT_SEGMENTS_EXPERIENCE:
+			return type === UNDO_TYPES.undo
+				? Liferay.Util.sub(
+						Liferay.Language.get('select-x-experience'),
+						getSegmentsExperienceName(
+							action.nextSegmentsExperienceId,
+							availableSegmentsExperiences
+						)
+				  )
+				: Liferay.Util.sub(
+						Liferay.Language.get('select-x-experience'),
+						getSegmentsExperienceName(
+							action.segmentsExperienceId,
+							availableSegmentsExperiences
+						)
+				  );
+		case SWITCH_VIEWPORT_SIZE:
 			return Liferay.Util.sub(
-				Liferay.Language.get('select-x-experience'),
-				action.segmentsExperienceName
+				Liferay.Language.get('change-viewport'),
+				action.itemName
 			);
 
-		case UPDATE_COL_SIZE_START:
+		case UPDATE_COL_SIZE:
 			return Liferay.Language.get('update-column-size');
 		case UPDATE_FRAGMENT_ENTRY_LINK_CONFIGURATION:
 		case UPDATE_ITEM_CONFIG:

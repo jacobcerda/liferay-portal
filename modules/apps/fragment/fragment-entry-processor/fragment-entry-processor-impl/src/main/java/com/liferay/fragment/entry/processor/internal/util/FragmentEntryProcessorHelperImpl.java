@@ -116,7 +116,8 @@ public class FragmentEntryProcessorHelperImpl
 		}
 
 		InfoItemFormProvider<Object> infoItemFormProvider =
-			_infoItemFormProviderTracker.getInfoItemFormProvider(className);
+			(InfoItemFormProvider<Object>)
+				_infoItemFormProviderTracker.getInfoItemFormProvider(className);
 
 		if (infoItemFormProvider == null) {
 			if (_log.isWarnEnabled()) {
@@ -128,9 +129,10 @@ public class FragmentEntryProcessorHelperImpl
 			return null;
 		}
 
-		InfoFieldValue infoFieldValue = infoItemFormProvider.getInfoFieldValue(
-			displayObjectOptional.get(),
-			jsonObject.getString("collectionFieldId"));
+		InfoFieldValue<Object> infoFieldValue =
+			infoItemFormProvider.getInfoFieldValue(
+				displayObjectOptional.get(),
+				jsonObject.getString("collectionFieldId"));
 
 		if (infoFieldValue == null) {
 			return null;
@@ -203,8 +205,9 @@ public class FragmentEntryProcessorHelperImpl
 			return null;
 		}
 
-		InfoItemFormProvider infoItemFormProvider =
-			_infoItemFormProviderTracker.getInfoItemFormProvider(className);
+		InfoItemFormProvider<Object> infoItemFormProvider =
+			(InfoItemFormProvider<Object>)
+				_infoItemFormProviderTracker.getInfoItemFormProvider(className);
 
 		if (infoItemFormProvider == null) {
 			if (_log.isWarnEnabled()) {

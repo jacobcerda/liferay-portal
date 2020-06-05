@@ -109,7 +109,7 @@ class ElementsDefaultEventHandler extends DefaultEventHandler {
 		});
 	}
 
-	publishToLive(itemData) {
+	publishArticleToLive(itemData) {
 		if (
 			confirm(
 				Liferay.Language.get(
@@ -118,6 +118,18 @@ class ElementsDefaultEventHandler extends DefaultEventHandler {
 			)
 		) {
 			this._send(itemData.publishArticleURL);
+		}
+	}
+
+	publishFolderToLive(itemData) {
+		if (
+			confirm(
+				Liferay.Language.get(
+					'are-you-sure-you-want-to-publish-the-selected-folder'
+				)
+			)
+		) {
+			this._send(itemData.publishFolderURL);
 		}
 	}
 

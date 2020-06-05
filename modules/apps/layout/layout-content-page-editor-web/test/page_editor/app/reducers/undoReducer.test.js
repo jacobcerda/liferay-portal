@@ -24,7 +24,7 @@ import {
 	ADD_UNDO_ACTION,
 	DUPLICATE_ITEM,
 	MOVE_ITEM,
-	UPDATE_COL_SIZE_START,
+	UPDATE_COL_SIZE,
 	UPDATE_EDITABLE_VALUES,
 	UPDATE_FRAGMENT_ENTRY_LINK_CONFIGURATION,
 	UPDATE_ITEM_CONFIG,
@@ -38,7 +38,10 @@ import {SELECT_SEGMENTS_EXPERIENCE} from '../../../../src/main/resources/META-IN
 import selectExperience from '../../../../src/main/resources/META-INF/resources/page_editor/plugins/experience/actions/selectExperience';
 
 const STATE = {
-	availableSegmentsExperiences: {0: {name: 'default'}},
+	availableSegmentsExperiences: {
+		0: {name: 'default'},
+		2: {name: 'experience-2'},
+	},
 	layoutData: {items: []},
 	undoHistory: [],
 };
@@ -239,7 +242,7 @@ describe('undoReducer', () => {
 		const layoutDataActionTypes = [
 			ADD_ITEM,
 			MOVE_ITEM,
-			UPDATE_COL_SIZE_START,
+			UPDATE_COL_SIZE,
 			UPDATE_ITEM_CONFIG,
 		];
 

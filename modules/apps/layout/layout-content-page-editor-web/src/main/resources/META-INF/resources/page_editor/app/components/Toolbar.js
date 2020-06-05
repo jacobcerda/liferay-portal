@@ -22,11 +22,11 @@ import ReactDOM from 'react-dom';
 import useLazy from '../../core/hooks/useLazy';
 import useLoad from '../../core/hooks/useLoad';
 import usePlugins from '../../core/hooks/usePlugins';
-import selectExperience from '../../plugins/experience/actions/selectExperience';
 import * as Actions from '../actions/index';
 import {PAGE_TYPES} from '../config/constants/pageTypes';
 import {config} from '../config/index';
 import {useDispatch, useSelector} from '../store/index';
+import redo from '../thunks/redo';
 import undo from '../thunks/undo';
 import {useDropClear} from '../utils/useDragAndDrop';
 import {useSelectItem} from './Controls';
@@ -60,21 +60,10 @@ function ToolbarBody() {
 
 	const [openPreviewModal, setOpenPreviewModal] = useState(false);
 
-	const [
-		currentSegmentsExperienceId,
-		setCurrentSegmentsExperienceId,
-	] = useState('');
-
 	const {observer} = useModal({
 		onClose: () => {
 			if (isMounted()) {
 				setOpenPreviewModal(false);
-
-				dispatch(
-					selectExperience({
-						segmentsExperienceId: currentSegmentsExperienceId,
-					})
-				);
 			}
 		},
 	});
@@ -152,12 +141,6 @@ function ToolbarBody() {
 		}
 	};
 
-	const handlePreviewPage = () => {
-		setCurrentSegmentsExperienceId(segmentsExperienceId);
-
-		setOpenPreviewModal(true);
-	};
-
 	const handleSubmit = (event) => {
 		if (
 			config.masterUsed &&
@@ -173,6 +156,10 @@ function ToolbarBody() {
 
 	const onUndo = () => {
 		dispatch(undo({store}));
+	};
+
+	const onRedo = () => {
+		dispatch(redo({store}));
 	};
 
 	const deselectItem = (event) => {
@@ -269,13 +256,13 @@ function ToolbarBody() {
 
 			<ul className="navbar-nav" onClick={deselectItem}>
 				<NetworkStatusBar {...network} />
-				{config.undoEnabled && <Undo onUndo={onUndo} />}
+				{config.undoEnabled && <Undo onRedo={onRedo} onUndo={onUndo} />}
 
 				<li className="nav-item">
 					<ClayButton
 						className="btn btn-secondary mr-3"
 						displayType="secondary"
-						onClick={handlePreviewPage}
+						onClick={() => setOpenPreviewModal(true)}
 						small
 						type="button"
 					>

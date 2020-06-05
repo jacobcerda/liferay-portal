@@ -47,6 +47,18 @@ definition {
 			User.changeProfileImage(imageName = "${accountLogo}");
 		}
 
+		if (isSet(accountType)) {
+			SelectField.select(
+				selectFieldLabel = "Type",
+				selectFieldValue = "${accountType}");
+		}
+
+		if (isSet(accountTaxID)) {
+			PortletEntry.inputText(
+				fieldLabel = "Tax ID",
+				text = "${accountTaxID}");
+		}
+
 		if ("${accountStatus}" == "Inactive") {
 			Uncheck.uncheckToggleSwitch(locator1 = "ToggleSwitch#ACCOUNT_STATUS");
 		}

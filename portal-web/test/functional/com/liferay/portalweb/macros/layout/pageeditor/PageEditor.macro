@@ -124,12 +124,19 @@ definition {
 			}
 		}
 		else {
-			DragAndDrop.javaScriptDragAndDropToObject(
-				key_collectionName = "${collectionName}",
-				key_fragmentName = "${fragmentName}",
-				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
-				locator2 = "PageEditor#FRAGMENT_DROP_TARGET",
-				value1 = "");
+			var browserType = PropsUtil.get("browser.type");
+
+			if ("${browserType}" == "internetexplorer") {
+				DragAndDrop.javaScriptDragAndDropFragmentIE(fragmentOrder = "${fragmentOrder}");
+			}
+			else {
+				DragAndDrop.javaScriptDragAndDropToObject(
+					key_collectionName = "${collectionName}",
+					key_fragmentName = "${fragmentName}",
+					locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+					locator2 = "PageEditor#FRAGMENT_DROP_TARGET",
+					value1 = "");
+			}
 		}
 
 		PageEditor.waitForAutoSave();
@@ -265,9 +272,9 @@ definition {
 			key_fragmentName = "${portletName}",
 			locator1 = "Fragment#FRAGMENT_HEADER");
 
-		Type(
-			locator1 = "PageEditor#WIDGETS_APPLICATION_SEARCH_FIELD",
-			value1 = "");
+		PageEditor.gotoTab(tabName = "Contents");
+
+		PageEditor.gotoTab(tabName = "Fragments and Widgets");
 
 		PageEditor.closeSidebar(tabName = "Fragments and Widgets");
 	}

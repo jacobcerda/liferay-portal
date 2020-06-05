@@ -13,6 +13,7 @@
  */
 
 import ClayButton from '@clayui/button';
+import {compile} from 'path-to-regexp';
 import React, {useState} from 'react';
 
 import Popover from '../../components/popover/Popover.es';
@@ -20,7 +21,7 @@ import {useNavigation} from '../../hooks/useNavigation.es';
 import SelectObjects from './SelectObjectsDropDown.es';
 
 const NewAppPopover = (
-	{alignElement, history, onCancel, visible},
+	{alignElement, editPath, history, onCancel, visible},
 	forwardRef
 ) => {
 	const [selectedObject, setSelectedObject] = useState({});
@@ -28,7 +29,9 @@ const NewAppPopover = (
 	const navigation = useNavigation(history);
 
 	const onClick = () => {
-		navigation.push(`/standard/${selectedObject.id}/deploy`);
+		navigation.push(
+			compile(editPath[0])({dataDefinitionId: selectedObject.id})
+		);
 	};
 
 	return (
@@ -56,7 +59,6 @@ const NewAppPopover = (
 								displayType="secondary"
 								onClick={() => {
 									setSelectedObject({});
-
 									onCancel();
 								}}
 								small
@@ -84,7 +86,7 @@ const NewAppPopover = (
 
 						<span className="font-weight-light text-secondary">
 							{Liferay.Language.get(
-								'create-an-app-to-manage-the-data-of-an-object'
+								'create-an-app-to-collect-and-manage-an-objects-data'
 							)}
 						</span>
 					</>

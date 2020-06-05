@@ -46,7 +46,7 @@
 		border-radius: 50%;
 		cursor: col-resize;
 		height: 16px;
-		left: 100%;
+		left: 0;
 		outline: none;
 		padding: 0;
 		position: absolute;
@@ -57,6 +57,10 @@
 
 		html.rtl & {
 			transform: translate(50%, -50%);
+		}
+
+		&-first {
+			left: 13px;
 		}
 	}
 
@@ -106,7 +110,7 @@
 
 	&__col.empty {
 		flex-basis: unset;
-		min-height: 5em;
+		min-height: 10em;
 	}
 
 	&__row.align-bottom,
@@ -137,7 +141,7 @@
 	&__section.empty > .container,
 	&__section.empty > .container-fluid,
 	&__row.empty {
-		height: 10em;
+		min-height: 10em;
 	}
 
 	&__editable {
@@ -189,6 +193,10 @@
 	&__row.no-gutters:before {
 		left: 0;
 		width: 100%;
+	}
+
+	&__row.no-gutters .page-editor__col__resizer-first {
+		left: 1px;
 	}
 
 	&__no-fragments-message {

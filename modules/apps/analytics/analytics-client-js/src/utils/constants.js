@@ -37,3 +37,13 @@ export const STORAGE_KEY_USER_ID = 'ac_client_user_id';
 export const LIMIT_FAILED_ATTEMPTS = 7;
 
 export const REQUEST_TIMEOUT = 5000;
+
+//DXP Timing
+
+export const MARK_LOAD_EVENT_START = 'loadEventStartSPA';
+
+export const MARK_NAVIGATION_START = 'navigationStartSPA';
+
+export const MARK_PAGE_LOAD_TIME = 'pageLoadTimeSPA';
+
+export const MARK_VIEW_DURATION = 'viewDurationSPA';

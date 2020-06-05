@@ -66,7 +66,8 @@ public class GetAssetFieldValueMVCResourceCommand
 		String className = _portal.getClassName(classNameId);
 
 		InfoItemFormProvider<Object> infoItemFormProvider =
-			_infoItemFormProviderTracker.getInfoItemFormProvider(className);
+			(InfoItemFormProvider<Object>)
+				_infoItemFormProviderTracker.getInfoItemFormProvider(className);
 
 		if (infoItemFormProvider == null) {
 			if (_log.isWarnEnabled()) {
@@ -117,8 +118,8 @@ public class GetAssetFieldValueMVCResourceCommand
 		String languageId = ParamUtil.getString(
 			resourceRequest, "languageId", themeDisplay.getLanguageId());
 
-		InfoFieldValue infoFieldValue = infoItemFormProvider.getInfoFieldValue(
-			object, fieldId);
+		InfoFieldValue<Object> infoFieldValue =
+			infoItemFormProvider.getInfoFieldValue(object, fieldId);
 
 		Object value = StringPool.BLANK;
 
