@@ -14,74 +14,22 @@
 
 import React from 'react';
 
-import Card from './components/card/Card.es';
-import BarChart from './components/chart/bar/BarChart.es';
-import PieChart from './components/chart/pie/PieChart.es';
-import EmptyState from './components/empty-state/EmptyState.es';
-import List from './components/list/List.es';
-import toDataArray, {sumTotalEntries, toArray} from './utils/data.es';
-import fieldTypes from './utils/fieldTypes.es';
+import CardList from './components/card/CardList.es';
+import Sidebar from './components/sidebar/Sidebar.es';
+import {SidebarContextProvider} from './components/sidebar/SidebarContext.es';
 
-const chartFactory = (options, type, values, totalEntries) => {
-	switch (type) {
-		case 'checkbox_multiple':
-			return (
-				<BarChart
-					data={toDataArray(options, values)}
-					totalEntries={totalEntries}
-				/>
-			);
+export default ({
+	data,
+	fields,
+	formReportRecordsFieldValuesURL,
+	portletNamespace,
+}) => (
+	<SidebarContextProvider
+		formReportRecordsFieldValuesURL={formReportRecordsFieldValuesURL}
+		portletNamespace={portletNamespace}
+	>
+		<CardList data={data} fields={fields} />
 
-		case 'radio':
-		case 'select':
-			return (
-				<PieChart
-					data={toDataArray(options, values)}
-					totalEntries={totalEntries}
-				/>
-			);
-
-		case 'text':
-			return <List data={toArray(values)} totalEntries={totalEntries} />;
-
-		default:
-			return null;
-	}
-};
-
-export default ({data, fields}) => {
-	let hasCards = false;
-
-	const cards = fields.map(({label, name, options, type}, index) => {
-		const {values = {}, totalEntries = sumTotalEntries(values)} =
-			data[name] || {};
-
-		const chart = chartFactory(options, type, values, totalEntries);
-
-		if (chart === null) {
-			return null;
-		}
-		else {
-			hasCards = true;
-		}
-
-		const field = {
-			label,
-			name,
-			type,
-			...fieldTypes[type],
-		};
-
-		return (
-			<Card field={field} key={index} totalEntries={totalEntries}>
-				{chart}
-			</Card>
-		);
-	});
-
-	if (!hasCards) {
-		return <EmptyState />;
-	}
-
-	return cards;
-};
+		<Sidebar />
+	</SidebarContextProvider>
+);

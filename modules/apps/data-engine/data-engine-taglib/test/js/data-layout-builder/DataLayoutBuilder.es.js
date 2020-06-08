@@ -113,10 +113,11 @@ describe('DataLayoutBuilder', () => {
 	it('is serializing pages', () => {
 		component = new DataLayoutBuilder(props);
 
-		expect(component.serialize([])).toMatchObject({
+		expect(component.serialize([], [])).toMatchObject({
 			definition:
 				'{"availableLanguageIds":["en_US"],"dataDefinitionFields":[],"defaultLanguageId":"en_US"}',
-			layout: '{"dataLayoutPages":[],"paginationMode":"wizard"}',
+			layout:
+				'{"dataLayoutPages":[],"dataRules":[],"paginationMode":"wizard"}',
 		});
 	});
 

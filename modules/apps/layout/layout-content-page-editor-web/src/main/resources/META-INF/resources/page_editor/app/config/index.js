@@ -17,7 +17,7 @@ const DEFAULT_CONFIG = {
 };
 
 /** @type {import('../../types/config').Config} */
-export let config = null;
+export let config = DEFAULT_CONFIG;
 
 /**
  * Extracts the immutable parts from the server data.
@@ -34,6 +34,7 @@ export function initializeConfig(backendConfig) {
 	const augmentedPanels = augmentPanelData(pluginsRootPath, sidebarPanels);
 
 	const syntheticItems = {
+		marginOptions: [...backendConfig.paddingOptions],
 		panels: generatePanels(augmentedPanels),
 		sidebarPanels: partitionPanels(augmentedPanels),
 		toolbarId,

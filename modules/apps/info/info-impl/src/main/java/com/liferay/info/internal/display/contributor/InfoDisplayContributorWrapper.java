@@ -20,12 +20,12 @@ import com.liferay.info.display.contributor.InfoDisplayObjectProvider;
 import com.liferay.info.display.contributor.field.InfoDisplayContributorFieldType;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.field.InfoForm;
 import com.liferay.info.field.InfoFormValues;
 import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.InfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.field.type.URLInfoFieldType;
+import com.liferay.info.form.InfoForm;
 import com.liferay.info.item.InfoItemClassPKReference;
 import com.liferay.info.item.NoSuchInfoItemException;
 import com.liferay.info.item.provider.InfoItemFormProvider;
@@ -33,6 +33,7 @@ import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
+import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.util.Locale;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class InfoDisplayContributorWrapper
 
 	@Override
 	public InfoForm getInfoForm() {
-		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+		Locale locale = _getLocale();
 
 		try {
 			Set<InfoDisplayField> infoDisplayFields =
@@ -68,7 +69,7 @@ public class InfoDisplayContributorWrapper
 
 	@Override
 	public InfoForm getInfoForm(long itemClassTypeId) {
-		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+		Locale locale = _getLocale();
 
 		try {
 			return _convertToInfoForm(
@@ -85,7 +86,7 @@ public class InfoDisplayContributorWrapper
 
 	@Override
 	public InfoForm getInfoForm(Object itemObject) {
-		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+		Locale locale = _getLocale();
 
 		try {
 			return _convertToInfoForm(
@@ -99,7 +100,7 @@ public class InfoDisplayContributorWrapper
 
 	@Override
 	public InfoFormValues getInfoFormValues(Object itemObject) {
-		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+		Locale locale = _getLocale();
 
 		try {
 			InfoFormValues infoFormValues = _convertToInfoFormValues(
@@ -136,7 +137,7 @@ public class InfoDisplayContributorWrapper
 	private InfoForm _convertToInfoForm(
 		Set<InfoDisplayField> infoDisplayFields) {
 
-		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+		Locale locale = _getLocale();
 
 		InfoForm infoForm = new InfoForm("fields");
 
@@ -163,7 +164,7 @@ public class InfoDisplayContributorWrapper
 	private InfoFormValues _convertToInfoFormValues(
 		Map<String, Object> infoDisplayFieldsValues) {
 
-		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+		Locale locale = _getLocale();
 
 		InfoFormValues infoFormValues = new InfoFormValues();
 
@@ -194,7 +195,8 @@ public class InfoDisplayContributorWrapper
 	private InfoFieldType _getInfoFieldTypeType(String infoDisplayFieldType) {
 		if (Objects.equals(
 				infoDisplayFieldType,
-				InfoDisplayContributorFieldType.IMAGE.getValue())) {
+				InfoDisplayContributorFieldType.IMAGE.getValue()) ||
+			Objects.equals(infoDisplayFieldType, "ddm-image")) {
 
 			return ImageInfoFieldType.INSTANCE;
 		}
@@ -206,6 +208,16 @@ public class InfoDisplayContributorWrapper
 		}
 
 		return TextInfoFieldType.INSTANCE;
+	}
+
+	private Locale _getLocale() {
+		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+
+		if (locale == null) {
+			locale = LocaleUtil.getDefault();
+		}
+
+		return locale;
 	}
 
 	private final InfoDisplayContributor<Object> _infoDisplayContributor;

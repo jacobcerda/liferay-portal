@@ -27,7 +27,11 @@ describe('List', () => {
 	afterEach(cleanup);
 
 	it('renders', () => {
-		const {asFragment} = render(<List {...props} />);
+		const {asFragment, container} = render(<List {...props} />);
+
+		const li = container.querySelectorAll('li');
+
+		expect(li.length).toBe(5);
 
 		expect(asFragment()).toMatchSnapshot();
 	});

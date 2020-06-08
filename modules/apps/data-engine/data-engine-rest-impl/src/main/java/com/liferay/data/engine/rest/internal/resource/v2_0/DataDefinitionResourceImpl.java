@@ -492,7 +492,11 @@ public class DataDefinitionResourceImpl
 		DDMForm ddmForm = DataDefinitionUtil.toDDMForm(
 			dataDefinition, _ddmFormFieldTypeServicesTracker);
 
-		_validate(dataDefinition, ddmForm);
+		_validate(
+			dataDefinition,
+			_dataDefinitionContentTypeTracker.getDataDefinitionContentType(
+				contentType),
+			ddmForm);
 
 		DDMFormSerializerSerializeRequest.Builder builder =
 			DDMFormSerializerSerializeRequest.Builder.newBuilder(ddmForm);
@@ -593,10 +597,16 @@ public class DataDefinitionResourceImpl
 					dataLayout));
 		}
 
+		DDMStructure ddmStructure = _ddmStructureLocalService.getDDMStructure(
+			dataDefinitionId);
 		DDMForm ddmForm = DataDefinitionUtil.toDDMForm(
 			dataDefinition, _ddmFormFieldTypeServicesTracker);
 
-		_validate(dataDefinition, ddmForm);
+		_validate(
+			dataDefinition,
+			_dataDefinitionContentTypeTracker.getDataDefinitionContentType(
+				ddmStructure.getClassNameId()),
+			ddmForm);
 
 		_removeFieldsFromDataLayoutsAndDataListViews(
 			dataDefinition, dataDefinitionId,
@@ -1224,6 +1234,12 @@ public class DataDefinitionResourceImpl
 		}
 
 		if (ddmFormValidationException instanceof
+				DDMFormValidationException.MustSetFieldsForForm) {
+
+			return new DataDefinitionValidationException.MustSetFields();
+		}
+
+		if (ddmFormValidationException instanceof
 				DDMFormValidationException.MustSetFieldType) {
 
 			DDMFormValidationException.MustSetFieldType mustSetFieldType =
@@ -1414,7 +1430,10 @@ public class DataDefinitionResourceImpl
 			_spiDDMFormRuleConverter);
 	}
 
-	private void _validate(DataDefinition dataDefinition, DDMForm ddmForm) {
+	private void _validate(
+		DataDefinition dataDefinition,
+		DataDefinitionContentType dataDefinitionContentType, DDMForm ddmForm) {
+
 		try {
 			_ddmFormValidator.validate(ddmForm);
 
@@ -1431,8 +1450,9 @@ public class DataDefinitionResourceImpl
 			}
 		}
 		catch (DDMFormValidationException ddmFormValidationException) {
-			if (ddmFormValidationException instanceof
-					DDMFormValidationException.MustSetFieldsForForm) {
+			if ((ddmFormValidationException instanceof
+					DDMFormValidationException.MustSetFieldsForForm) &&
+				dataDefinitionContentType.allowEmptyDataDefinition()) {
 
 				return;
 			}

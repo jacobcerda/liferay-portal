@@ -18,6 +18,7 @@ import {Route, Switch} from 'react-router-dom';
 import ControlMenu from '../../components/control-menu/ControlMenu.es';
 import NavigationBar from '../../components/navigation-bar/NavigationBar.es';
 import {getItem} from '../../utils/client.es';
+import {getLocalizedValue} from '../../utils/lang.es';
 import ListApps from '../apps/ListApps.es';
 import EditApp from '../apps/edit/EditApp.es';
 import EditFormView from '../form-view/EditFormView.es';
@@ -41,10 +42,8 @@ export default ({
 	useEffect(() => {
 		getItem(
 			`/o/data-engine/v2.0/data-definitions/${dataDefinitionId}`
-		).then((dataDefinition) =>
-			setTitle(
-				dataDefinition.name[Liferay.ThemeDisplay.getDefaultLanguageId()]
-			)
+		).then(({defaultLanguageId, name}) =>
+			setTitle(getLocalizedValue(defaultLanguageId, name))
 		);
 	}, [dataDefinitionId]);
 

@@ -1821,6 +1821,8 @@ definition {
 
 		SystemSettings.saveConfiguration();
 
+		Navigator.openURL();
+
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
 			panel = "Site Administration",
@@ -1839,6 +1841,8 @@ definition {
 			configurationScope = "Site Scope");
 
 		SystemSettings.resetConfiguration(configurationName = "Forms");
+
+		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
@@ -3855,7 +3859,7 @@ definition {
 	@priority = "5"
 	test SubmitFormWithRequiredRepeatingTextField {
 		property test.name.skip.portal.instance = "Forms#SubmitFormWithRequiredRepeatingTextField";
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 
 		Navigator.openURL();
 
@@ -3908,6 +3912,8 @@ definition {
 		FormFields.addRepeatableField(
 			fieldName = "TextField",
 			repeatableFieldNumber = "1");
+
+		Pause(locator1 = "2000");
 
 		FormFields.editRepeatingText(
 			fieldName = "TextField",
@@ -4635,7 +4641,7 @@ definition {
 	@priority = "4"
 	test ViewRepeatableTextFieldLabel {
 		property test.name.skip.portal.instance = "Forms#ViewRepeatableTextFieldLabel";
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 
 		Navigator.openURL();
 
@@ -4686,6 +4692,8 @@ definition {
 		FormFields.addRepeatableField(
 			fieldName = "TextField",
 			repeatableFieldNumber = "1");
+
+		Pause(locator1 = "2000");
 
 		FormFields.viewRepeatableTextFieldLabel(
 			fieldLabel = "Text Field",

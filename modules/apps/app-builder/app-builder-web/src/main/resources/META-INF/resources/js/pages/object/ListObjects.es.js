@@ -21,6 +21,7 @@ import ListView from '../../components/list-view/ListView.es';
 import PermissionsModal from '../../components/permissions/PermissionsModal.es';
 import {ACTIONS} from '../../pages/entry/PermissionsContext.es';
 import {getItem, updateItem} from '../../utils/client.es';
+import {getLocalizedValue} from '../../utils/lang.es';
 import {fromNow} from '../../utils/time.es';
 
 const COLUMNS = [
@@ -50,8 +51,6 @@ export default ({history, listViewProps = {}, objectType}) => {
 		dataDefinitionId: null,
 		endpoint: null,
 	});
-
-	const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
 
 	const {actions = []} = listViewProps;
 
@@ -126,16 +125,26 @@ export default ({history, listViewProps = {}, objectType}) => {
 			<AppNavigationBar />
 
 			<ListView columns={COLUMNS} {...listViewProps}>
-				{(item) => ({
-					...item,
-					dateCreated: fromNow(item.dateCreated),
-					dateModified: fromNow(item.dateModified),
-					name: (
-						<Link to={`/${objectType}/${item.id}/form-views`}>
-							{item.name[defaultLanguageId]}
-						</Link>
-					),
-				})}
+				{(item) => {
+					const {
+						dateCreated,
+						dateModified,
+						defaultLanguageId,
+						id,
+						name,
+					} = item;
+
+					return {
+						...item,
+						dateCreated: fromNow(dateCreated),
+						dateModified: fromNow(dateModified),
+						name: (
+							<Link to={`/${objectType}/${id}/form-views`}>
+								{getLocalizedValue(defaultLanguageId, name)}
+							</Link>
+						),
+					};
+				}}
 			</ListView>
 
 			<PermissionsModal

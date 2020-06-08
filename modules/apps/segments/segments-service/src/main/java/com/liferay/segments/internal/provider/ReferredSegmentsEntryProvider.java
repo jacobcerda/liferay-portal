@@ -67,6 +67,7 @@ public class ReferredSegmentsEntryProvider
 		serviceTrackerMap.close();
 	}
 
+	@Override
 	protected String getSource() {
 		return SegmentsEntryConstants.SOURCE_REFERRED;
 	}

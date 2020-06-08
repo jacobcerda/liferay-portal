@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
 import java.util.Locale;
@@ -53,6 +54,13 @@ public class DataLayoutBuilderTag extends BaseDataLayoutBuilderTag {
 				DataLayoutTaglibUtil.resolveModule(
 					"data-engine-taglib/data_layout_builder/js" +
 						"/DataLayoutBuilder.es"));
+
+			if (Validator.isNull(getDataLayoutId())) {
+				setDataLayoutId(
+					DataLayoutTaglibUtil.getDefaultDataLayoutId(
+						getDataDefinitionId(), httpServletRequest));
+			}
+
 			setNamespacedAttribute(
 				httpServletRequest, "fieldTypes",
 				DataLayoutTaglibUtil.getFieldTypesJSONArray(

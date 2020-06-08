@@ -16,6 +16,7 @@ package com.liferay.document.library.web.internal.portlet.action;
 
 import com.liferay.data.engine.rest.dto.v2_0.DataDefinition;
 import com.liferay.data.engine.rest.dto.v2_0.DataLayout;
+import com.liferay.data.engine.rest.resource.exception.DataDefinitionValidationException;
 import com.liferay.data.engine.rest.resource.v2_0.DataDefinitionResource;
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryTypeException;
@@ -112,7 +113,8 @@ public class EditFileEntryTypeDataDefinitionMVCActionCommand
 				}
 			}
 		}
-		catch (DuplicateFileEntryTypeException | NoSuchMetadataSetException |
+		catch (DataDefinitionValidationException |
+			   DuplicateFileEntryTypeException | NoSuchMetadataSetException |
 			   RequiredStructureException | StructureDefinitionException |
 			   StructureDuplicateElementException | StructureNameException
 				   exception) {

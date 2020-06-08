@@ -81,26 +81,6 @@ public class BadgeTag extends BaseContainerTag {
 	}
 
 	@Override
-	protected String getEndPage() {
-		return _END_PAGE;
-	}
-
-	@Override
-	protected String getStartPage() {
-		return _START_PAGE;
-	}
-
-	/**
-	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
-	 *             #processCssClasses(String)}
-	 */
-	@Deprecated
-	@Override
-	protected String processClassName(Set<String> className) {
-		return processCssClasses(className);
-	}
-
-	@Override
 	protected String processCssClasses(Set<String> cssClasses) {
 		cssClasses.add("badge");
 		cssClasses.add("badge-" + _displayType);
@@ -124,10 +104,6 @@ public class BadgeTag extends BaseContainerTag {
 	}
 
 	private static final String _ATTRIBUTE_NAMESPACE = "clay:badge:";
-
-	private static final String _END_PAGE = "/badge/end.jsp";
-
-	private static final String _START_PAGE = "/badge/start.jsp";
 
 	private String _displayType = "primary";
 	private String _label;

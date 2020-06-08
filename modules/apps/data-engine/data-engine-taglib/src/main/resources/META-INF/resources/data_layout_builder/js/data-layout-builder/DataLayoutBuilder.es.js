@@ -119,7 +119,7 @@ class DataLayoutBuilder extends React.Component {
 		this.eventEmitter.emit(event, payload, error);
 	}
 
-	getDataDefinitionAndDataLayout(pages) {
+	getDataDefinitionAndDataLayout(pages, rules) {
 		const {
 			defaultLanguageId = themeDisplay.getDefaultLanguageId(),
 		} = this.props;
@@ -162,6 +162,17 @@ class DataLayoutBuilder extends React.Component {
 						description: page.localizedDescription,
 						title: page.localizedTitle,
 					};
+				}),
+				dataRules: rules.map((rule) => {
+					if (typeof rule.name === 'string') {
+						rule.name = {
+							[defaultLanguageId]: rule.name,
+						};
+					}
+
+					delete rule.ruleEditedIndex;
+
+					return rule;
 				}),
 				paginationMode: 'wizard',
 			},
@@ -359,9 +370,9 @@ class DataLayoutBuilder extends React.Component {
 	}
 
 	getFormData() {
-		const {pages} = this.getStore();
+		const {pages, rules} = this.getStore();
 
-		return this.getDataDefinitionAndDataLayout(pages);
+		return this.getDataDefinitionAndDataLayout(pages, rules || []);
 	}
 
 	getLayoutProvider() {
@@ -433,8 +444,11 @@ class DataLayoutBuilder extends React.Component {
 		});
 	}
 
-	serialize(pages) {
-		const {definition, layout} = this.getDataDefinitionAndDataLayout(pages);
+	serialize(pages, rules) {
+		const {definition, layout} = this.getDataDefinitionAndDataLayout(
+			pages,
+			rules || []
+		);
 
 		return {
 			definition: JSON.stringify(definition),

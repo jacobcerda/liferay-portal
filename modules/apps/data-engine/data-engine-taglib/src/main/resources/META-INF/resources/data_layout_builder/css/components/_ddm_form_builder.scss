@@ -40,3 +40,10 @@ $baseline: 24px;
 		padding: 0 !important;
 	}
 }
+
+.data-engine-form-builder-messages {
+	.alert {
+		margin-top: 60px;
+		z-index: 1000;
+	}
+}

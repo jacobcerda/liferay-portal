@@ -13,17 +13,24 @@
  */
 
 import ClayButton from '@clayui/button';
-import React from 'react';
+import React, {useContext} from 'react';
 
-export default ({data, onClick, totalEntries}) => {
+import {SidebarContext} from '../sidebar/SidebarContext.es';
+
+export default ({data, field, totalEntries}) => {
+	const {toggleSidebar} = useContext(SidebarContext);
+
 	return (
 		<ul className="entries-list">
 			{Array.isArray(data) &&
 				data.map((field, index) => <li key={index}>{field}</li>)}
 
-			{totalEntries > 5 ? (
+			{data.length == 5 && totalEntries > 5 ? (
 				<li key={'see-more'}>
-					<ClayButton displayType="link" onClick={onClick}>
+					<ClayButton
+						displayType="link"
+						onClick={() => toggleSidebar(field, totalEntries)}
+					>
 						{Liferay.Language.get('see-all-entries')}
 					</ClayButton>
 				</li>

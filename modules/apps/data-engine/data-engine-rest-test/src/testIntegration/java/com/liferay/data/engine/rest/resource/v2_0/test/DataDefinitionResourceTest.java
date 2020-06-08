@@ -267,6 +267,30 @@ public class DataDefinitionResourceTest
 				"MustSetDefaultLocaleAsAvailableLocale", problem.getType());
 		}
 
+		// MustSetFields
+
+		try {
+			dataDefinitionResource.postDataDefinitionByContentType(
+				"journal",
+				DataDefinition.toDTO(
+					DataDefinitionTestUtil.read(
+						"data-definition-must-set-fields.json")));
+
+			Assert.fail("An exception must be thrown");
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals("MustSetFields", problem.getType());
+		}
+
+		dataDefinitionResource.postDataDefinitionByContentType(
+			"app-builder",
+			DataDefinition.toDTO(
+				DataDefinitionTestUtil.read(
+					"data-definition-must-set-fields.json")));
+
 		// MustSetFieldType
 
 		try {

@@ -69,18 +69,18 @@ public class GetAvailableTemplatesMVCResourceCommand
 
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
-		List<InfoItemRenderer> infoItemRenderers =
+		List<InfoItemRenderer<?>> infoItemRenderers =
 			_infoItemRendererTracker.getInfoItemRenderers(className);
 
 		Object object = _getDisplayObject(className, classPK);
 
-		for (InfoItemRenderer infoItemRenderer : infoItemRenderers) {
+		for (InfoItemRenderer<?> infoItemRenderer : infoItemRenderers) {
 			if (infoItemRenderer instanceof InfoItemTemplatedRenderer) {
 				JSONArray templatesJSONArray =
 					JSONFactoryUtil.createJSONArray();
 
-				InfoItemTemplatedRenderer infoItemTemplatedRenderer =
-					(InfoItemTemplatedRenderer)infoItemRenderer;
+				InfoItemTemplatedRenderer<Object> infoItemTemplatedRenderer =
+					(InfoItemTemplatedRenderer<Object>)infoItemRenderer;
 
 				List<InfoItemRendererTemplate> infoItemRendererTemplates =
 					infoItemTemplatedRenderer.getInfoItemRendererTemplates(

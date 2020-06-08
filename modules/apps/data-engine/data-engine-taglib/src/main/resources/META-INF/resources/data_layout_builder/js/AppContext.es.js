@@ -185,8 +185,11 @@ const setDataDefinitionFields = (
 };
 
 const setDataLayout = (dataLayoutBuilder) => {
-	const {pages} = dataLayoutBuilder.getStore();
-	const {layout} = dataLayoutBuilder.getDataDefinitionAndDataLayout(pages);
+	const {pages, rules} = dataLayoutBuilder.getStore();
+	const {layout} = dataLayoutBuilder.getDataDefinitionAndDataLayout(
+		pages,
+		rules || []
+	);
 
 	return layout;
 };

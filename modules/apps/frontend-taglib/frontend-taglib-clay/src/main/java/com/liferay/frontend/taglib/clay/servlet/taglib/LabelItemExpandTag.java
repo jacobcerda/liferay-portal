@@ -37,26 +37,6 @@ public class LabelItemExpandTag extends BaseContainerTag {
 	}
 
 	@Override
-	protected String getEndPage() {
-		return _END_PAGE;
-	}
-
-	@Override
-	protected String getStartPage() {
-		return _START_PAGE;
-	}
-
-	/**
-	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
-	 *             #processCssClasses(String)}
-	 */
-	@Deprecated
-	@Override
-	protected String processClassName(Set<String> className) {
-		return processCssClasses(className);
-	}
-
-	@Override
 	protected String processCssClasses(Set<String> cssClasses) {
 		cssClasses.add("label-item");
 		cssClasses.add("label-item-expand");
@@ -66,9 +46,5 @@ public class LabelItemExpandTag extends BaseContainerTag {
 
 	private static final String _ATTRIBUTE_NAMESPACE =
 		"clay:label-item-expand:";
-
-	private static final String _END_PAGE = "/label_item_expand/end.jsp";
-
-	private static final String _START_PAGE = "/label_item_expand/start.jsp";
 
 }

@@ -104,6 +104,15 @@ public class DataDefinitionValidationException extends RuntimeException {
 
 	}
 
+	public static class MustSetFields
+		extends DataDefinitionValidationException {
+
+		public MustSetFields() {
+			super("There are no fields for the data definition");
+		}
+
+	}
+
 	public static class MustSetFieldType
 		extends DataDefinitionValidationException {
 

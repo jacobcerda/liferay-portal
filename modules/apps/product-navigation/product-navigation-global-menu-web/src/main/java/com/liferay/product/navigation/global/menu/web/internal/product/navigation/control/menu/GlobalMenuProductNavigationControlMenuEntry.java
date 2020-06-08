@@ -18,6 +18,10 @@ import com.liferay.application.list.PanelCategory;
 import com.liferay.application.list.PanelCategoryRegistry;
 import com.liferay.application.list.constants.PanelCategoryKeys;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.control.menu.BaseJSPProductNavigationControlMenuEntry;
 import com.liferay.product.navigation.control.menu.ProductNavigationControlMenuEntry;
 import com.liferay.product.navigation.control.menu.constants.ProductNavigationControlMenuCategoryKeys;
@@ -53,14 +57,28 @@ public class GlobalMenuProductNavigationControlMenuEntry
 	public boolean isShow(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
+		String layoutMode = ParamUtil.getString(
+			httpServletRequest, "p_l_mode", Constants.VIEW);
+
+		if (layoutMode.equals(Constants.EDIT)) {
+			return false;
+		}
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
 		List<PanelCategory> globalMenuPanelCategories =
 			_panelCategoryRegistry.getChildPanelCategories(
-				PanelCategoryKeys.GLOBAL_MENU);
+				PanelCategoryKeys.GLOBAL_MENU,
+				themeDisplay.getPermissionChecker(),
+				themeDisplay.getScopeGroup());
 
 		for (PanelCategory panelCategory : globalMenuPanelCategories) {
 			List<PanelCategory> childPanelCategories =
 				_panelCategoryRegistry.getChildPanelCategories(
-					panelCategory.getKey());
+					panelCategory.getKey(), themeDisplay.getPermissionChecker(),
+					themeDisplay.getScopeGroup());
 
 			if (!childPanelCategories.isEmpty()) {
 				return true;

@@ -35,7 +35,7 @@ describe('Card', () => {
 		expect(container.querySelector('.card-text').title).toBe('10 entries');
 	});
 
-	it('shows "there are not entries" when totalEntries is zero', () => {
+	it('shows "there are no entries" when totalEntries is zero', () => {
 		const {getAllByText} = render(<Card {...props} totalEntries={0} />);
 		expect(getAllByText('there-are-no-entries').length).toBe(2);
 	});

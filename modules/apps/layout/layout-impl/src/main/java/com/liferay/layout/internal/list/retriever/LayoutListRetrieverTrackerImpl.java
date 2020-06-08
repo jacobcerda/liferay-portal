@@ -33,7 +33,8 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 public class LayoutListRetrieverTrackerImpl
 	implements LayoutListRetrieverTracker {
 
-	public LayoutListRetriever getLayoutListRetriever(String type) {
+	@Override
+	public LayoutListRetriever<?, ?> getLayoutListRetriever(String type) {
 		return _layoutListRetrievers.get(type);
 	}
 
@@ -42,7 +43,7 @@ public class LayoutListRetrieverTrackerImpl
 		policy = ReferencePolicy.DYNAMIC
 	)
 	protected void setLayoutListRetrievers(
-		LayoutListRetriever layoutListRetriever) {
+		LayoutListRetriever<?, ?> layoutListRetriever) {
 
 		_layoutListRetrievers.put(
 			GenericUtil.getGenericClassName(layoutListRetriever),
@@ -50,13 +51,13 @@ public class LayoutListRetrieverTrackerImpl
 	}
 
 	protected void unsetLayoutListRetrievers(
-		LayoutListRetriever layoutListRetriever) {
+		LayoutListRetriever<?, ?> layoutListRetriever) {
 
 		_layoutListRetrievers.remove(
 			GenericUtil.getGenericClassName(layoutListRetriever));
 	}
 
-	private final Map<String, LayoutListRetriever> _layoutListRetrievers =
+	private final Map<String, LayoutListRetriever<?, ?>> _layoutListRetrievers =
 		new ConcurrentHashMap<>();
 
 }

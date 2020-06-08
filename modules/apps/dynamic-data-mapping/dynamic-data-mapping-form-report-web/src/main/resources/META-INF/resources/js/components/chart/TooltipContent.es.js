@@ -17,7 +17,13 @@ import React from 'react';
 import colors from '../../utils/colors.es';
 import {roundPercentage} from '../../utils/data.es';
 
-export default ({active, activeIndex, payload, totalEntries}) => {
+export default ({
+	active,
+	activeIndex,
+	payload,
+	showBullet = true,
+	totalEntries,
+}) => {
 	const getPercentage = (count) => count / totalEntries;
 
 	if (!active) {
@@ -28,20 +34,23 @@ export default ({active, activeIndex, payload, totalEntries}) => {
 
 	return (
 		<div className="custom-tooltip">
-			<svg height="12" width="12">
-				<circle
-					cx="6"
-					cy="6"
-					fill={colors(activeIndex)}
-					r="6"
-					strokeWidth="0"
-				/>
-			</svg>
+			{showBullet ? (
+				<svg height="12" width="12">
+					<circle
+						cx="6"
+						cy="6"
+						fill={colors(activeIndex)}
+						r="6"
+						strokeWidth="0"
+					/>
+				</svg>
+			) : null}
 
 			<p className="tooltip-label">
-				{`${label}: ${count} ${Liferay.Language.get(
-					'entries'
-				).toLowerCase()}`}{' '}
+				{`${label}: ${count} `}
+				{count == 1
+					? `${Liferay.Language.get('entry').toLowerCase()} `
+					: `${Liferay.Language.get('entries').toLowerCase()} `}
 				<b>({roundPercentage(getPercentage(count))})</b>
 			</p>
 		</div>

@@ -27,7 +27,14 @@ int totalItems = ddmFormReportDisplayContext.getTotalItems();
 				cssClass="align-items-center"
 			>
 				<span class="ddm-form-report-header-title text-truncate">
-					<liferay-ui:message arguments="<%= totalItems %>" key="x-entries" />
+					<c:choose>
+						<c:when test="<%= totalItems == 1 %>">
+							<liferay-ui:message arguments="<%= totalItems %>" key="x-entry" />
+						</c:when>
+						<c:otherwise>
+							<liferay-ui:message arguments="<%= totalItems %>" key="x-entries" />
+						</c:otherwise>
+					</c:choose>
 				</span>
 			</clay:content-row>
 

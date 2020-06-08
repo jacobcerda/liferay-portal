@@ -19,6 +19,26 @@ import React from 'react';
 
 import EmptyState from '../empty-state/EmptyState.es';
 
+const TotalEntriesLabel = ({totalEntries}) => {
+	let label = Liferay.Language.get('there-are-no-entries');
+
+	if (totalEntries == 1) {
+		label = `1 ${Liferay.Language.get('entry').toLowerCase()}`;
+	}
+
+	if (totalEntries > 1) {
+		label = `${totalEntries} ${Liferay.Language.get(
+			'entries'
+		).toLowerCase()}`;
+	}
+
+	return (
+		<ClayCard.Description displayType="text" truncate={false}>
+			{label}
+		</ClayCard.Description>
+	);
+};
+
 export default ({children, field: {icon, label, title}, totalEntries}) => (
 	<div className="col-md-8">
 		<div className="sheet">
@@ -41,18 +61,7 @@ export default ({children, field: {icon, label, title}, totalEntries}) => (
 								{label}
 							</ClayCard.Description>
 
-							<ClayCard.Description
-								displayType="text"
-								truncate={false}
-							>
-								{totalEntries > 0
-									? `${totalEntries} ${Liferay.Language.get(
-											'entries'
-									  ).toLowerCase()}`
-									: Liferay.Language.get(
-											'there-are-no-entries'
-									  )}
-							</ClayCard.Description>
+							<TotalEntriesLabel totalEntries={totalEntries} />
 						</div>
 					</ClayCard.AspectRatio>
 

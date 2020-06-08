@@ -23,6 +23,8 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.servlet.taglib.BaseDynamicInclude;
 import com.liferay.portal.kernel.servlet.taglib.DynamicInclude;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.SessionClicks;
 import com.liferay.portal.kernel.util.Validator;
@@ -58,12 +60,19 @@ public class ProductMenuBodyTopDynamicInclude extends BaseDynamicInclude {
 			HttpServletResponse httpServletResponse, String key)
 		throws IOException {
 
-		PageContext pageContext = PageContextFactoryUtil.create(
-			httpServletRequest, httpServletResponse);
+		String layoutMode = ParamUtil.getString(
+			httpServletRequest, "p_l_mode", Constants.VIEW);
+
+		if (layoutMode.equals(Constants.PREVIEW)) {
+			return;
+		}
 
 		if (_isGlobalMenuApp(httpServletRequest)) {
 			return;
 		}
+
+		PageContext pageContext = PageContextFactoryUtil.create(
+			httpServletRequest, httpServletResponse);
 
 		try {
 			JspWriter jspWriter = pageContext.getOut();

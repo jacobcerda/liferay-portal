@@ -28,24 +28,30 @@ import {useCollectionItemIndex} from '../components/CollectionItemContext';
 import {useSelectItem} from '../components/Controls';
 import {getToControlsId} from '../components/layout-data-items/Collection';
 import {LAYOUT_DATA_ITEM_TYPES} from '../config/constants/layoutDataItemTypes';
+import {config} from '../config/index';
 
 const LAYOUT_DATA_ALLOWED_CHILDREN_TYPES = {
 	[LAYOUT_DATA_ITEM_TYPES.root]: [
 		LAYOUT_DATA_ITEM_TYPES.collection,
 		LAYOUT_DATA_ITEM_TYPES.dropZone,
 		LAYOUT_DATA_ITEM_TYPES.container,
-		LAYOUT_DATA_ITEM_TYPES.section,
 		LAYOUT_DATA_ITEM_TYPES.row,
 		LAYOUT_DATA_ITEM_TYPES.fragment,
 	],
 	[LAYOUT_DATA_ITEM_TYPES.collection]: [],
 	[LAYOUT_DATA_ITEM_TYPES.collectionItem]: [
+		...(config.containerItemEnabled
+			? [LAYOUT_DATA_ITEM_TYPES.container]
+			: []),
 		LAYOUT_DATA_ITEM_TYPES.row,
 		LAYOUT_DATA_ITEM_TYPES.fragment,
 	],
 	[LAYOUT_DATA_ITEM_TYPES.dropZone]: [],
 	[LAYOUT_DATA_ITEM_TYPES.container]: [
 		LAYOUT_DATA_ITEM_TYPES.collection,
+		...(config.containerItemEnabled
+			? [LAYOUT_DATA_ITEM_TYPES.container]
+			: []),
 		LAYOUT_DATA_ITEM_TYPES.dropZone,
 		LAYOUT_DATA_ITEM_TYPES.row,
 		LAYOUT_DATA_ITEM_TYPES.fragment,
@@ -53,6 +59,9 @@ const LAYOUT_DATA_ALLOWED_CHILDREN_TYPES = {
 	[LAYOUT_DATA_ITEM_TYPES.row]: [LAYOUT_DATA_ITEM_TYPES.column],
 	[LAYOUT_DATA_ITEM_TYPES.column]: [
 		LAYOUT_DATA_ITEM_TYPES.collection,
+		...(config.containerItemEnabled
+			? [LAYOUT_DATA_ITEM_TYPES.container]
+			: []),
 		LAYOUT_DATA_ITEM_TYPES.dropZone,
 		LAYOUT_DATA_ITEM_TYPES.row,
 		LAYOUT_DATA_ITEM_TYPES.fragment,
@@ -62,7 +71,6 @@ const LAYOUT_DATA_ALLOWED_CHILDREN_TYPES = {
 		LAYOUT_DATA_ITEM_TYPES.collection,
 		LAYOUT_DATA_ITEM_TYPES.dropZone,
 		LAYOUT_DATA_ITEM_TYPES.container,
-		LAYOUT_DATA_ITEM_TYPES.section,
 		LAYOUT_DATA_ITEM_TYPES.row,
 		LAYOUT_DATA_ITEM_TYPES.fragment,
 	],
@@ -394,7 +402,21 @@ function computeHover({
 
 	// Drop inside target
 
-	if (!siblingItem && targetPositionWithMiddle === TARGET_POSITION.MIDDLE) {
+	const validDropInsideTarget = (() => {
+		const targetIsFragment =
+			targetItem.type == LAYOUT_DATA_ITEM_TYPES.fragment;
+
+		const targetIsEmpty =
+			layoutData.items[targetItem.itemId].children.length === 0;
+
+		return (
+			targetPositionWithMiddle === TARGET_POSITION.MIDDLE &&
+			targetIsEmpty &&
+			!targetIsFragment
+		);
+	})();
+
+	if (!siblingItem && validDropInsideTarget) {
 		return dispatch({
 			dropItem: sourceItem,
 			dropTargetItem: targetItem,

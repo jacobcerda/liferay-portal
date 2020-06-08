@@ -39,6 +39,11 @@ public class JournalDataLayoutBuilderDefinition
 	}
 
 	@Override
+	public boolean allowRules() {
+		return true;
+	}
+
+	@Override
 	public String[] getDisabledProperties() {
 		return new String[] {"predefinedValue"};
 	}

@@ -85,26 +85,6 @@ public class ColTag extends BaseContainerTag {
 	}
 
 	@Override
-	protected String getEndPage() {
-		return _END_PAGE;
-	}
-
-	@Override
-	protected String getStartPage() {
-		return _START_PAGE;
-	}
-
-	/**
-	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
-	 *             #processCssClasses(String)}
-	 */
-	@Deprecated
-	@Override
-	protected String processClassName(Set<String> className) {
-		return processCssClasses(className);
-	}
-
-	@Override
 	protected String processCssClasses(Set<String> cssClasses) {
 		if (Validator.isNotNull(_size)) {
 			cssClasses.add("col-" + _size);
@@ -134,10 +114,6 @@ public class ColTag extends BaseContainerTag {
 	}
 
 	private static final String _ATTRIBUTE_NAMESPACE = "clay:col:";
-
-	private static final String _END_PAGE = "/col/end.jsp";
-
-	private static final String _START_PAGE = "/col/start.jsp";
 
 	private String _lg;
 	private String _md;

@@ -145,14 +145,15 @@ public class PortletLayoutDisplayContext {
 
 		String type = collectionJSONObject.getString("type");
 
-		LayoutListRetriever layoutListRetriever =
-			_layoutListRetrieverTracker.getLayoutListRetriever(type);
+		LayoutListRetriever<?, ListObjectReference> layoutListRetriever =
+			(LayoutListRetriever<?, ListObjectReference>)
+				_layoutListRetrieverTracker.getLayoutListRetriever(type);
 
 		if (layoutListRetriever == null) {
 			return Collections.emptyList();
 		}
 
-		ListObjectReferenceFactory listObjectReferenceFactory =
+		ListObjectReferenceFactory<?> listObjectReferenceFactory =
 			_listObjectReferenceFactoryTracker.getListObjectReference(type);
 
 		if (listObjectReferenceFactory == null) {
@@ -191,9 +192,10 @@ public class PortletLayoutDisplayContext {
 			return Collections.emptyList();
 		}
 
-		LayoutListRetriever layoutListRetriever =
-			_layoutListRetrieverTracker.getLayoutListRetriever(
-				collectionJSONObject.getString("type"));
+		LayoutListRetriever<?, ListObjectReference> layoutListRetriever =
+			(LayoutListRetriever<?, ListObjectReference>)
+				_layoutListRetrieverTracker.getLayoutListRetriever(
+					collectionJSONObject.getString("type"));
 
 		if (layoutListRetriever == null) {
 			return Collections.emptyList();
@@ -315,14 +317,14 @@ public class PortletLayoutDisplayContext {
 
 		String type = collectionJSONObject.getString("type");
 
-		LayoutListRetriever layoutListRetriever =
+		LayoutListRetriever<?, ?> layoutListRetriever =
 			_layoutListRetrieverTracker.getLayoutListRetriever(type);
 
 		if (layoutListRetriever == null) {
 			return null;
 		}
 
-		ListObjectReferenceFactory listObjectReferenceFactory =
+		ListObjectReferenceFactory<?> listObjectReferenceFactory =
 			_listObjectReferenceFactoryTracker.getListObjectReference(type);
 
 		if (listObjectReferenceFactory == null) {

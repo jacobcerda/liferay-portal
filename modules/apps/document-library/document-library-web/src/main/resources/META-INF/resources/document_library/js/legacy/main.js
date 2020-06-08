@@ -63,6 +63,10 @@ AUI.add(
 					validator: Lang.isBoolean,
 				},
 
+				viewFileEntryTypeURL: {
+					validator: Lang.isString,
+				},
+
 				viewFileEntryURL: {
 					validator: Lang.isString,
 				},
@@ -429,7 +433,7 @@ AUI.add(
 											uri = Liferay.Util.addParams(
 												instance.ns(
 													'fileEntryTypeId='
-												) + selectedItem,
+												) + selectedItem.value,
 												uri
 											);
 

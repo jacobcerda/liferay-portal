@@ -58,7 +58,7 @@ definition {
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "SSO",
 			configurationName = "OpenID Connect Provider",
-			configurationScope = "System Scope");
+			configurationScope = "Virtual Instance Scope");
 
 		Click(locator1 = "Button#ADD");
 

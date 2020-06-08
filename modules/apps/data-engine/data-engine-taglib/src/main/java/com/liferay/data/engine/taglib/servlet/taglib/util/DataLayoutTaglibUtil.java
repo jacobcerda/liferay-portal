@@ -195,6 +195,14 @@ public class DataLayoutTaglibUtil {
 			dataRecordId, httpServletRequest);
 	}
 
+	public static Long getDefaultDataLayoutId(
+			Long dataDefinitionId, HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		return _dataLayoutTaglibUtil._getDefaultDataLayoutId(
+			dataDefinitionId, httpServletRequest);
+	}
+
 	public static JSONArray getFieldTypesJSONArray(
 			HttpServletRequest httpServletRequest, Set<String> scopes)
 		throws Exception {
@@ -405,6 +413,26 @@ public class DataLayoutTaglibUtil {
 	private String _getDDMDataProviderInstancesURL() {
 		return _ddmFormBuilderSettingsRetrieverHelper.
 			getDDMDataProviderInstancesURL();
+	}
+
+	private Long _getDefaultDataLayoutId(
+			Long dataDefinitionId, HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		DataDefinition dataDefinition = getDataDefinition(
+			dataDefinitionId, httpServletRequest);
+
+		if (dataDefinition == null) {
+			return 0L;
+		}
+
+		DataLayout dataLayout = dataDefinition.getDefaultDataLayout();
+
+		if (dataLayout == null) {
+			return 0L;
+		}
+
+		return dataLayout.getId();
 	}
 
 	private JSONArray _getFieldTypesJSONArray(
