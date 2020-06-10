@@ -87,20 +87,20 @@ public interface InfoLocalizedValue<T> {
 	}
 
 	public static class BuilderInfoLocalizedValue<T>
-		implements InfoLocalizedValue {
+		implements InfoLocalizedValue<T> {
 
 		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
+		public boolean equals(Object object) {
+			if (this == object) {
 				return true;
 			}
 
-			if (!(obj instanceof BuilderInfoLocalizedValue)) {
+			if (!(object instanceof BuilderInfoLocalizedValue)) {
 				return false;
 			}
 
 			BuilderInfoLocalizedValue builderInfoLocalizedValue =
-				(BuilderInfoLocalizedValue)obj;
+				(BuilderInfoLocalizedValue)object;
 
 			if (Objects.equals(
 					_builder._defaultLocale,

@@ -12,18 +12,17 @@
  * details.
  */
 
-package com.liferay.info.item.provider;
+import PropTypes from 'prop-types';
+import React from 'react';
 
-import org.osgi.annotation.versioning.ProviderType;
+const ExportTranslationContext = React.createContext({
+	namespace: '',
+});
 
-/**
- * @author Jürgen Kappler
- * @author Jorge Ferrer
- */
-@ProviderType
-public interface InfoItemObjectProviderTracker {
+ExportTranslationContext.Provider.propTypes = {
+	value: PropTypes.shape({
+		namespace: PropTypes.string,
+	}),
+};
 
-	public InfoItemObjectProvider<Object> getInfoItemObjectProvider(
-		String itemClassName);
-
-}
+export default ExportTranslationContext;

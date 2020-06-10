@@ -78,7 +78,8 @@ public class ContentDashboardAdminPortlet extends MVCPortlet {
 
 		ContentDashboardAdminDisplayContext
 			contentDashboardAdminDisplayContext =
-				new ContentDashboardAdminDisplayContext(searchContainer);
+				new ContentDashboardAdminDisplayContext(
+					renderRequest, searchContainer);
 
 		renderRequest.setAttribute(
 			ContentDashboardWebKeys.CONTENT_DASHBOARD_ADMIN_DISPLAY_CONTEXT,
@@ -90,7 +91,7 @@ public class ContentDashboardAdminPortlet extends MVCPortlet {
 					_portal.getHttpServletRequest(renderRequest),
 					_portal.getLiferayPortletRequest(renderRequest),
 					_portal.getLiferayPortletResponse(renderResponse),
-					searchContainer);
+					contentDashboardAdminDisplayContext);
 
 		renderRequest.setAttribute(
 			ContentDashboardWebKeys.

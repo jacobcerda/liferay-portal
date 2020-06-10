@@ -230,7 +230,7 @@ AUI.add(
 				};
 
 				var templateResourceURL = Liferay.Util.PortletURL.createResourceURL(
-					themeDisplay.getURLControlPanel(),
+					themeDisplay.getLayoutURL(),
 					templateResourceParameters
 				);
 

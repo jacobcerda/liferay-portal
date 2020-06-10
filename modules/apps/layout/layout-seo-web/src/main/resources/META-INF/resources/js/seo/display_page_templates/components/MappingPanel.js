@@ -16,7 +16,9 @@ import ClayButton from '@clayui/button';
 import ClayForm, {ClayInput, ClaySelectWithOption} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {PropTypes} from 'prop-types';
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
+
+import useOnClickOutside from '../hooks/useOnClickOutside';
 
 const noop = () => {};
 
@@ -25,8 +27,11 @@ const normalizeField = ({key, label}) => ({
 	value: key,
 });
 
-function MappingPanel({fields, field, source, onChange = noop}) {
+function MappingPanel({name, fields, field, source, onChange = noop}) {
 	const [isPanelOpen, setIsPanelOpen] = useState(false);
+	const wrapperRef = useRef(null);
+
+	useOnClickOutside([wrapperRef.current], () => setIsPanelOpen(false));
 
 	const handleChangeField = (event) => {
 		const {value} = event.target;
@@ -40,14 +45,15 @@ function MappingPanel({fields, field, source, onChange = noop}) {
 	};
 
 	return (
-		<div className="dpt-mapping-panel-wrapper">
+		<div className="dpt-mapping-panel-wrapper" ref={wrapperRef}>
 			<ClayButton
-				className="dpt-mapping-btn"
+				className="dpt-mapping-btn lfr-portal-tooltip"
 				displayType="secondary"
 				monospaced
 				onClick={() => {
 					setIsPanelOpen((state) => !state);
 				}}
+				title={Liferay.Language.get('map')}
 			>
 				<ClayIcon symbol="bolt" />
 			</ClayButton>
@@ -58,17 +64,23 @@ function MappingPanel({fields, field, source, onChange = noop}) {
 				>
 					<div className="popover-body">
 						<ClayForm.Group small>
-							<label htmlFor="mappingSelectorSourceSelect">
+							<label htmlFor={`${name}_mappingSelectorSource`}>
 								{Liferay.Language.get('source')}
 							</label>
-							<ClayInput readOnly value={source.initialValue} />
+							<ClayInput
+								id={`${name}_mappingSelectorSource`}
+								readOnly
+								value={source.initialValue}
+							/>
 						</ClayForm.Group>
 						<ClayForm.Group small>
-							<label htmlFor="mappingSelectorFieldSelect">
+							<label
+								htmlFor={`${name}_mappingSelectorFieldSelect`}
+							>
 								{Liferay.Language.get('field')}
 							</label>
 							<ClaySelectWithOption
-								id="mappingSelectorFieldSelect"
+								id={`${name}_mappingSelectorFieldSelect`}
 								onChange={handleChangeField}
 								options={fields.map(normalizeField)}
 								value={field.key}
@@ -92,6 +104,7 @@ MappingPanel.propTypes = {
 			label: PropTypes.string,
 		})
 	).isRequired,
+	name: PropTypes.string.isRequired,
 	source: PropTypes.shape({
 		initialValue: PropTypes.string,
 	}).isRequired,

@@ -20,6 +20,7 @@ import com.liferay.info.field.InfoFormValues;
 import com.liferay.info.item.InfoItemClassPKReference;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
@@ -29,11 +30,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -78,10 +76,16 @@ public class XLIFFInfoFormTranslationExporter<T>
 		Collection<InfoFieldValue<Object>> infoFieldValues =
 			infoFormValues.getInfoFieldValues();
 
-		for (InfoFieldValue infoFieldValue : infoFieldValues) {
+		for (InfoFieldValue<Object> infoFieldValue : infoFieldValues) {
 			InfoField infoField = infoFieldValue.getInfoField();
 
-			if (_blacklistedFieldNames.contains(infoField.getName())) {
+			if (!infoField.isLocalizable()) {
+				continue;
+			}
+
+			Object sourceValue = infoFieldValue.getValue(sourceLocale);
+
+			if (Validator.isNull(sourceValue)) {
 				continue;
 			}
 
@@ -93,13 +97,12 @@ public class XLIFFInfoFormTranslationExporter<T>
 
 			Element sourceElement = segmentElement.addElement("source");
 
-			sourceElement.addCDATA(
-				(String)infoFieldValue.getValue(sourceLocale));
+			sourceElement.addCDATA(_getStringValue(sourceValue));
 
 			Element targetElement = segmentElement.addElement("target");
 
 			targetElement.addCDATA(
-				(String)infoFieldValue.getValue(targetLocale));
+				_getStringValue(infoFieldValue.getValue(targetLocale)));
 		}
 
 		String formattedString = document.formattedString();
@@ -107,9 +110,12 @@ public class XLIFFInfoFormTranslationExporter<T>
 		return new ByteArrayInputStream(formattedString.getBytes());
 	}
 
-	private static final Set<String> _blacklistedFieldNames = new HashSet<>(
-		Arrays.asList(
-			"authorName", "lastEditorName", "publishDate", "categories",
-			"tagNames"));
+	private String _getStringValue(Object value) {
+		if (value == null) {
+			return null;
+		}
+
+		return value.toString();
+	}
 
 }

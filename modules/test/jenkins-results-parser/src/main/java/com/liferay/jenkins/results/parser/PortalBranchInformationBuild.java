@@ -12,17 +12,15 @@
  * details.
  */
 
-package com.liferay.portal.workflow.web.internal.constants;
+package com.liferay.jenkins.results.parser;
 
 /**
- * @author Adam Brandizzi
+ * @author Michael Hashimoto
  */
-public class WorkflowDefinitionConstants {
+public interface PortalBranchInformationBuild extends Build {
 
-	public static final int STATUS_ALL = 0;
+	public BranchInformation getPortalBaseBranchInformation();
 
-	public static final int STATUS_NOT_PUBLISHED = 1;
-
-	public static final int STATUS_PUBLISHED = 2;
+	public BranchInformation getPortalBranchInformation();
 
 }

@@ -73,7 +73,7 @@ public class DDMStructureInfoItemFieldSetProviderImpl
 
 				LocalizedValue label = ddmFormField.getLabel();
 
-				InfoLocalizedValue labelInfoLocalizedValue =
+				InfoLocalizedValue<String> labelInfoLocalizedValue =
 					InfoLocalizedValue.builder(
 					).addValues(
 						label.getValues()
@@ -84,7 +84,8 @@ public class DDMStructureInfoItemFieldSetProviderImpl
 				infoFieldSet.add(
 					new InfoField(
 						_getInfoFieldType(ddmFormField),
-						labelInfoLocalizedValue, ddmFormField.getName()));
+						labelInfoLocalizedValue, ddmFormField.isLocalizable(),
+						ddmFormField.getName()));
 			}
 
 			return infoFieldSet;

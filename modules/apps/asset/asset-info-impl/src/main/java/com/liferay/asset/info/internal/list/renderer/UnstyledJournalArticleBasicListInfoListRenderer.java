@@ -12,22 +12,19 @@
  * details.
  */
 
-package com.liferay.info.item.provider;
+package com.liferay.asset.info.internal.list.renderer;
 
-import java.util.List;
+import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.info.list.renderer.InfoListRenderer;
+import com.liferay.info.taglib.list.renderer.UnstyledBasicInfoListRenderer;
 
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.service.component.annotations.Component;
 
 /**
- * @author Jürgen Kappler
- * @author Jorge Ferrer
+ * @author Pavel Savinov
  */
-@ProviderType
-public interface InfoItemFormProviderTracker {
-
-	public List<String> getInfoItemClassNames();
-
-	public InfoItemFormProvider<?> getInfoItemFormProvider(
-		String itemClassName);
-
+@Component(immediate = true, service = InfoListRenderer.class)
+public class UnstyledJournalArticleBasicListInfoListRenderer
+	extends AssetEntryBasicListInfoListRenderer
+	implements UnstyledBasicInfoListRenderer<AssetEntry> {
 }

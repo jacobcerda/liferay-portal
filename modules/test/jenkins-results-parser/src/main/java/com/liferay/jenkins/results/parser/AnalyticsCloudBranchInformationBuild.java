@@ -12,23 +12,15 @@
  * details.
  */
 
-package com.liferay.asset.internal.info.renderer;
-
-import com.liferay.asset.kernel.model.AssetRenderer;
-import com.liferay.info.item.renderer.InfoItemRenderer;
-
-import org.osgi.service.component.annotations.Component;
+package com.liferay.jenkins.results.parser;
 
 /**
- * @author Jorge Ferrer
+ * @author Michael Hashimoto
  */
-@Component(service = InfoItemRenderer.class)
-public class FullContentAssetEntryInfoItemRenderer
-	extends BaseAssetEntryInfoItemRenderer {
+public interface AnalyticsCloudBranchInformationBuild extends Build {
 
-	@Override
-	protected String getTemplate() {
-		return AssetRenderer.TEMPLATE_FULL_CONTENT;
-	}
+	public BranchInformation getOSBAsahBranchInformation();
+
+	public BranchInformation getOSBFaroBranchInformation();
 
 }

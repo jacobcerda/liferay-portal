@@ -13,6 +13,7 @@
  */
 
 import ClayForm, {ClayInput} from '@clayui/form';
+import {PropTypes} from 'prop-types';
 import React, {useState} from 'react';
 
 import MappingPanel from './MappingPanel';
@@ -21,52 +22,55 @@ function MappingField({fields, label, name, selectedField, selectedSource}) {
 	const [source, setSource] = useState(selectedSource);
 	const [field, setField] = useState(selectedField);
 
-	const inititalSourceLabel = `${
-		selectedSource &&
-		(selectedSource.classTypeLabel || selectedSource.classNameLabel)
-	}`;
+	const inititalSourceLabel = selectedSource
+		? selectedSource.classTypeLabel || selectedSource.classNameLabel
+		: '';
 
 	const handleOnchange = ({field, source}) => {
 		setSource(source);
 		setField(field);
 	};
 
-	const uiId = `${name}fieldSelector`;
-
 	return (
 		<ClayForm.Group>
-			<label className="dpt-mapping-label" htmlFor={uiId}>
-				<div className="control-label">{label}</div>
-				<ClayInput.Group>
-					<ClayInput.GroupItem>
-						<ClayInput
-							className="dpt-mapping-input"
-							id={uiId}
-							readOnly
-							type="text"
-							value={`${inititalSourceLabel}: ${field.label}`}
-						/>
-						<ClayInput
-							name={name}
-							type="hidden"
-							value={field.key}
-						/>
-					</ClayInput.GroupItem>
-					<ClayInput.GroupItem shrink>
-						<MappingPanel
-							field={field}
-							fields={fields}
-							onChange={handleOnchange}
-							source={{
-								...source,
-								initialValue: inititalSourceLabel,
-							}}
-						/>
-					</ClayInput.GroupItem>
-				</ClayInput.Group>
-			</label>
+			<label className="control-label">{label}</label>
+			<ClayInput.Group>
+				<ClayInput.GroupItem>
+					<ClayInput
+						className="dpt-mapping-input"
+						readOnly
+						type="text"
+						value={`${inititalSourceLabel}: ${field.label}`}
+					/>
+					<ClayInput name={name} type="hidden" value={field.key} />
+				</ClayInput.GroupItem>
+				<ClayInput.GroupItem shrink>
+					<MappingPanel
+						field={field}
+						fields={fields}
+						name={name}
+						onChange={handleOnchange}
+						source={{
+							...source,
+							initialValue: inititalSourceLabel,
+						}}
+					/>
+				</ClayInput.GroupItem>
+			</ClayInput.Group>
 		</ClayForm.Group>
 	);
 }
+
+MappingField.propTypes = {
+	name: PropTypes.string.isRequired,
+	selectedField: PropTypes.shape({
+		key: PropTypes.string,
+		label: PropTypes.string,
+	}).isRequired,
+	selectedSource: PropTypes.shape({
+		classNameLabel: PropTypes.string,
+		classTypeLabel: PropTypes.string,
+	}).isRequired,
+};
 
 export default MappingField;
