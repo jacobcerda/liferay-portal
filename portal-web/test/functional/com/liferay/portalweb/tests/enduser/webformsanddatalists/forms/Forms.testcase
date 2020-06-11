@@ -108,7 +108,6 @@ definition {
 		property test.name.skip.portal.instance = "Forms#AddElementSetsWithTranslation";
 		property testray.component.names = "Training";
 		property portal.acceptance = "true";
-		property portal.upstream = "quarantine";
 
 		Navigator.openURL();
 
@@ -745,6 +744,13 @@ definition {
 
 		Form.save();
 
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
 		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
 
 		Pause(locator1 = "2000");
@@ -930,6 +936,13 @@ definition {
 
 		Form.save();
 
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
 		FormsAdminNavigator.gotoEditField(fieldName = "Testing Title");
 
 		FormFields.viewTextLabel(
@@ -957,6 +970,13 @@ definition {
 		Form.closeSidebar();
 
 		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
 
 		Form.publishForm();
 
@@ -1316,6 +1336,13 @@ definition {
 
 		Form.save();
 
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Delete Select Option Test");
+
 		Form.publishForm();
 
 		FormsAdminNavigator.gotoPublishedForm();
@@ -1446,7 +1473,6 @@ definition {
 	test EditAllFormFieldNames {
 		property test.name.skip.portal.instance = "Forms#EditAllFormFieldNames";
 		property portal.acceptance = "true";
-		property portal.upstream = "quarantine";
 
 		Navigator.openURL();
 
@@ -1995,6 +2021,13 @@ definition {
 
 		Form.save();
 
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
 		FormsAdminNavigator.gotoEditField(fieldName = "Grid Field Translated");
 
 		FormFields.deleteGridOptionsRow(
@@ -2002,6 +2035,13 @@ definition {
 			rowNumber = "2");
 
 		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
 
 		FormsAdminNavigator.gotoEditField(fieldName = "Grid Field Translated");
 
@@ -2026,6 +2066,13 @@ definition {
 		Form.closeSidebar();
 
 		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
 
 		for (var localeMap : list "Japanese (Japan):日本語,Portuguese (Brazil):Português") {
 			var locale = StringUtil.extractFirst("${localeMap}", ":");
@@ -2084,6 +2131,13 @@ definition {
 
 		Form.save();
 
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Text");
+
 		Form.viewFormName(formName = "Text");
 
 		FormsAdminNavigator.gotoBack();
@@ -2108,6 +2162,13 @@ definition {
 		Form.closeSidebar();
 
 		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Checkbox");
 
 		Form.viewFormName(formName = "Checkbox");
 
@@ -2143,11 +2204,10 @@ definition {
 	@description = "This is a use case for LPS-61740"
 	@priority = "5"
 	test PreviewAndPublishForm {
-		property portal.acceptance = "quarantine";
-		property portal.upstream = "quarantine";
 		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property environment.acceptance = "quarantine";
+		property portal.acceptance = "true";
 
 		Navigator.openURL();
 
@@ -2158,15 +2218,9 @@ definition {
 
 		FormsAdminNavigator.gotoAddForm();
 
-		Form.editName();
+		Form.editName(formName = "Test Preview and Publish Form");
 
-		Form.editDescription();
-
-		var browserType = PropsUtil.get("browser.type");
-
-		if (("${browserType}" == "internetexplorer") && (IsElementPresent(locator1 = "Form#SIDEBAR_CLOSE"))) {
-			Click(locator1 = "Form#SIDEBAR_CLOSE");
-		}
+		Form.editDescription(formDescription = "Test Preview and Publish Form Description");
 
 		Form.addTextField(fieldPositionNumber = "1");
 
@@ -2176,12 +2230,14 @@ definition {
 
 		Form.save();
 
+		Navigator.openURL();
+
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
 			panel = "Site Administration",
 			portlet = "Forms");
 
-		FormsAdminNavigator.gotoEditFormByName();
+		FormsAdminNavigator.gotoEditFormByName(formName = "Test Preview and Publish Form");
 
 		Form.publishForm();
 
@@ -2190,7 +2246,8 @@ definition {
 		Form.previewForm(
 			fieldLabel = "Text Field",
 			fieldName = "TextField",
-			fieldValue = "Preview Paragraph entry");
+			fieldValue = "Preview Paragraph entry",
+			formName = "Test Preview and Publish Form");
 
 		Navigator.closeWindow();
 
@@ -2201,12 +2258,21 @@ definition {
 			panel = "Site Administration",
 			portlet = "Forms");
 
-		FormsAdminNavigator.gotoEditFormByName();
+		FormsAdminNavigator.gotoEditFormByName(formName = "Test Preview and Publish Form");
 
-		Form.submitFormPublish(
+		FormsAdminNavigator.gotoPublishedForm();
+
+		Pause(locator1 = "5000");
+
+		FormFields.viewTextField(
 			fieldLabel = "Text Field",
+			fieldName = "TextField");
+
+		FormFields.editText(
 			fieldName = "TextField",
 			fieldValue = "Published Paragraph entry");
+
+		FormPortlet.submitSuccessfully();
 
 		Navigator.openURL();
 
@@ -2228,7 +2294,7 @@ definition {
 			panel = "Site Administration",
 			portlet = "Forms");
 
-		FormsAdminNavigator.gotoEditFormByName();
+		FormsAdminNavigator.gotoEditFormByName(formName = "Test Preview and Publish Form");
 
 		Form.viewFormNotPublished();
 	}
@@ -2858,7 +2924,7 @@ definition {
 	@priority = "4"
 	test SubmitFormAndViewEmailNotification {
 		property test.name.skip.portal.instance = "Forms#SubmitFormAndViewEmailNotification";
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 		property test.smtp.server.enabled = "true";
 
 		Navigator.openURL();
@@ -2971,6 +3037,13 @@ definition {
 		Form.configureRequireCaptcha();
 
 		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
 
 		Form.publishForm();
 
@@ -3942,7 +4015,6 @@ definition {
 	test SubmitFormWithRequiredTextField {
 		property test.name.skip.portal.instance = "Forms#SubmitFormWithRequiredTextField";
 		property portal.acceptance = "true";
-		property portal.upstream = "quarantine";
 		property testray.component.names = "Training";
 
 		Navigator.openURL();
@@ -4139,6 +4211,13 @@ definition {
 
 		Form.save();
 
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
 		Form.publishForm();
 
 		FormsAdminNavigator.gotoPublishedForm();
@@ -4207,6 +4286,13 @@ definition {
 
 		Form.save();
 
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
 		Form.publishForm();
 
 		FormsAdminNavigator.gotoPublishedForm();
@@ -4252,78 +4338,6 @@ definition {
 			fieldLabel = "Date Field",
 			fieldName = "DateField",
 			fieldValue = "01/01/2016");
-	}
-
-	@description = "This is a use case for LPS-71485 and LPS-71512."
-	@ignore = "true"
-	@priority = "2"
-	test ViewAltSuccessPagePagination {
-		property test.name.skip.portal.instance = "Forms#ViewAltSuccessPagePagination";
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Forms");
-
-		FormsAdminNavigator.gotoAddForm();
-
-		Form.editName();
-
-		Form.editDescription();
-
-		Form.editPageTitle(
-			formPageName = "Page 1",
-			formTitleNumber = "1");
-
-		Form.addTextField(fieldPositionNumber = "1");
-
-		Form.editFieldLabelMetal(fieldValue = "Text Field");
-
-		Form.closeSidebar();
-
-		Form.addPage(formAddNewPageNumber = "1");
-
-		Form.editPageTitle(
-			formPageName = "Page 2",
-			formTitleNumber = "2");
-
-		Form.addTextField(fieldPositionNumber = "3");
-
-		Form.editFieldLabelMetal(fieldValue = "Text2");
-
-		Form.closeSidebar();
-
-		Form.addSuccessPage();
-
-		Form.editSuccessPage(
-			successPageDescription = "Thank you for filling out the Form.",
-			successPageTitle = "Success Page Title");
-
-		Form.switchPaginationModeToBottom();
-
-		Form.viewAltPagePagination(page = "2");
-
-		Form.viewAltSuccessPagePagination();
-
-		Form.gotoPageAltPagination(page = "1");
-
-		FormFields.viewTextField(
-			fieldLabel = "Text Field",
-			fieldName = "TextField");
-
-		Form.save();
-
-		Form.viewAltPagePagination(page = "2");
-
-		Form.viewAltSuccessPagePagination();
-
-		Form.gotoPageAltPagination(page = "1");
-
-		FormFields.viewTextField(
-			fieldLabel = "Text Field",
-			fieldName = "TextField");
 	}
 
 	@description = "This is a use case for LPS-68182."

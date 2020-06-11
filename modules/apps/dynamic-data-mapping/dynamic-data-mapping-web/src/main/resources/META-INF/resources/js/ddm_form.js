@@ -19,6 +19,8 @@ AUI.add(
 
 		var AObject = A.Object;
 
+		var AQueue = A.Queue;
+
 		var DateMath = A.DataType.DateMath;
 
 		var Lang = A.Lang;
@@ -300,7 +302,7 @@ AUI.add(
 			},
 
 			getFieldInfo(tree, key, value) {
-				var queue = new A.Queue(tree);
+				var queue = new AQueue(tree);
 
 				var addToQueue = function (item) {
 					if (queue._q.indexOf(item) === -1) {
