@@ -20,14 +20,18 @@ import React, {useContext, useEffect, useState} from 'react';
 import {withRouter} from 'react-router-dom';
 
 import {AppContext} from '../../AppContext.es';
+import Error from '../../components/Error.es';
 import Link from '../../components/Link.es';
 import QuestionsEditor from '../../components/QuestionsEditor';
 import TagSelector from '../../components/TagSelector.es';
+import TextLengthValidation from '../../components/TextLengthValidation.es';
 import useSection from '../../hooks/useSection.es';
 import {client, createQuestionQuery} from '../../utils/client.es';
+import lang from '../../utils/lang.es';
 import {
 	historyPushWithSlug,
 	slugToText,
+	stripHTML,
 	useDebounceCallback,
 } from '../../utils/utils.es';
 
@@ -40,6 +44,7 @@ export default withRouter(
 	}) => {
 		const [articleBody, setArticleBody] = useState('');
 		const [headline, setHeadline] = useState('');
+		const [error, setError] = useState({});
 		const [sectionId, setSectionId] = useState();
 		const [sections, setSections] = useState([]);
 		const [tags, setTags] = useState([]);
@@ -73,6 +78,22 @@ export default withRouter(
 				]);
 			}
 		}, [section, section.parentSection]);
+
+		const processError = (error) => {
+			if (error.message && error.message.includes('AssetTagException')) {
+				error.message = lang.sub(
+					Liferay.Language.get(
+						'the-x-cannot-contain-the-following-invalid-characters-x'
+					),
+					[
+						'Tag',
+						' & \' @ \\\\ ] } : , = > / < \\n [ {  | + # ` ? \\" \\r ; / * ~',
+					]
+				);
+			}
+
+			setError(error);
+		};
 
 		return (
 			<section className="c-mt-5 questions-section questions-section-new">
@@ -138,9 +159,11 @@ export default withRouter(
 													'include-all-the-information-someone-would-need-to-answer-your-question'
 												)}
 											</span>
-										</ClayForm.FeedbackItem>
 
-										<ClayForm.Text>{''}</ClayForm.Text>
+											<TextLengthValidation
+												text={articleBody}
+											/>
+										</ClayForm.FeedbackItem>
 									</ClayForm.FeedbackGroup>
 								</ClayForm.Group>
 
@@ -181,7 +204,10 @@ export default withRouter(
 								<ClayButton
 									className="c-mt-4 c-mt-sm-0"
 									disabled={
-										!articleBody || !headline || !tagsLoaded
+										!articleBody ||
+										!headline ||
+										!tagsLoaded ||
+										stripHTML(articleBody).length < 15
 									}
 									displayType="primary"
 									onClick={() => {
@@ -195,7 +221,7 @@ export default withRouter(
 												messageBoardSectionId:
 													sectionId || section.id,
 											},
-										});
+										}).catch(processError);
 									}}
 								>
 									{Liferay.Language.get('post-your-question')}
@@ -211,6 +237,7 @@ export default withRouter(
 						</div>
 					</div>
 				</div>
+				<Error error={error} />
 			</section>
 		);
 	}

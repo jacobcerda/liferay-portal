@@ -14,7 +14,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "People",
-			panel = "Site Administration",
 			portlet = "Segments");
 
 		LexiconEntry.gotoAdd();
@@ -33,13 +32,14 @@ definition {
 	tearDown {
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
+		Navigator.openURL();
+
 		if ("${testPortalInstance}" == "true") {
 			PortalInstances.tearDownCP();
 		}
 		else {
 			ProductMenu.gotoPortlet(
 				category = "People",
-				panel = "Site Administration",
 				portlet = "Segments",
 				site = "Guest");
 
@@ -84,9 +84,10 @@ definition {
 			userScreenName = "OrganizationTag",
 			userTag = "organizationtagtest");
 
+		Navigator.openURL();
+
 		ProductMenu.gotoPortlet(
 			category = "People",
-			panel = "Site Administration",
 			portlet = "Segments",
 			site = "Guest");
 
@@ -173,9 +174,10 @@ definition {
 			userScreenName = "UserTag",
 			userTag = "tagtest");
 
+		Navigator.openURL();
+
 		ProductMenu.gotoPortlet(
 			category = "People",
-			panel = "Site Administration",
 			portlet = "Segments",
 			site = "Guest");
 

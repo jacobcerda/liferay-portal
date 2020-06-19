@@ -18,6 +18,7 @@ import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortlet
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
@@ -78,6 +79,8 @@ public class GetPagePreviewMVCResourceCommand extends BaseMVCResourceCommand {
 			resourceRequest.getAttribute(
 				SegmentsWebKeys.SEGMENTS_EXPERIENCE_IDS),
 			new long[] {SegmentsExperienceConstants.ID_DEFAULT});
+		boolean currentPortletDecorate = GetterUtil.getBoolean(
+			resourceRequest.getAttribute(WebKeys.PORTLET_DECORATE));
 		User currentUser = (User)resourceRequest.getAttribute(WebKeys.USER);
 
 		try {
@@ -87,6 +90,9 @@ public class GetPagePreviewMVCResourceCommand extends BaseMVCResourceCommand {
 			resourceRequest.setAttribute(
 				SegmentsWebKeys.SEGMENTS_EXPERIENCE_IDS,
 				new long[] {segmentsExperienceId});
+
+			resourceRequest.setAttribute(
+				WebKeys.PORTLET_DECORATE, Boolean.FALSE);
 
 			String languageId = ParamUtil.getString(
 				resourceRequest, "languageId",
@@ -104,6 +110,10 @@ public class GetPagePreviewMVCResourceCommand extends BaseMVCResourceCommand {
 			Layout layout = themeDisplay.getLayout();
 
 			layout.setClassNameId(0);
+
+			if (layout.isTypeAssetDisplay()) {
+				layout.setType(LayoutConstants.TYPE_CONTENT);
+			}
 
 			HttpServletRequest httpServletRequest =
 				_portal.getHttpServletRequest(resourceRequest);
@@ -135,6 +145,8 @@ public class GetPagePreviewMVCResourceCommand extends BaseMVCResourceCommand {
 			resourceRequest.setAttribute(
 				SegmentsWebKeys.SEGMENTS_EXPERIENCE_IDS,
 				currentSegmentsExperienceIds);
+			resourceRequest.setAttribute(
+				WebKeys.PORTLET_DECORATE, currentPortletDecorate);
 
 			themeDisplay.setLocale(currentLocale);
 			themeDisplay.setSignedIn(true);

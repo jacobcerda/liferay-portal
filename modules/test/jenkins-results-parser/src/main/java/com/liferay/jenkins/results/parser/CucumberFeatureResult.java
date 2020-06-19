@@ -15,9 +15,13 @@
 package com.liferay.jenkins.results.parser;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -27,7 +31,7 @@ import org.dom4j.Node;
 /**
  * @author Michael Hashimoto
  */
-public class CucumberFeatureResult {
+public class CucumberFeatureResult implements Serializable {
 
 	public List<CucumberScenarioResult> getCucumberScenarioResults() {
 		if (_cucumberScenarioResults != null) {
@@ -122,13 +126,7 @@ public class CucumberFeatureResult {
 	}
 
 	public String getURL() {
-		Element element = (Element)_node;
-
-		Element anchorElement = element.element("a");
-
-		return JenkinsResultsParserUtil.combine(
-			_build.getBuildURL(), "cucumber-html-reports/",
-			anchorElement.attributeValue("href"));
+		return _url;
 	}
 
 	protected CucumberFeatureResult(Build build, Node node) {
@@ -140,8 +138,13 @@ public class CucumberFeatureResult {
 			throw new IllegalArgumentException("Node is null");
 		}
 
-		_build = build;
-		_node = node;
+		Element element = (Element)node;
+
+		Element anchorElement = element.element("a");
+
+		_url = JenkinsResultsParserUtil.combine(
+			build.getBuildURL(), "cucumber-html-reports/",
+			anchorElement.attributeValue("href"));
 	}
 
 	private Document _getDocument() {
@@ -150,12 +153,15 @@ public class CucumberFeatureResult {
 		}
 
 		try {
-			String content = JenkinsResultsParserUtil.toString(getURL());
+			String documentContent = JenkinsResultsParserUtil.toString(
+				getURL(), false);
 
-			content = content.replaceAll("&nbsp;", " ");
-			content = content.replaceAll("<br>", "<br />");
+			documentContent = documentContent.replaceAll(
+				Pattern.quote("&nbsp;"), " ");
+			documentContent = documentContent.replaceAll(
+				Pattern.quote("<br>"), "<br />");
 
-			_document = Dom4JUtil.parse(content);
+			_document = Dom4JUtil.parse(documentContent);
 
 			return _document;
 		}
@@ -164,9 +170,32 @@ public class CucumberFeatureResult {
 		}
 	}
 
-	private final Build _build;
+	private void readObject(ObjectInputStream objectInputStream)
+		throws ClassNotFoundException, IOException {
+
+		objectInputStream.defaultReadObject();
+
+		try {
+			_document = Dom4JUtil.parse(objectInputStream.readUTF());
+		}
+		catch (DocumentException documentException) {
+			throw new RuntimeException(
+				"Unable to deserialize document", documentException);
+		}
+	}
+
+	private void writeObject(ObjectOutputStream objectOutputStream)
+		throws IOException {
+
+		objectOutputStream.defaultWriteObject();
+
+		Document document = _getDocument();
+
+		objectOutputStream.writeUTF(document.asXML());
+	}
+
 	private List<CucumberScenarioResult> _cucumberScenarioResults;
-	private Document _document;
-	private final Node _node;
+	private transient Document _document;
+	private final String _url;
 
 }

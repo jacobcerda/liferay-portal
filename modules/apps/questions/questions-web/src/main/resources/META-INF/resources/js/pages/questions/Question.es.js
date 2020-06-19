@@ -33,9 +33,9 @@ import RelatedQuestions from '../../components/RelatedQuestions.es';
 import SectionLabel from '../../components/SectionLabel.es';
 import Subscription from '../../components/Subscription.es';
 import TagList from '../../components/TagList.es';
+import TextLengthValidation from '../../components/TextLengthValidation.es';
 import useQueryParams from '../../hooks/useQueryParams.es';
 import {
-	client,
 	createAnswerQuery,
 	deleteMessageBoardThreadQuery,
 	getMessagesQuery,
@@ -43,7 +43,10 @@ import {
 	markAsAnswerMessageBoardMessageQuery,
 } from '../../utils/client.es';
 import lang from '../../utils/lang.es';
-import {dateToBriefInternationalHuman} from '../../utils/utils.es';
+import {
+	dateToBriefInternationalHuman,
+	historyPushWithSlug,
+} from '../../utils/utils.es';
 
 export default withRouter(
 	({
@@ -64,6 +67,8 @@ export default withRouter(
 		const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 		const [page, setPage] = useState(1);
 		const [pageSize, setPageSize] = useState(20);
+
+		const historyPushParser = historyPushWithSlug(history.push);
 
 		const {
 			loading,
@@ -146,8 +151,13 @@ export default withRouter(
 
 		const [deleteThread] = useMutation(deleteMessageBoardThreadQuery, {
 			onCompleted() {
-				client.resetStore();
-				history.goBack();
+				historyPushParser(
+					`/questions/${question.messageBoardSection.title}`
+				);
+			},
+			update(proxy) {
+				proxy.evict(`MessageBoardThread:${question.id}`);
+				proxy.gc();
 			},
 		});
 
@@ -441,11 +451,24 @@ export default withRouter(
 															}}
 														/>
 													</div>
+
+													<ClayForm.FeedbackGroup>
+														<ClayForm.FeedbackItem>
+															<TextLengthValidation
+																text={
+																	articleBody
+																}
+															/>
+														</ClayForm.FeedbackItem>
+													</ClayForm.FeedbackGroup>
 												</ClayForm.Group>
 											</ClayForm>
 
 											<ClayButton
-												disabled={!articleBody}
+												disabled={
+													!articleBody ||
+													articleBody.length < 23
+												}
 												displayType="primary"
 												onClick={() => {
 													createAnswer({

@@ -17,19 +17,19 @@ import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 
 import {getLayoutDataItemPropTypes} from '../../../prop-types/index';
+import selectLanguageId from '../../selectors/selectLanguageId';
 import InfoItemService from '../../services/InfoItemService';
+import {useSelector} from '../../store/index';
 
 const Container = React.forwardRef(({children, className, data, item}, ref) => {
 	const {
 		align,
-		backgroundColor,
+		backgroundColorCssClass,
 		backgroundImage,
 		borderColor,
 		borderRadius,
 		borderWidth,
-		containerWidth,
 		contentDisplay,
-		dropShadow,
 		justify,
 		marginBottom,
 		marginLeft,
@@ -40,15 +40,39 @@ const Container = React.forwardRef(({children, className, data, item}, ref) => {
 		paddingLeft,
 		paddingRight,
 		paddingTop,
+		shadow,
+		widthType,
 	} = item.config;
 
-	const backgroundColorCssClass = backgroundColor && backgroundColor.cssClass;
+	const languageId = useSelector(selectLanguageId);
 	const [backgroundImageValue, setBackgroundImageValue] = useState('');
-	const borderColorCssClass = borderColor && borderColor.cssClass;
+	const [link, setLink] = useState(null);
 
 	useEffect(() => {
 		loadBackgroundImage(backgroundImage).then(setBackgroundImageValue);
 	}, [backgroundImage]);
+
+	useEffect(() => {
+		if (!item.config.link) {
+			return;
+		}
+
+		if (item.config.link.href) {
+			setLink(item.config.link);
+		}
+		else if (item.config.link.fieldId) {
+			InfoItemService.getAssetFieldValue({
+				...item.config.link,
+				languageId,
+				onNetworkStatus: () => {},
+			}).then(({fieldValue}) => {
+				setLink({
+					href: fieldValue,
+					target: item.config.link.target,
+				});
+			});
+		}
+	}, [item.config.link, languageId]);
 
 	const style = {
 		boxSizing: 'border-box',
@@ -70,9 +94,9 @@ const Container = React.forwardRef(({children, className, data, item}, ref) => {
 		style.opacity = Number(opacity / 100) || 1;
 	}
 
-	return (
+	const content = (
 		<div
-			{...data}
+			{...(link ? {} : data)}
 			className={classNames(
 				className,
 				`mb-${marginBottom || 0}`,
@@ -85,15 +109,15 @@ const Container = React.forwardRef(({children, className, data, item}, ref) => {
 				`pt-${paddingTop || 0}`,
 				{
 					[align]: !!align,
+					[`bg-${backgroundColorCssClass}`]: !!backgroundColorCssClass,
+					[`border-${borderColor}`]: !!borderColor,
 					[borderRadius]: !!borderRadius,
-					container: containerWidth === 'fixed',
+					container: widthType === 'fixed',
 					'd-block': contentDisplay === 'block',
 					'd-flex': contentDisplay === 'flex',
-					[dropShadow]: !!dropShadow,
 					empty: item.children.length === 0,
 					[justify]: !!justify,
-					[`bg-${backgroundColorCssClass}`]: !!backgroundColorCssClass,
-					[`border-${borderColorCssClass}`]: !!borderColorCssClass,
+					[shadow]: !!shadow,
 				}
 			)}
 			ref={ref}
@@ -101,6 +125,14 @@ const Container = React.forwardRef(({children, className, data, item}, ref) => {
 		>
 			{children}
 		</div>
+	);
+
+	return link ? (
+		<a {...data} href={link.href} target={link.target}>
+			{content}
+		</a>
+	) : (
+		content
 	);
 });
 

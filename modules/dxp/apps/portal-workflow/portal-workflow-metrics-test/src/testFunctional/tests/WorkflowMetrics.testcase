@@ -47,7 +47,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -292,7 +291,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -395,7 +393,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -520,7 +517,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -685,7 +681,7 @@ definition {
 	@description = "Verify if the default filter values are correct and if the chart is displayed (LPS-98001)"
 	@priority = "5"
 	test DefaultWorkflowMetricsFilterValues {
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 
 		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 
@@ -738,7 +734,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -938,7 +933,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs",
 			site = "${siteName}");
 
@@ -946,7 +940,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs",
 			site = "${siteName}");
 
@@ -1169,7 +1162,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1255,7 +1247,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1326,7 +1317,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1416,13 +1406,12 @@ definition {
 	@description = "View that Custom Range is selected with shown input date"
 	@priority = "5"
 	test VerifyCustomRangeDateInput {
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1510,7 +1499,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1589,7 +1577,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1646,7 +1633,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1736,7 +1722,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1805,7 +1790,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1868,7 +1852,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 
@@ -1936,7 +1919,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Workflow",
 			site = "${siteName}");
 

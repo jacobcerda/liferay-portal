@@ -18,7 +18,10 @@ import com.liferay.headless.delivery.dto.v1_0.PageElement;
 import com.liferay.layout.util.structure.ColumnLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.Map;
 import java.util.Set;
@@ -48,9 +51,36 @@ public class ColumnLayoutStructureItemImporter
 		Map<String, Object> definitionMap = getDefinitionMap(
 			pageElement.getDefinition());
 
-		if (definitionMap != null) {
-			columnLayoutStructureItem.setSize(
-				(Integer)definitionMap.get("size"));
+		if (definitionMap == null) {
+			return columnLayoutStructureItem;
+		}
+
+		columnLayoutStructureItem.setSize((Integer)definitionMap.get("size"));
+
+		if (!definitionMap.containsKey("columnViewportConfig")) {
+			return columnLayoutStructureItem;
+		}
+
+		Map<String, Object> columnViewportConfigurations =
+			(Map<String, Object>)definitionMap.get("columnViewportConfig");
+
+		for (Map.Entry<String, Object> entry :
+				columnViewportConfigurations.entrySet()) {
+
+			Map<String, Object> columnViewportConfiguration =
+				(Map<String, Object>)entry.getValue();
+
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+			if (columnViewportConfiguration.containsKey("size")) {
+				jsonObject.put(
+					"size",
+					GetterUtil.getInteger(
+						columnViewportConfiguration.get("size")));
+			}
+
+			columnLayoutStructureItem.setViewportSizeConfiguration(
+				entry.getKey(), jsonObject);
 		}
 
 		return columnLayoutStructureItem;

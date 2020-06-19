@@ -266,7 +266,7 @@ definition {
 
 		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
 
-		LexiconEntry.gotoEntry(rowEntry = "Topic");
+		Navigator.gotoNavNested(navNested = "Topic");
 
 		Category.viewPath(
 			categoryName = "Category Name",
@@ -380,7 +380,7 @@ definition {
 
 		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
 
-		LexiconEntry.gotoAdd();
+		Vocabulary.gotoAddVocabulary();
 
 		PortletEntry.inputName(name = "Vocabulary Name");
 
@@ -418,7 +418,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.gotoPageMenuItem(
@@ -505,7 +504,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Bookmarks");
 
 		Bookmark.viewNoCategoryCP(vocabularyName = "Vocabulary Name");
@@ -1124,64 +1122,6 @@ definition {
 		Subcategory.viewSearchResultsCP(nullResult = "true");
 	}
 
-	@priority = "4"
-	test SearchVocabulary {
-		property testray.component.names = "Categories";
-
-		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
-
-		Vocabulary.addCP(
-			vocabularyDescription = "Sushi",
-			vocabularyName = "Food Vocab");
-
-		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
-
-		Vocabulary.addCP(
-			vocabularyDescription = "Futbol",
-			vocabularyName = "Sport Vocab");
-
-		for (var vocabularyName : list "Food,Sport") {
-			Category.openCategoriesAdmin(siteURLKey = "test-site-name");
-
-			Search.searchCP(searchTerm = "${vocabularyName}");
-
-			Vocabulary.viewSearchResultsCP(vocabularyNameList = "${vocabularyName} Vocab");
-		}
-
-		for (var vocabularyDescription : list "Sushi,Futbol") {
-			Category.openCategoriesAdmin(siteURLKey = "test-site-name");
-
-			Search.searchCP(searchTerm = "${vocabularyDescription}");
-
-			Vocabulary.viewSearchResultsCP(vocabularyDefinitionList = "${vocabularyDescription}");
-		}
-
-		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
-
-		Search.searchCP(searchTerm = "Vocab");
-
-		Vocabulary.viewSearchResultsCP(
-			vocabularyDefinitionList = "Sushi,Futbol",
-			vocabularyNameList = "Food Vocab,Sport Vocab");
-	}
-
-	@priority = "3"
-	test SearchVocabularyWithNullResult {
-		property testray.component.names = "Categories";
-
-		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
-
-		Vocabulary.addCP(
-			vocabularyDescription = "Vocabulary Description",
-			vocabularyName = "Vocabulary Name");
-
-		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
-
-		Search.searchCP(searchTerm = "Null");
-
-		Vocabulary.viewSearchResultsCP(nullResult = "true");
-	}
-
 	@Description ="This is for LPS-101409. Validate selecting multiple categories when creating page with blank template."
 	@priority ="4"
 	test SelectMultipleRequiredCategoriesWithBlankPageTemplate {
@@ -1257,7 +1197,6 @@ definition {
 		task ("Navigate to the Pages Administration") {
 			ProductMenu.gotoPortlet(
 				category = "Site Builder",
-				panel = "Site Administration",
 				portlet = "Pages");
 		}
 
@@ -1309,7 +1248,6 @@ definition {
 		task ("Navigate to the Pages Administration") {
 			ProductMenu.gotoPortlet(
 				category = "Site Builder",
-				panel = "Site Administration",
 				portlet = "Pages");
 		}
 
@@ -1332,7 +1270,6 @@ definition {
 		task ("Navigate to the Pages Administration") {
 			ProductMenu.gotoPortlet(
 				category = "Site Builder",
-				panel = "Site Administration",
 				portlet = "Pages");
 		}
 
@@ -1443,7 +1380,7 @@ definition {
 
 		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
 
-		LexiconEntry.gotoEntry(rowEntry = "Topic");
+		Navigator.gotoNavNested(navNested = "Topic");
 
 		Category.viewPath(
 			categoryName = "Category Name",

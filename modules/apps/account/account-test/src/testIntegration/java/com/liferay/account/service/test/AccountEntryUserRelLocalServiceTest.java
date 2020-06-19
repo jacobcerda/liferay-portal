@@ -32,7 +32,9 @@ import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.exception.UserEmailAddressException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -61,6 +63,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Drew Brokke
  */
+@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 public class AccountEntryUserRelLocalServiceTest {
 
@@ -159,6 +162,60 @@ public class AccountEntryUserRelLocalServiceTest {
 	}
 
 	@Test
+	public void testAddAccountEntryUserRel2WithInvalidUserEmailAddressDomain()
+		throws Exception {
+
+		AccountEntry accountEntry = AccountEntryTestUtil.addAccountEntry(
+			_accountEntryLocalService, new String[] {"test1.com", "test2.com"});
+
+		_userInfo.emailAddress = _userInfo.screenName + "@invalid-domain.com";
+
+		_addAccountEntryUserRel(accountEntry.getAccountEntryId());
+	}
+
+	@Test
+	public void testAddAccountEntryUserRel2WithInvalidUserEmailAddressDomainAs2BUser()
+		throws Exception {
+
+		String originalName = PrincipalThreadLocal.getName();
+
+		try {
+			AccountEntry accountEntry = AccountEntryTestUtil.addAccountEntry(
+				_accountEntryLocalService,
+				new String[] {"test1.com", "test2.com"});
+
+			_accountEntryUserRelLocalService.addAccountEntryUserRel(
+				accountEntry.getAccountEntryId(), _user.getUserId());
+
+			PrincipalThreadLocal.setName(_user.getUserId());
+
+			_userInfo.emailAddress =
+				_userInfo.screenName + "@invalid-domain.com";
+
+			_addAccountEntryUserRel(_accountEntry.getAccountEntryId());
+
+			Assert.fail();
+		}
+		catch (UserEmailAddressException.MustHaveValidDomain
+					userEmailAddressException) {
+
+			Assert.assertEquals(
+				_userInfo.emailAddress, userEmailAddressException.emailAddress);
+			Assert.assertEquals(
+				_accountEntry.getDomains(),
+				userEmailAddressException.validDomains);
+			Assert.assertEquals(
+				String.format(
+					"Email address %s must have one of the valid domains: %s",
+					_userInfo.emailAddress, _accountEntry.getDomains()),
+				userEmailAddressException.getMessage());
+		}
+		finally {
+			PrincipalThreadLocal.setName(originalName);
+		}
+	}
+
+	@Test
 	public void testAddAccountEntryUserRel2WithInvalidUserInfo()
 		throws Exception {
 
@@ -189,12 +246,14 @@ public class AccountEntryUserRelLocalServiceTest {
 
 	@Test
 	public void testAddAccountEntryUserRels() throws Exception {
-		_users.add(UserTestUtil.addUser());
-		_users.add(UserTestUtil.addUser());
+		List<User> users = new ArrayList<>();
+
+		users.add(UserTestUtil.addUser());
+		users.add(UserTestUtil.addUser());
 
 		_accountEntryUserRelLocalService.addAccountEntryUserRels(
 			_accountEntry.getAccountEntryId(),
-			ListUtil.toLongArray(_users, User.USER_ID_ACCESSOR));
+			ListUtil.toLongArray(users, User.USER_ID_ACCESSOR));
 
 		Assert.assertEquals(
 			2,
@@ -204,8 +263,8 @@ public class AccountEntryUserRelLocalServiceTest {
 		List<User> accountUsers = _accountUserRetriever.getAccountUsers(
 			_accountEntry.getAccountEntryId());
 
-		Assert.assertTrue(accountUsers.containsAll(_users));
-		Assert.assertTrue(_users.containsAll(accountUsers));
+		Assert.assertTrue(accountUsers.containsAll(users));
+		Assert.assertTrue(users.containsAll(accountUsers));
 	}
 
 	@Test
@@ -244,11 +303,13 @@ public class AccountEntryUserRelLocalServiceTest {
 
 	@Test
 	public void testGetAccountEntryUserRelsByAccountEntryId() throws Exception {
-		_users.add(UserTestUtil.addUser());
-		_users.add(UserTestUtil.addUser());
-		_users.add(UserTestUtil.addUser());
+		List<User> users = new ArrayList<>();
 
-		for (User user : _users) {
+		users.add(UserTestUtil.addUser());
+		users.add(UserTestUtil.addUser());
+		users.add(UserTestUtil.addUser());
+
+		for (User user : users) {
 			_accountEntryUserRelLocalService.addAccountEntryUserRel(
 				_accountEntry.getAccountEntryId(), user.getUserId());
 		}
@@ -259,7 +320,7 @@ public class AccountEntryUserRelLocalServiceTest {
 					_accountEntry.getAccountEntryId());
 
 		long[] expectedUserIds = ListUtil.toLongArray(
-			_users, User.USER_ID_ACCESSOR);
+			users, User.USER_ID_ACCESSOR);
 
 		Arrays.sort(expectedUserIds);
 
@@ -355,8 +416,6 @@ public class AccountEntryUserRelLocalServiceTest {
 			AccountEntry accountEntry = AccountEntryTestUtil.addAccountEntry(
 				_accountEntryLocalService);
 
-			_accountEntries.add(accountEntry);
-
 			accountEntryIds[i] = accountEntry.getAccountEntryId();
 		}
 
@@ -366,17 +425,11 @@ public class AccountEntryUserRelLocalServiceTest {
 	private AccountEntryUserRel _addAccountEntryUserRel(long accountEntryId)
 		throws Exception {
 
-		AccountEntryUserRel accountEntryUserRel =
-			_accountEntryUserRelLocalService.addAccountEntryUserRel(
-				accountEntryId, TestPropsValues.getUserId(),
-				_userInfo.screenName, _userInfo.emailAddress, _userInfo.locale,
-				_userInfo.firstName, _userInfo.middleName, _userInfo.lastName,
-				_userInfo.prefixId, _userInfo.suffixId);
-
-		_users.add(
-			_userLocalService.getUser(accountEntryUserRel.getAccountUserId()));
-
-		return accountEntryUserRel;
+		return _accountEntryUserRelLocalService.addAccountEntryUserRel(
+			accountEntryId, TestPropsValues.getUserId(), _userInfo.screenName,
+			_userInfo.emailAddress, _userInfo.locale, _userInfo.firstName,
+			_userInfo.middleName, _userInfo.lastName, _userInfo.prefixId,
+			_userInfo.suffixId);
 	}
 
 	private void _testAddAccountEntryUserRel2(
@@ -407,9 +460,6 @@ public class AccountEntryUserRelLocalServiceTest {
 	}
 
 	@DeleteAfterTestRun
-	private final List<AccountEntry> _accountEntries = new ArrayList<>();
-
-	@DeleteAfterTestRun
 	private AccountEntry _accountEntry;
 
 	@Inject
@@ -428,9 +478,6 @@ public class AccountEntryUserRelLocalServiceTest {
 
 	@Inject
 	private UserLocalService _userLocalService;
-
-	@DeleteAfterTestRun
-	private final List<User> _users = new ArrayList<>();
 
 	private class UserInfo {
 

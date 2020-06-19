@@ -23,7 +23,9 @@ import {AppContext} from '../../AppContext.es';
 import Link from '../../components/Link.es';
 import QuestionsEditor from '../../components/QuestionsEditor';
 import TagSelector from '../../components/TagSelector.es';
+import TextLengthValidation from '../../components/TextLengthValidation.es';
 import {getThreadContentQuery, updateThreadQuery} from '../../utils/client.es';
+import {stripHTML} from '../../utils/utils.es';
 
 export default withRouter(
 	({
@@ -65,6 +67,10 @@ export default withRouter(
 		const [updateThread] = useMutation(updateThreadQuery, {
 			onCompleted() {
 				history.goBack();
+			},
+			update(proxy) {
+				proxy.evict(`MessageBoardThread:${id}`);
+				proxy.gc();
 			},
 		});
 
@@ -133,9 +139,10 @@ export default withRouter(
 													'include-all-the-information-someone-would-need-to-answer-your-question'
 												)}
 											</span>
+											<TextLengthValidation
+												text={articleBody}
+											/>
 										</ClayForm.FeedbackItem>
-
-										<ClayForm.Text>{''}</ClayForm.Text>
 									</ClayForm.FeedbackGroup>
 								</ClayForm.Group>
 
@@ -152,7 +159,10 @@ export default withRouter(
 								<ClayButton
 									className="c-mt-4 c-mt-sm-0"
 									disabled={
-										!articleBody || !headline || !tagsLoaded
+										!articleBody ||
+										!headline ||
+										!tagsLoaded ||
+										stripHTML(articleBody).length < 15
 									}
 									displayType="primary"
 									onClick={() => {

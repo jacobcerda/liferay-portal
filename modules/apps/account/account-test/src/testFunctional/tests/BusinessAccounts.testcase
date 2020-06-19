@@ -80,6 +80,31 @@ definition {
 	}
 
 	@priority = "4"
+	test AddPersonalAccount {
+		GlobalMenu.gotoPortlet(
+			category = "Accounts",
+			panel = "Control Panel",
+			portlet = "Accounts");
+
+		Accounts.addCP(
+			accountDescription = "This is a Personal Account.",
+			accountName = "Personal Account",
+			accountType = "Personal");
+
+		GlobalMenu.gotoPortlet(
+			category = "Accounts",
+			panel = "Control Panel",
+			portlet = "Accounts");
+
+		Search.searchCP(searchTerm = "Personal Account");
+
+		Accounts.viewAccountDetails(
+			accountDescription = "This is a Personal Account.",
+			accountName = "Personal Account",
+			accountType = "Personal");
+	}
+
+	@priority = "4"
 	test AssignExistingUserToAccount {
 		GlobalMenu.gotoPortlet(
 			category = "Accounts",
@@ -542,7 +567,9 @@ definition {
 			panel = "Control Panel",
 			portlet = "Accounts");
 
-		Accounts.addCP(accountName = "Accounts Name for Test");
+		Accounts.addCP(
+			accountName = "Accounts Name for Test",
+			accountTaxID = "Z9870654786390342199899Y");
 
 		GlobalMenu.gotoPortlet(
 			category = "Accounts",
@@ -556,6 +583,10 @@ definition {
 		LexiconEntry.viewEntryStatus(
 			rowEntry = "Accounts Name for Test",
 			rowStatus = "Active");
+
+		Accounts.viewAccountDetails(
+			accountName = "Accounts Name for Test",
+			accountTaxID = "Z9870654786390342199899Y");
 	}
 
 	@priority = "4"

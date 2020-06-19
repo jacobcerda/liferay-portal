@@ -16,8 +16,15 @@ package com.liferay.layout.page.template.admin.web.internal.headless.delivery.dt
 
 import com.liferay.headless.delivery.dto.v1_0.PageElement;
 import com.liferay.headless.delivery.dto.v1_0.PageRowDefinition;
+import com.liferay.headless.delivery.dto.v1_0.RowViewportConfig;
+import com.liferay.headless.delivery.dto.v1_0.RowViewportConfigDefinition;
+import com.liferay.layout.responsive.ViewportSize;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.layout.util.structure.RowLayoutStructureItem;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.util.MapUtil;
+
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -52,9 +59,79 @@ public class RowLayoutStructureItemExporter
 							rowLayoutStructureItem.getNumberOfColumns();
 						reverseOrder = getReverseOrder();
 						verticalAlignment = getVerticalAlignment();
+
+						setRowViewportConfig(
+							() -> {
+								Map<String, JSONObject> viewportConfigurations =
+									rowLayoutStructureItem.
+										getViewportSizeConfigurations();
+
+								if (MapUtil.isEmpty(viewportConfigurations)) {
+									return null;
+								}
+
+								return new RowViewportConfig() {
+									{
+										landscapeMobile =
+											_toRowViewportConfigDefinition(
+												viewportConfigurations,
+												ViewportSize.MOBILE_LANDSCAPE);
+										portraitMobile =
+											_toRowViewportConfigDefinition(
+												viewportConfigurations,
+												ViewportSize.PORTRAIT_MOBILE);
+										tablet = _toRowViewportConfigDefinition(
+											viewportConfigurations,
+											ViewportSize.TABLET);
+									}
+								};
+							});
 					}
 				};
 				type = PageElement.Type.ROW;
+			}
+		};
+	}
+
+	private RowViewportConfigDefinition _toRowViewportConfigDefinition(
+		Map<String, JSONObject> viewportConfigurations,
+		ViewportSize viewportSize) {
+
+		if (!viewportConfigurations.containsKey(
+				viewportSize.getViewportSizeId())) {
+
+			return null;
+		}
+
+		JSONObject jsonObject = viewportConfigurations.get(
+			viewportSize.getViewportSizeId());
+
+		return new RowViewportConfigDefinition() {
+			{
+				setModulesPerRow(
+					() -> {
+						if (!jsonObject.has("modulesPerRow")) {
+							return null;
+						}
+
+						return jsonObject.getInt("modulesPerRow");
+					});
+				setReverseOrder(
+					() -> {
+						if (!jsonObject.has("reverseOrder")) {
+							return null;
+						}
+
+						return jsonObject.getBoolean("reverseOrder");
+					});
+				setVerticalAlignment(
+					() -> {
+						if (!jsonObject.has("verticalAlignment")) {
+							return null;
+						}
+
+						return jsonObject.getString("verticalAlignment");
+					});
 			}
 		};
 	}

@@ -203,7 +203,6 @@ out.println(PortalUtil.escapeRedirect("/"));
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test");
@@ -220,7 +219,6 @@ out.println(PortalUtil.escapeRedirect("/"));
 	test ValidateNoLARRemoteCodeExecution {
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		LAR.importPortlet(
@@ -285,7 +283,7 @@ out.println(PortalUtil.escapeRedirect("/"));
 	test ViewJSLoaderModulesURLNoWiki {
 		var portalURL = PropsUtil.get("portal.url");
 
-		Navigator.openSpecificURL(url = "${portalURL}/o/js_loader_modules");
+		Open.openNoError(locator1 = "${portalURL}/o/js_loader_modules");
 
 		AssertConsoleTextPresent(value1 = "com.liferay.wiki.engine.html");
 

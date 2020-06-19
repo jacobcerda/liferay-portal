@@ -89,45 +89,54 @@ const PreviewModal = ({observer}) => {
 						)}
 					>
 						<ul className="navbar-nav page-editor__preview-modal__part">
-							<li className="mr-2 nav-item">
-								<div className="align-middle d-inline-flex">
-									<label
-										className="mr-2 mt-1"
-										htmlFor={experienceSelectId}
-									>
-										{Liferay.Language.get('experience')}
-									</label>
+							{availableSegmentsExperiences && (
+								<li className="mr-2 nav-item">
+									<div className="align-middle d-inline-flex">
+										<label
+											className="mr-2 mt-1"
+											htmlFor={experienceSelectId}
+										>
+											{Liferay.Language.get('experience')}
+										</label>
 
-									<ClaySelect
-										aria-label="Experience"
-										className="form-control-sm"
-										id={experienceSelectId}
-										onChange={(event) => {
-											setSegmentsExperienceId(
-												event.target.options[
-													event.target.selectedIndex
-												].value
-											);
-										}}
-										value={segmentsExperienceId}
-									>
-										{availableSegmentsExperiences &&
-											Object.keys(
-												availableSegmentsExperiences
-											).map((segmentsExperienceId) => (
-												<ClaySelect.Option
-													key={segmentsExperienceId}
-													label={
-														availableSegmentsExperiences[
-															segmentsExperienceId
-														].name
-													}
-													value={segmentsExperienceId}
-												/>
-											))}
-									</ClaySelect>
-								</div>
-							</li>
+										<ClaySelect
+											aria-label="Experience"
+											className="form-control-sm"
+											id={experienceSelectId}
+											onChange={(event) => {
+												setSegmentsExperienceId(
+													event.target.options[
+														event.target
+															.selectedIndex
+													].value
+												);
+											}}
+											value={segmentsExperienceId}
+										>
+											{availableSegmentsExperiences &&
+												Object.keys(
+													availableSegmentsExperiences
+												).map(
+													(segmentsExperienceId) => (
+														<ClaySelect.Option
+															key={
+																segmentsExperienceId
+															}
+															label={
+																availableSegmentsExperiences[
+																	segmentsExperienceId
+																].name
+															}
+															value={
+																segmentsExperienceId
+															}
+														/>
+													)
+												)}
+										</ClaySelect>
+									</div>
+								</li>
+							)}
 
 							<li className="nav-item">
 								<Translation

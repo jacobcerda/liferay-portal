@@ -20,17 +20,12 @@ import MappingInput from './MappingInput';
 function MappingInputs({fields, inputs, selectedSource}) {
 	return (
 		<>
-			{inputs.map(({label, name, selectedFieldKey}) => (
+			{inputs.map((props) => (
 				<MappingInput
-					fields={fields}
-					key={name}
-					label={label}
-					name={name}
-					selectedField={
-						fields.find(({key}) => key === selectedFieldKey) ||
-						fields[0]
-					}
+					initialFields={fields}
+					key={props.name}
 					selectedSource={selectedSource}
+					{...props}
 				/>
 			))}
 		</>

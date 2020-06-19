@@ -25,6 +25,14 @@ const DEFAULT_RENDER_DATA = {
 
 const TOAST_AUTO_CLOSE_INTERVAL = 5000;
 
+const Text = ({allowHTML, string = null}) => {
+	if (allowHTML) {
+		return <div dangerouslySetInnerHTML={{__html: string}} />;
+	}
+
+	return string;
+};
+
 const getDefaultAlertContainer = () => {
 	let container = document.getElementById(DEFAULT_ALERT_CONTAINER_ID);
 
@@ -37,12 +45,17 @@ const getDefaultAlertContainer = () => {
 	return container;
 };
 
+const TYPES = {
+	HTML: 'html',
+	TEXT: 'text',
+};
+
 /**
  * Function that implements the Toast pattern, which allows to present feedback
  * to user actions as a toast message in the lower left corner of the page
  *
- * @param {string} message The message to show in the toast notification
- * @param {string} title The title associated with the message
+ * @param {string|HTML} message The message to show in the toast notification
+ * @param {string|HTML} title The title associated with the message
  * @param {string} displayType The displayType of notification to show. It can be one of the
  * following: 'danger', 'info', 'success', 'warning'
  * @return {ClayToast} The Alert toast created
@@ -52,8 +65,11 @@ const getDefaultAlertContainer = () => {
 function openToast({
 	containerId,
 	message = '',
+	messageType = TYPES.TEXT,
+	onClick = () => {},
 	renderData = DEFAULT_RENDER_DATA,
-	title = Liferay.Language.get('success'),
+	title,
+	titleType = TYPES.TEXT,
 	toastProps = {},
 	type = 'success',
 	variant,
@@ -70,12 +86,15 @@ function openToast({
 			<ClayAlert
 				autoClose={TOAST_AUTO_CLOSE_INTERVAL}
 				displayType={type}
+				onClick={(event) => onClick({event, onClose})}
 				onClose={onClose}
-				title={title}
+				title={
+					<Text allowHTML={titleType === TYPES.HTML} string={title} />
+				}
 				variant={variant}
 				{...toastProps}
 			>
-				{message}
+				<Text allowHTML={messageType === TYPES.HTML} string={message} />
 			</ClayAlert>
 		</ClayAlert.ToastContainer>,
 		renderData,

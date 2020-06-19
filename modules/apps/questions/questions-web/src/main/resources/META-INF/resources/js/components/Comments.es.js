@@ -18,9 +18,9 @@ import ClayForm from '@clayui/form';
 import React, {useCallback, useState} from 'react';
 
 import {createCommentQuery} from '../utils/client.es';
-import lang from '../utils/lang.es';
 import Comment from './Comment.es';
 import QuestionsEditor from './QuestionsEditor';
+import TextLengthValidation from './TextLengthValidation.es';
 
 export default ({
 	comments,
@@ -75,18 +75,11 @@ export default ({
 							}}
 						/>
 
-						{comment.length < 15 && (
-							<p className="float-right small text-secondary">
-								{lang.sub(
-									Liferay.Language.get('x-characters-left'),
-									[15 - comment.length]
-								)}
-							</p>
-						)}
+						<TextLengthValidation text={comment} />
 
 						<ClayButton.Group className="c-mt-3" spaced>
 							<ClayButton
-								disabled={comment.length < 15}
+								disabled={comment.length < 23}
 								displayType="primary"
 								onClick={() => {
 									createComment({

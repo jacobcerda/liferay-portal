@@ -4818,6 +4818,14 @@ log.sanitizer.enabled=false</echo>
 		<run-legacy-database-dump database.type="postgresql" />
 	</target>
 
+	<target name="legacy-functional-bundle-tomcat-sqlserver2017">
+		<run-legacy-database-dump database.type="sqlserver" database.version="2017" />
+	</target>
+
+	<target name="legacy-functional-bundle-tomcat-sqlserver2019">
+		<run-legacy-database-dump database.type="sqlserver" database.version="2019" />
+	</target>
+
 	<target name="legacy-functional-bundle-tomcat-sybase160">
 		<run-legacy-database-dump database.type="sybase" />
 	</target>
@@ -6523,8 +6531,9 @@ information. Make sure to commit in all build services results.
 					<property name="format.current.branch" value="${format.current.branch}" />
 					<property name="show.documentation" value="false" />
 					<property name="source.auto.fix" value="false" />
+					<property name="source.fail.on.auto.fix" value="true" />
+					<property name="source.fail.on.has.warning" value="true" />
 					<property name="source.print.errors" value="false" />
-					<property name="source.throw.exception" value="true" />
 					<property name="source.use.properties" value="false" />
 				</ant>
 			</test-action>
@@ -6552,9 +6561,10 @@ information. Make sure to commit in all build services results.
 				<ant dir="portal-impl" target="format-source-all">
 					<property name="show.documentation" value="false" />
 					<property name="source.auto.fix" value="false" />
+					<property name="source.fail.on.auto.fix" value="true" />
+					<property name="source.fail.on.has.warning" value="true" />
 					<property if:true="${liferay.releng.public}" name="source.formatter.excludes" value="modules/private/**" />
 					<property name="source.print.errors" value="false" />
-					<property name="source.throw.exception" value="true" />
 					<property name="source.use.properties" value="false" />
 				</ant>
 			</test-action>

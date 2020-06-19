@@ -21,6 +21,7 @@ import ClayLink from '@clayui/link';
 import classNames from 'classnames';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useDrag, useDrop} from 'react-dnd';
+import {getEmptyImage} from 'react-dnd-html5-backend';
 
 import {ACCEPTING_TYPES, ITEM_HOVER_BORDER_LIMIT} from './constants';
 
@@ -38,23 +39,49 @@ const ITEM_STATES_COLORS = {
 	pending: 'info',
 };
 
-const isValidTarget = (source, target, dropZone) => {
-	return !!(
-		source.id !== target.id &&
-		((target.parentId && target.columnIndex <= source.columnIndex) ||
-			(target.columnIndex > source.columnIndex && !source.active)) &&
-		((dropZone === DROP_ZONES.TOP &&
-			(target.columnIndex !== source.columnIndex ||
-				target.itemIndex < source.itemIndex ||
-				target.itemIndex > source.itemIndex + 1)) ||
-			(dropZone === DROP_ZONES.BOTTOM &&
-				(target.columnIndex !== source.columnIndex ||
+const isValidTarget = (sources, target, dropZone) => {
+	if (sources.some((item) => item.id === target.id)) {
+		return false;
+	}
+
+	if (
+		sources.some(
+			(source) =>
+				!(
+					(target.parentId &&
+						target.columnIndex <= source.columnIndex) ||
+					(target.columnIndex > source.columnIndex && !source.active)
+				)
+		)
+	) {
+		return false;
+	}
+
+	if (dropZone === DROP_ZONES.TOP) {
+		return !sources.some(
+			(source) =>
+				!(
+					target.columnIndex !== source.columnIndex ||
+					target.itemIndex < source.itemIndex ||
+					target.itemIndex > source.itemIndex + 1
+				)
+		);
+	}
+	else if (dropZone === DROP_ZONES.BOTTOM) {
+		return !sources.some(
+			(source) =>
+				!(
+					target.columnIndex !== source.columnIndex ||
 					target.itemIndex > source.itemIndex ||
-					target.itemIndex < source.itemIndex - 1)) ||
-			(dropZone === DROP_ZONES.ELEMENT &&
-				target.id !== source.parentId &&
-				target.parentable))
-	);
+					target.itemIndex < source.itemIndex - 1
+				)
+		);
+	}
+	else if (dropZone === DROP_ZONES.ELEMENT) {
+		return !sources.some(
+			(source) => !(target.id !== source.parentId && target.parentable)
+		);
+	}
 };
 
 const getDropZone = (ref, monitor) => {
@@ -81,6 +108,14 @@ const getDropZone = (ref, monitor) => {
 	return dropZone;
 };
 
+const getItemIndex = (item = {}, items) => {
+	const siblings = Array.from(items.values()).filter(
+		(_item) => _item.columnIndex === item.columnIndex
+	);
+
+	return siblings.indexOf(item);
+};
+
 const noop = () => {};
 
 const MillerColumnsItem = ({
@@ -103,10 +138,12 @@ const MillerColumnsItem = ({
 		url,
 		viewUrl,
 	},
+	items,
 	actionHandlers = {},
 	namespace,
 	onItemDrop = noop,
 	onItemStayHover = noop,
+	rtl,
 }) => {
 	const ref = useRef();
 	const timeoutRef = useRef();
@@ -154,16 +191,32 @@ const MillerColumnsItem = ({
 		return quickActions;
 	}, [actions, actionHandlers]);
 
-	const [{isDragging}, drag] = useDrag({
+	const [{isDragging}, drag, previewRef] = useDrag({
 		collect: (monitor) => ({
 			isDragging: !!monitor.isDragging(),
 		}),
+		isDragging: (monitor) => {
+			const movedItems = monitor.getItem().items;
+
+			return (
+				(movedItems.some((item) => item.checked) && checked) ||
+				movedItems.some((item) => item.id === itemId)
+			);
+		},
 		item: {
-			active,
-			columnIndex,
-			id: itemId,
-			itemIndex,
-			parentId,
+			items: checked
+				? Array.from(items.values())
+						.filter((item) => item.checked)
+						.map((item) => ({
+							...item,
+							itemIndex: getItemIndex(item, items),
+						}))
+				: [
+						{
+							...items.get(itemId),
+							itemIndex: getItemIndex(items.get(itemId), items),
+						},
+				  ],
 			type: ACCEPTING_TYPES.ITEM,
 		},
 	});
@@ -174,7 +227,7 @@ const MillerColumnsItem = ({
 			const dropZone = getDropZone(ref, monitor);
 
 			return isValidTarget(
-				source,
+				source.items,
 				{columnIndex, id: itemId, itemIndex, parentId, parentable},
 				dropZone
 			);
@@ -185,7 +238,11 @@ const MillerColumnsItem = ({
 		drop(source, monitor) {
 			if (monitor.canDrop()) {
 				if (dropZone === DROP_ZONES.ELEMENT) {
-					onItemDrop(source.id, itemId);
+					const newIndex = Array.from(items.values()).filter(
+						(item) => item.columnIndex === columnIndex
+					).length;
+
+					onItemDrop(source.items, itemId, newIndex);
 				}
 				else {
 					let newIndex = itemIndex;
@@ -194,7 +251,7 @@ const MillerColumnsItem = ({
 						newIndex = itemIndex + 1;
 					}
 
-					onItemDrop(source.id, parentId, newIndex);
+					onItemDrop(source.items, parentId, newIndex);
 				}
 			}
 		},
@@ -212,6 +269,10 @@ const MillerColumnsItem = ({
 	useEffect(() => {
 		drag(drop(ref));
 	}, [drag, drop]);
+
+	useEffect(() => {
+		previewRef(getEmptyImage(), {captureDraggingState: true});
+	}, [previewRef]);
 
 	useEffect(() => {
 		if (!active && dropZone === DROP_ZONES.ELEMENT && !timeoutRef.current) {
@@ -235,11 +296,11 @@ const MillerColumnsItem = ({
 			className={classNames(
 				'autofit-row autofit-row-center list-group-item-flex miller-columns-item',
 				{
-					active,
 					dragging: isDragging,
 					'drop-bottom': isOver && dropZone === DROP_ZONES.BOTTOM,
 					'drop-element': isOver && dropZone === DROP_ZONES.ELEMENT,
 					'drop-top': isOver && dropZone === DROP_ZONES.TOP,
+					'miller-columns-item--active': active,
 				}
 			)}
 			data-actions={bulkActions}
@@ -260,7 +321,7 @@ const MillerColumnsItem = ({
 			{selectable && (
 				<div className="autofit-col">
 					<ClayCheckbox
-						checked={checked}
+						defaultChecked={checked}
 						name={`${namespace}rowIds`}
 						value={itemId}
 					/>
@@ -372,7 +433,7 @@ const MillerColumnsItem = ({
 
 			{hasChild && (
 				<div className="autofit-col miller-columns-item-child-indicator">
-					<ClayIcon symbol="caret-right" />
+					<ClayIcon symbol={rtl ? 'caret-left' : 'caret-right'} />
 				</div>
 			)}
 		</li>

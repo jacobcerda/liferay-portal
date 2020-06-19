@@ -37,7 +37,11 @@ const props = {
 			type: 'select',
 			values: {option1: 1},
 		},
-		totalEntries: 4,
+		field5: {
+			type: 'date',
+			values: {option1: 1},
+		},
+		totalEntries: 5,
 	},
 	fields: [
 		{
@@ -68,7 +72,7 @@ const props = {
 			label: 'Field 5',
 			name: 'field5',
 			options: {option: 'option'},
-			type: 'text',
+			type: 'date',
 		},
 	],
 };

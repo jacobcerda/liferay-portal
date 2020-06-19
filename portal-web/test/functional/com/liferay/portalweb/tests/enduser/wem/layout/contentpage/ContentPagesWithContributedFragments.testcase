@@ -29,6 +29,162 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-112249. The Content Flags, Content Ratings and Content Display are compatible and consistent in the same cell of Collection Display."
+	@priority = "4"
+	test AddAllThreeContentFragmentsInCollectionDisplayOneCell {
+		for (var i : list "1,2,3") {
+			JSONWebcontent.addWebContent(
+				content = "WC WebContent Content ${i}",
+				groupName = "Test Site Name",
+				title = "WC WebContent Title ${i}");
+		}
+
+		JSONAssetlist.addDynamicAssetListEntry(
+			groupName = "Test Site Name",
+			title = "Dynamic Asset List Test");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name");
+
+		AssetListsAdmin.editAssetList(assetListTitle = "Dynamic Asset List Test");
+
+		AssetListsAdmin.configureAssetEntryType(selectedAsset = "Web Content Article");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Content Display",
+			fragmentName = "Collection Display");
+
+		PageEditor.editCollectionDisplay(
+			assetListName = "Dynamic Asset List Test",
+			fragmentName = "Collection Display");
+
+		for (var i : list "1,2,3") {
+			if ("${i}" == "1") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryTitle = "WC WebContent Title 3",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+			}
+
+			if ("${i}" == "2") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryTitle = "WC WebContent Title ${i}",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+			}
+
+			if ("${i}" == "3") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryTitle = "WC WebContent Title 1",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+			}
+		}
+
+		PageEditor.addFragmentToCollectionDisplay(
+			collectionName = "Content Display",
+			entryTitle = "WC WebContent Title 3",
+			fragmentName = "Content Flags");
+
+		PageEditor.addFragmentToCollectionDisplay(
+			collectionName = "Content Display",
+			fragmentName = "Content Ratings",
+			targetFragmentName = "Content Flags");
+
+		PageEditor.addFragmentToCollectionDisplay(
+			collectionName = "Content Display",
+			fragmentName = "Content Display",
+			targetFragmentName = "Content Ratings");
+
+		for (var i : list "1,2,3") {
+			AssertVisible(
+				key_colPosition = "1",
+				key_rowPosition = "${i}",
+				locator1 = "PageEditor#COLLECTION_ITEM_RATING_STAR_EMPTY");
+
+			AssertVisible(
+				key_colPosition = "1",
+				key_rowPosition = "${i}",
+				locator1 = "PageEditor#COLLECTION_ITEM_AVERAGE_STAR");
+
+			AssertTextEquals(
+				key_rowPosition = "${i}",
+				locator1 = "Fragment#CONTENT_FRAGMENT_BODY",
+				value1 = "Report");
+		}
+
+		for (var i : list "1,2,3") {
+			if ("${i}" == "1") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryContent = "WC WebContent Content 3",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_CONTENT");
+			}
+
+			if ("${i}" == "2") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryContent = "WC WebContent Content ${i}",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_CONTENT");
+			}
+
+			if ("${i}" == "3") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryContent = "WC WebContent Content 1",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_CONTENT");
+			}
+		}
+
+		PageEditor.gotoContentConfiguration(
+			colPosition = "1",
+			entryContent = "Report",
+			fragmentName = "Content Flagss",
+			rowPosition = "1");
+
+		AssertTextEquals(
+			key_text = "Content",
+			locator1 = "TextInput#ANY",
+			value1 = "WC WebContent Title 3");
+
+		PageEditor.gotoContentConfiguration(
+			colPosition = "1",
+			entryContent = "0.0",
+			fragmentName = "Content Ratings",
+			rowPosition = "1");
+
+		AssertTextEquals(
+			key_text = "Content",
+			locator1 = "TextInput#ANY",
+			value1 = "WC WebContent Title 3");
+
+		PageEditor.gotoContentConfiguration(
+			colPosition = "1",
+			entryContent = "WC WebContent Content 3",
+			fragmentName = "Content Display",
+			rowPosition = "1");
+
+		AssertTextEquals(
+			key_text = "Content",
+			locator1 = "TextInput#ANY",
+			value1 = "WC WebContent Title 3");
+	}
+
 	@description = "This is a test for LPS-101330. A user should be able to add a video fragment and the video should play."
 	@priority = "5"
 	test AddContentPageWithVideoFragment {
@@ -130,6 +286,111 @@ definition {
 				key_rowPosition = "3",
 				locator1 = "PageEditor#COLLECTION_CELL_NESTED_ELEMENT");
 		}
+	}
+
+	@description = "This is a use case for LPS-109298. Each tab of Tabs fragment is able to contain any elements in content page."
+	@priority = "5"
+	test AddFrgamentToIndividualTabOfTabsFragment {
+		property test.assert.warning.exceptions = "true";
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Basic Components",
+			fragmentName = "Tabs");
+
+		AssertVisible(
+			key_content = "Place fragments here.",
+			key_fragmentClass = "content",
+			key_position = "1",
+			locator1 = "Fragment#PAGE_EDITOR_FRAGMENT");
+
+		PageEditor.expandFragmentCollection(collectionName = "Layout Elements");
+
+		DragAndDrop.javaScriptDragAndDropToObject(
+			key_collectionName = "Layout Elements",
+			key_fragmentName = "Section",
+			key_index = "2",
+			locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+			locator2 = "PageEditor#FRAGMENT_WITH_DROP_TARGET",
+			value1 = "");
+
+		AssertElementPresent(
+			key_fragmentName = "Section",
+			key_inFragmentName = "Tabs",
+			locator1 = "Fragment#FRAGMENT_BODY_IN_FRAGMENT");
+
+		PageEditor.gotoTabsFragmentNavItem(navItem = "Tab 2");
+
+		AssertVisible(
+			key_content = "Place fragments here.",
+			key_fragmentClass = "content",
+			key_position = "1",
+			locator1 = "Fragment#PAGE_EDITOR_FRAGMENT");
+
+		PageEditor.expandFragmentCollection(collectionName = "Basic Components");
+
+		DragAndDrop.javaScriptDragAndDropToObject(
+			key_collectionName = "Basic Components",
+			key_fragmentName = "Heading",
+			key_index = "3",
+			locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+			locator2 = "PageEditor#FRAGMENT_WITH_DROP_TARGET",
+			value1 = "");
+
+		AssertElementPresent(
+			key_fragmentName = "Heading",
+			key_inFragmentName = "Tabs",
+			locator1 = "Fragment#FRAGMENT_BODY_IN_FRAGMENT");
+
+		PageEditor.gotoTabsFragmentNavItem(navItem = "Tab 3");
+
+		AssertVisible(
+			key_content = "Place fragments here.",
+			key_fragmentClass = "content",
+			key_position = "1",
+			locator1 = "Fragment#PAGE_EDITOR_FRAGMENT");
+
+		PageEditor.expandFragmentCollection(collectionName = "Basic Components");
+
+		DragAndDrop.javaScriptDragAndDropToObject(
+			key_collectionName = "Basic Components",
+			key_fragmentName = "Tabs",
+			key_index = "4",
+			locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+			locator2 = "PageEditor#FRAGMENT_WITH_DROP_TARGET",
+			value1 = "");
+
+		AssertElementPresent(
+			key_fragmentName = "Tabs",
+			key_inFragmentName = "Tabs",
+			locator1 = "Fragment#FRAGMENT_BODY_IN_FRAGMENT");
+
+		PageEditor.gotoTabsFragmentNavItem(navItem = "Tab 4");
+
+		AssertVisible(
+			key_content = "Place fragments here.",
+			key_fragmentClass = "content",
+			key_position = "1",
+			locator1 = "Fragment#PAGE_EDITOR_FRAGMENT");
+
+		Navigator.gotoNavTab(navTab = "Widgets");
+
+		DragAndDrop.javaScriptDragAndDropToObject(
+			key_index = "9",
+			key_portletName = "Asset Publisher",
+			locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_WIDGET",
+			locator2 = "PageEditor#FRAGMENT_WITH_DROP_TARGET",
+			value1 = "Asset Publisher");
+
+		AssertElementPresent(
+			key_fragmentName = "Asset Publisher",
+			key_inFragmentName = "Tabs",
+			locator1 = "Fragment#FRAGMENT_BODY_IN_FRAGMENT");
+
+		PageEditor.clickPublish();
 	}
 
 	@description = "This is a use case for LPS-111274. The selected Tabs fragment should always stay selected when click on the tabs of it."
@@ -275,41 +536,6 @@ definition {
 				LexiconCard.viewCardNotPresent(card = "${assetListName}");
 			}
 		}
-	}
-
-	@description = "This is a use case for for LPS-111548. Reloading the page will clean all Undo states."
-	@priority = "4"
-	test ConfigureHeadingFragmentAndRefreshPageWithUndoEnabled {
-		property osgi.module.configuration.file.names = "com.liferay.layout.content.page.editor.web.internal.configuration.FFLayoutContentPageEditorConfiguration.config";
-		property osgi.module.configurations = "undoEnabled = true";
-
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Content Page Name",
-			siteName = "Test Site Name");
-
-		PageEditor.addFragment(
-			collectionName = "Basic Components",
-			fragmentName = "Heading");
-
-		PageEditor.waitForAutoSave();
-
-		AssertVisible(
-			key_text = "undo",
-			locator1 = "Icon#ANY_ENABLED");
-
-		PageEditor.gotoConfiguration(fragmentName = "Heading");
-
-		PageEditor.configureFragment(textAlign = "Center");
-
-		PageEditor.viewFragmentStyle(
-			alignment = "center",
-			fragmentName = "heading");
-
-		Refresh();
-
-		AssertElementPresent(
-			key_text = "undo",
-			locator1 = "Icon#ANY_DISABLED");
 	}
 
 	@description = "Given a content page with a configured Content fragment, when the content is deleted the fragment should not be visible in view mode and a message should be shown in page editor."
@@ -1149,49 +1375,6 @@ definition {
 		}
 	}
 
-	@description = "This is a use case for for LPS-111548. Undo can make the page editor come back to previous state up to 20 last states when the page has more than 20 states."
-	@priority = "5"
-	test UndoPagechangeTwentyTimes {
-		property osgi.module.configuration.file.names = "com.liferay.layout.content.page.editor.web.internal.configuration.FFLayoutContentPageEditorConfiguration.config";
-		property osgi.module.configurations = "undoEnabled = true";
-
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Content Page Name",
-			siteName = "Test Site Name");
-
-		PageEditor.addFragment(
-			collectionName = "Basic Components",
-			fragmentName = "Tabs");
-
-		for (var i : list "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20") {
-			PageEditor.gotoConfiguration(fragmentName = "Tabs");
-
-			PageEditor.configureFragment(numberOfTabs = "${i}");
-
-			Click.clickNoMouseOver(
-				key_elementType = "Fragment",
-				locator1 = "PageEditor#FRAGMENT_BODY_TOOLBAR_CONFIGURATION_BUTTON");
-		}
-
-		for (var i : list "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20") {
-			Click(
-				key_text = "undo",
-				locator1 = "Icon#ANY");
-		}
-
-		AssertVisible(
-			key_navItem = "Tab 4",
-			locator1 = "Fragment#NAV_ITEM_TAB");
-
-		AssertElementNotPresent(
-			key_navItem = "Tab 5",
-			locator1 = "Fragment#NAV_ITEM_TAB");
-
-		AssertElementPresent(
-			key_text = "undo",
-			locator1 = "Icon#ANY_DISABLED");
-	}
-
 	@description = "This is a test for LPS-112093. The Blogs Entries of collection are displayed using Full Content when add a Content Display to Collection Display."
 	@priority = "4"
 	test ViewBlogEntryViaContentInCollectionDisplay {
@@ -1394,6 +1577,213 @@ definition {
 			key_fieldLabel = "Template",
 			locator1 = "Select#GENERIC_SELECT_FIELD",
 			value1 = "Abstract");
+	}
+
+	@description = "This is a test for LPS-112249. The flags of each collection item are shown when add a Content Flags fragment to Collection Display."
+	@priority = "5"
+	test ViewFlagsViaContentFlagsInCollectionDisplay {
+		for (var i : list "1,2,3") {
+			JSONWebcontent.addWebContent(
+				content = "WC WebContent Content ${i}",
+				groupName = "Test Site Name",
+				title = "WC WebContent Title ${i}");
+		}
+
+		JSONAssetlist.addDynamicAssetListEntry(
+			groupName = "Test Site Name",
+			title = "Dynamic Asset List Test");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name");
+
+		AssetListsAdmin.editAssetList(assetListTitle = "Dynamic Asset List Test");
+
+		AssetListsAdmin.configureAssetEntryType(selectedAsset = "Web Content Article");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Content Display",
+			fragmentName = "Collection Display");
+
+		PageEditor.editCollectionDisplay(
+			assetListName = "Dynamic Asset List Test",
+			fragmentName = "Collection Display");
+
+		for (var i : list "1,2,3") {
+			if ("${i}" == "1") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryTitle = "WC WebContent Title 3",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+			}
+			if ("${i}" == "2") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryTitle = "WC WebContent Title ${i}",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+			}
+			if ("${i}" == "3") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryTitle = "WC WebContent Title 1",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+			}
+		}
+
+		PageEditor.addFragmentToCollectionDisplay(
+			collectionName = "Content Display",
+			entryTitle = "WC WebContent Title 3",
+			fragmentName = "Content Flags");
+
+		for (var i : list "1,2,3") {
+			AssertTextEquals(
+				key_rowPosition = "${i}",
+				locator1 = "Fragment#CONTENT_FRAGMENT_BODY",
+				value1 = "Report");
+		}
+
+		PageEditor.waitForAutoSave();
+
+		PageEditor.gotoContentConfiguration(
+			fragmentName = "Content Ratings",
+			rowPosition = "1");
+
+		AssertTextEquals(
+			key_text = "Content",
+			locator1 = "TextInput#ANY",
+			value1 = "WC WebContent Title 3");
+
+		PageEditor.gotoContentConfiguration(
+			fragmentName = "Content Ratings",
+			rowPosition = "2");
+
+		AssertTextEquals(
+			key_text = "Content",
+			locator1 = "TextInput#ANY",
+			value1 = "WC WebContent Title 2");
+
+		PageEditor.gotoContentConfiguration(
+			fragmentName = "Content Ratings",
+			rowPosition = "3");
+
+		AssertTextEquals(
+			key_text = "Content",
+			locator1 = "TextInput#ANY",
+			value1 = "WC WebContent Title 1");
+	}
+
+	@description = "This is a test for LPS-112249. The ratings of each collection item are shown when add a Content Ratings fragment to Collection Display."
+	@priority = "5"
+	test ViewRatingsViaContentRatingsInCollectionDisplay {
+		for (var i : list "1,2,3") {
+			JSONWebcontent.addWebContent(
+				content = "WC WebContent Content ${i}",
+				groupName = "Test Site Name",
+				title = "WC WebContent Title ${i}");
+		}
+
+		JSONAssetlist.addDynamicAssetListEntry(
+			groupName = "Test Site Name",
+			title = "Dynamic Asset List Test");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name");
+
+		AssetListsAdmin.editAssetList(assetListTitle = "Dynamic Asset List Test");
+
+		AssetListsAdmin.configureAssetEntryType(selectedAsset = "Web Content Article");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Content Display",
+			fragmentName = "Collection Display");
+
+		PageEditor.editCollectionDisplay(
+			assetListName = "Dynamic Asset List Test",
+			fragmentName = "Collection Display");
+
+		for (var i : list "1,2,3") {
+			if ("${i}" == "1") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryTitle = "WC WebContent Title 3",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+			}
+			if ("${i}" == "2") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryTitle = "WC WebContent Title ${i}",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+			}
+			if ("${i}" == "3") {
+				AssertVisible(
+					key_colPosition = "1",
+					key_entryTitle = "WC WebContent Title 1",
+					key_fragmentName = "Collection Display",
+					key_rowPosition = "${i}",
+					locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+			}
+		}
+
+		PageEditor.addFragmentToCollectionDisplay(
+			collectionName = "Content Display",
+			entryTitle = "WC WebContent Title 3",
+			fragmentName = "Content Ratings");
+
+		for (var i : list "1,2,3") {
+			AssertVisible(
+				key_colPosition = "1",
+				key_rowPosition = "${i}",
+				locator1 = "PageEditor#COLLECTION_ITEM_RATING_STAR_EMPTY");
+
+			AssertVisible(
+				key_colPosition = "1",
+				key_rowPosition = "${i}",
+				locator1 = "PageEditor#COLLECTION_ITEM_AVERAGE_STAR");
+		}
+
+		PageEditor.waitForAutoSave();
+
+		PageEditor.gotoContentConfiguration(
+			fragmentName = "Content Ratings",
+			rowPosition = "1");
+
+		AssertTextEquals(
+			key_text = "Content",
+			locator1 = "TextInput#ANY",
+			value1 = "WC WebContent Title 3");
+
+		PageEditor.gotoContentConfiguration(
+			fragmentName = "Content Ratings",
+			rowPosition = "2");
+
+		AssertTextEquals(
+			key_text = "Content",
+			locator1 = "TextInput#ANY",
+			value1 = "WC WebContent Title 2");
+
+		PageEditor.gotoContentConfiguration(
+			fragmentName = "Content Ratings",
+			rowPosition = "3");
+
+		AssertTextEquals(
+			key_text = "Content",
+			locator1 = "TextInput#ANY",
+			value1 = "WC WebContent Title 1");
 	}
 
 	@description = "This is a test for LPS-112093. The Web Content Articles of collection are displayed using Default Template when add a Content Display to Collection Display."

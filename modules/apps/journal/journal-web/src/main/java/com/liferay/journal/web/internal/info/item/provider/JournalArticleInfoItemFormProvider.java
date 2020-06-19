@@ -38,6 +38,7 @@ import com.liferay.info.item.NoSuchInfoItemException;
 import com.liferay.info.item.field.reader.InfoItemFieldReaderFieldSetProvider;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.localized.InfoLocalizedValue;
+import com.liferay.info.type.WebImage;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleDisplay;
 import com.liferay.journal.service.JournalArticleLocalService;
@@ -47,8 +48,6 @@ import com.liferay.journal.util.comparator.ArticleVersionComparator;
 import com.liferay.journal.web.internal.asset.JournalArticleDDMFormValuesReader;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -57,6 +56,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.display.template.PortletDisplayTemplate;
 
 import java.text.Format;
@@ -285,16 +285,6 @@ public class JournalArticleInfoItemFormProvider
 			themeDisplay);
 	}
 
-	private JSONObject _getImageJSONObject(String alt, String url) {
-		JSONObject jsonObject = JSONUtil.put("url", url);
-
-		if (alt != null) {
-			jsonObject = jsonObject.put("alt", alt);
-		}
-
-		return jsonObject;
-	}
-
 	private Collection<InfoFieldSetEntry> _getJournalArticleFields() {
 		return Arrays.asList(
 			_titleInfoField, _descriptionInfoField, _smallImageInfoField,
@@ -334,12 +324,15 @@ public class JournalArticleInfoItemFormProvider
 					).build()));
 
 			if (themeDisplay != null) {
-				journalArticleFieldValues.add(
-					new InfoFieldValue<>(
-						_smallImageInfoField,
-						_getImageJSONObject(
-							null,
-							journalArticle.getArticleImageURL(themeDisplay))));
+				String articleImageURL = journalArticle.getArticleImageURL(
+					themeDisplay);
+
+				if (Validator.isNotNull(articleImageURL)) {
+					journalArticleFieldValues.add(
+						new InfoFieldValue<>(
+							_smallImageInfoField,
+							new WebImage(articleImageURL)));
+				}
 			}
 
 			User user = _getLastVersionUser(journalArticle);
@@ -350,12 +343,14 @@ public class JournalArticleInfoItemFormProvider
 						_authorNameInfoField, user.getFullName()));
 
 				if (themeDisplay != null) {
+					WebImage webImage = new WebImage(
+						user.getPortraitURL(themeDisplay));
+
+					webImage.setAlt(user.getFullName());
+
 					journalArticleFieldValues.add(
 						new InfoFieldValue<>(
-							_authorProfileImageInfoField,
-							_getImageJSONObject(
-								user.getFullName(),
-								user.getPortraitURL(themeDisplay))));
+							_authorProfileImageInfoField, webImage));
 				}
 			}
 
@@ -369,12 +364,14 @@ public class JournalArticleInfoItemFormProvider
 						lastEditorUser.getFullName()));
 
 				if (themeDisplay != null) {
+					WebImage webImage = new WebImage(
+						lastEditorUser.getPortraitURL(themeDisplay));
+
+					webImage.setAlt(lastEditorUser.getFullName());
+
 					journalArticleFieldValues.add(
 						new InfoFieldValue<>(
-							_lastEditorProfileImageInfoField,
-							_getImageJSONObject(
-								lastEditorUser.getFullName(),
-								lastEditorUser.getPortraitURL(themeDisplay))));
+							_lastEditorProfileImageInfoField, webImage));
 				}
 			}
 

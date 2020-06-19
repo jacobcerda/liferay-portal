@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 
@@ -51,6 +52,38 @@ public class PageColumnDefinition {
 	public static PageColumnDefinition toDTO(String json) {
 		return ObjectMapperUtil.readValue(PageColumnDefinition.class, json);
 	}
+
+	@Schema
+	@Valid
+	public ColumnViewportConfig getColumnViewportConfig() {
+		return columnViewportConfig;
+	}
+
+	public void setColumnViewportConfig(
+		ColumnViewportConfig columnViewportConfig) {
+
+		this.columnViewportConfig = columnViewportConfig;
+	}
+
+	@JsonIgnore
+	public void setColumnViewportConfig(
+		UnsafeSupplier<ColumnViewportConfig, Exception>
+			columnViewportConfigUnsafeSupplier) {
+
+		try {
+			columnViewportConfig = columnViewportConfigUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected ColumnViewportConfig columnViewportConfig;
 
 	@DecimalMax("12")
 	@DecimalMin("1")
@@ -107,6 +140,16 @@ public class PageColumnDefinition {
 		StringBundler sb = new StringBundler();
 
 		sb.append("{");
+
+		if (columnViewportConfig != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"columnViewportConfig\": ");
+
+			sb.append(String.valueOf(columnViewportConfig));
+		}
 
 		if (size != null) {
 			if (sb.length() > 1) {

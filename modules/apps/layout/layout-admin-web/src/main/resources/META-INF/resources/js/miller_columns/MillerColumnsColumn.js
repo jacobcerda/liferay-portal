@@ -19,25 +19,29 @@ import {useDrop} from 'react-dnd';
 import MillerColumnsItem from './MillerColumnsItem';
 import {ACCEPTING_TYPES} from './constants';
 
-const isValidTarget = (source, parent) => {
-	return !!(
-		parent &&
-		(source.columnIndex > parent.columnIndex + 1 ||
-			(source.columnIndex === parent.columnIndex + 1 &&
-				source.itemIndex < parent.childrenCount - 1) ||
-			(parent.parentable &&
-				source.columnIndex <= parent.columnIndex &&
-				!source.active))
+const isValidTarget = (sources, parent) =>
+	!sources.some(
+		(source) =>
+			!(
+				parent &&
+				(source.columnIndex > parent.columnIndex + 1 ||
+					(source.columnIndex === parent.columnIndex + 1 &&
+						source.parentId !== parent.id) ||
+					(parent.parentable &&
+						source.columnIndex <= parent.columnIndex &&
+						!source.active))
+			)
 	);
-};
 
 const MillerColumnsColumn = ({
 	actionHandlers,
-	items = [],
+	columnItems = [],
+	items,
 	namespace,
 	onItemDrop,
 	onItemStayHover,
 	parent,
+	rtl,
 }) => {
 	const ref = useRef();
 
@@ -45,7 +49,8 @@ const MillerColumnsColumn = ({
 		accept: ACCEPTING_TYPES.ITEM,
 		canDrop(source, monitor) {
 			return (
-				monitor.isOver({shallow: true}) && isValidTarget(source, parent)
+				monitor.isOver({shallow: true}) &&
+				isValidTarget(source.items, parent)
 			);
 		},
 		collect: (monitor) => ({
@@ -53,7 +58,7 @@ const MillerColumnsColumn = ({
 		}),
 		drop(source) {
 			if (canDrop) {
-				onItemDrop(source.id, parent.id);
+				onItemDrop(source.items, parent.id, columnItems.length);
 			}
 		},
 	});
@@ -72,14 +77,16 @@ const MillerColumnsColumn = ({
 			)}
 			ref={ref}
 		>
-			{items.map((item, index) => (
+			{columnItems.map((item, index) => (
 				<MillerColumnsItem
 					actionHandlers={actionHandlers}
 					item={{...item, itemIndex: index}}
+					items={items}
 					key={item.key}
 					namespace={namespace}
 					onItemDrop={onItemDrop}
 					onItemStayHover={onItemStayHover}
+					rtl={rtl}
 				/>
 			))}
 		</ul>

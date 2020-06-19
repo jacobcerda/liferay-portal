@@ -13,7 +13,6 @@
  */
 
 import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
-import ClayDropDown from '@clayui/drop-down';
 import {ClayInput, ClaySelect} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
@@ -21,7 +20,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import {withRouter} from 'react-router-dom';
 
 import {AppContext} from '../AppContext.es';
-import Link from '../components/Link.es';
+import Breadcrumb from '../components/Breadcrumb.es';
 import SectionSubscription from '../components/SectionSubscription.es';
 import useSection from '../hooks/useSection.es';
 import {
@@ -65,7 +64,6 @@ export default withRouter(
 
 		const historyPushParser = historyPushWithSlug(history.push);
 
-		const [active, setActive] = useState(false);
 		const [loading, setLoading] = useState(false);
 
 		const [debounceCallback] = useDebounceCallback((value) => {
@@ -82,12 +80,6 @@ export default withRouter(
 		}, [section, sectionChange]);
 
 		const filterOptions = getFilterOptions();
-
-		const getParentSubSections = () =>
-			(section &&
-				section.parentSection &&
-				section.parentSection.messageBoardSections.items) ||
-			[];
 
 		const navigateToNewQuestion = () => {
 			if (context.redirectToLogin && !themeDisplay.isSignedIn()) {
@@ -108,87 +100,9 @@ export default withRouter(
 		};
 
 		return (
-			<div className="d-flex flex-column flex-lg-row justify-content-between">
-				<div className="d-flex flex-grow-1">
-					{!!getParentSubSections().length && (
-						<ClayDropDown
-							active={active}
-							className="questions-navigation-dropdown"
-							onActiveChange={setActive}
-							trigger={
-								<div className="align-items-center d-flex h-100">
-									{section.parentSection && (
-										<ClayInput.Group>
-											<ClayInput.GroupItem className="align-items-center">
-												<div className="questions-navigation-parent-section-title text-truncate">
-													{
-														section.parentSection
-															.title
-													}
-													{':'}
-												</div>
-											</ClayInput.GroupItem>
-
-											<ClayInput.GroupItem
-												className="questions-navigation-section-title text-truncate"
-												shrink
-											>
-												{section.title ===
-												section.parentSection.title
-													? Liferay.Language.get(
-															'all'
-													  )
-													: section.title}
-											</ClayInput.GroupItem>
-
-											<ClayInput.GroupItem
-												className="align-items-center"
-												shrink
-											>
-												<ClayIcon symbol="caret-bottom" />
-											</ClayInput.GroupItem>
-										</ClayInput.Group>
-									)}
-								</div>
-							}
-						>
-							<Link
-								onClick={() => {
-									setActive(false);
-								}}
-								to={`/questions/${
-									(section &&
-										section.parentSection &&
-										section.parentSection.title) ||
-									sectionTitle
-								}`}
-							>
-								<ClayDropDown.Help>
-									{Liferay.Language.get('all')}
-								</ClayDropDown.Help>
-							</Link>
-
-							<ClayDropDown.ItemList>
-								<ClayDropDown.Group>
-									{getParentSubSections().map((item, i) => (
-										<ClayDropDown.Item
-											href={item.href}
-											key={i}
-										>
-											<Link
-												onClick={() => {
-													setActive(false);
-												}}
-												to={'/questions/' + item.title}
-											>
-												{item.title}
-											</Link>
-										</ClayDropDown.Item>
-									))}
-								</ClayDropDown.Group>
-							</ClayDropDown.ItemList>
-						</ClayDropDown>
-					)}
+			<div className="d-flex flex-column flex-xl-row justify-content-between">
+				<div className="align-items-center d-flex flex-grow-1">
+					<Breadcrumb section={section} />
 
 					{section && section.actions && section.actions.subscribe && (
 						<div className="c-ml-3">
@@ -197,8 +111,8 @@ export default withRouter(
 					)}
 				</div>
 
-				<div className="c-mt-3 c-mt-lg-0 d-flex flex-column flex-grow-1 flex-md-row">
-					<ClayInput.Group className="justify-content-lg-end">
+				<div className="c-mt-3 c-mt-xl-0 d-flex flex-column flex-grow-1 flex-md-row">
+					<ClayInput.Group className="justify-content-xl-end">
 						<ClayInput.GroupItem shrink>
 							<label
 								className="align-items-center d-inline-flex m-0 text-secondary"

@@ -70,75 +70,77 @@ renderResponse.setTitle((fileEntryType == null) ? LanguageUtil.get(request, "new
 		</clay:container-fluid>
 	</nav>
 
-	<clay:container-fluid
-		cssClass="container-view"
-	>
+	<div class="contextual-sidebar-content">
+		<clay:container-fluid
+			cssClass="container-view"
+		>
 
-		<%
-		DLEditFileEntryTypeDataEngineDisplayContext dlEditFileEntryTypeDataEngineDisplayContext = (DLEditFileEntryTypeDataEngineDisplayContext)request.getAttribute(DLWebKeys.DOCUMENT_LIBRARY_EDIT_FILE_ENTRY_TYPE_DATA_ENGINE_DISPLAY_CONTEXT);
-		%>
+			<%
+			DLEditFileEntryTypeDataEngineDisplayContext dlEditFileEntryTypeDataEngineDisplayContext = (DLEditFileEntryTypeDataEngineDisplayContext)request.getAttribute(DLWebKeys.DOCUMENT_LIBRARY_EDIT_FILE_ENTRY_TYPE_DATA_ENGINE_DISPLAY_CONTEXT);
+			%>
 
-		<liferay-data-engine:data-layout-builder
-			additionalPanels="<%= dlEditFileEntryTypeDataEngineDisplayContext.getAdditionalPanels(npmResolvedPackageName) %>"
-			componentId='<%= renderResponse.getNamespace() + "dataLayoutBuilder" %>'
-			contentType="document-library"
-			dataDefinitionId="<%= dataDefinitionId %>"
-			dataLayoutInputId="dataLayout"
-			groupId="<%= scopeGroupId %>"
-			localizable="<%= true %>"
-			namespace="<%= renderResponse.getNamespace() %>"
-		/>
-	</clay:container-fluid>
+			<liferay-data-engine:data-layout-builder
+				additionalPanels="<%= dlEditFileEntryTypeDataEngineDisplayContext.getAdditionalPanels(npmResolvedPackageName) %>"
+				componentId='<%= renderResponse.getNamespace() + "dataLayoutBuilder" %>'
+				contentType="document-library"
+				dataDefinitionId="<%= dataDefinitionId %>"
+				dataLayoutInputId="dataLayout"
+				groupId="<%= scopeGroupId %>"
+				localizable="<%= true %>"
+				namespace="<%= renderResponse.getNamespace() %>"
+			/>
+		</clay:container-fluid>
+	</div>
 </aui:form>
 
 <aui:script>
-function <portlet:namespace />getInputLocalizedValues(field) {
-	var inputLocalized = Liferay.component('<portlet:namespace />' + field);
-	var localizedValues = {};
+	function <portlet:namespace />getInputLocalizedValues(field) {
+		var inputLocalized = Liferay.component('<portlet:namespace />' + field);
+		var localizedValues = {};
 
-	if (inputLocalized) {
-		var translatedLanguages = inputLocalized
-			.get('translatedLanguages')
-			.values();
+		if (inputLocalized) {
+			var translatedLanguages = inputLocalized
+				.get('translatedLanguages')
+				.values();
 
-		translatedLanguages.forEach(function (languageId) {
-			localizedValues[languageId] = inputLocalized.getValue(languageId);
-		});
-	}
-
-	return localizedValues;
-}
-
-function <portlet:namespace />saveStructure() {
-	Liferay.componentReady('<portlet:namespace />dataLayoutBuilder').then(
-		function (dataLayoutBuilder) {
-			var name = <portlet:namespace />getInputLocalizedValues('name');
-
-			var description = <portlet:namespace />getInputLocalizedValues(
-				'description'
-			);
-
-			var formData = dataLayoutBuilder.getFormData();
-
-			var dataDefinition = formData.definition;
-
-			dataDefinition.description = description;
-			dataDefinition.name = name;
-
-			var dataLayout = formData.layout;
-
-			dataLayout.description = description;
-			dataLayout.name = name;
-
-			Liferay.Util.postForm(document.<portlet:namespace />fm, {
-				data: {
-					dataDefinition: JSON.stringify(dataDefinition),
-					dataLayout: JSON.stringify(dataLayout),
-				},
+			translatedLanguages.forEach(function (languageId) {
+				localizedValues[languageId] = inputLocalized.getValue(languageId);
 			});
 		}
-	);
-}
+
+		return localizedValues;
+	}
+
+	function <portlet:namespace />saveStructure() {
+		Liferay.componentReady('<portlet:namespace />dataLayoutBuilder').then(
+			function (dataLayoutBuilder) {
+				var name = <portlet:namespace />getInputLocalizedValues('name');
+
+				var description = <portlet:namespace />getInputLocalizedValues(
+					'description'
+				);
+
+				var formData = dataLayoutBuilder.getFormData();
+
+				var dataDefinition = formData.definition;
+
+				dataDefinition.description = description;
+				dataDefinition.name = name;
+
+				var dataLayout = formData.layout;
+
+				dataLayout.description = description;
+				dataLayout.name = name;
+
+				Liferay.Util.postForm(document.<portlet:namespace />fm, {
+					data: {
+						dataDefinition: JSON.stringify(dataDefinition),
+						dataLayout: JSON.stringify(dataLayout),
+					},
+				});
+			}
+		);
+	}
 </aui:script>
 
 <%

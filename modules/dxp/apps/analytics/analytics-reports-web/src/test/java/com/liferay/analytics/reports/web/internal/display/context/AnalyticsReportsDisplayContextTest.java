@@ -167,9 +167,9 @@ public class AnalyticsReportsDisplayContextTest {
 		Assert.assertEquals(
 			analyticsReportsInfoItem.getAuthorName(null),
 			props.get("authorName"));
-
-		Assert.assertEquals(layout.getPublishDate(), props.get("publishDate"));
-
+		Assert.assertEquals(
+			analyticsReportsInfoItem.getPublishDate(null),
+			props.get("publishDate"));
 		Assert.assertEquals(
 			analyticsReportsInfoItem.getTitle(null, LocaleUtil.US),
 			props.get("title"));

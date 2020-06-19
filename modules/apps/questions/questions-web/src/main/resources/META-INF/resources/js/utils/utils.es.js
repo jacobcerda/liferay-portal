@@ -104,7 +104,10 @@ export function useDebounceCallback(callback, milliseconds) {
 export function normalizeRating(aggregateRating) {
 	return (
 		aggregateRating &&
-		aggregateRating.ratingCount * normalize(aggregateRating.ratingAverage)
+		Math.trunc(
+			aggregateRating.ratingCount *
+				normalize(aggregateRating.ratingAverage)
+		)
 	);
 }
 
@@ -130,6 +133,7 @@ export function historyPushWithSlug(push) {
 
 export function stripHTML(text) {
 	const htmlTags = /<([^>]+>)/g;
+	const nonBreakableSpace = '&nbsp;';
 
-	return text.replace(htmlTags, '');
+	return text.replace(htmlTags, '').replace(nonBreakableSpace, ' ');
 }

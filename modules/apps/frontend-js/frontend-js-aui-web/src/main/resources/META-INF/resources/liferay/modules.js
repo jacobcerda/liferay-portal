@@ -521,9 +521,11 @@
 					'liferay-session': {
 						path: 'session.js',
 						requires: [
+							'aui-base',
+							'aui-component',
 							'aui-timer',
 							'cookie',
-							'liferay-notification',
+							'plugin',
 						],
 					},
 					'liferay-sign-in-modal': {

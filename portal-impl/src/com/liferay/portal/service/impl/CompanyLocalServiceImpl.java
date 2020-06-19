@@ -148,6 +148,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	/**
 	 * Adds a company.
 	 *
+	 * @param  companyId the primary key of the company (<code>null</code> or
+	 *         <code>0</code> to generate it automatically)
 	 * @param  webId the the company's web domain
 	 * @param  virtualHostname the company's virtual host name
 	 * @param  mx the company's mail domain
@@ -157,11 +159,12 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	 *         <code>0</code>)
 	 * @param  active whether the company is active
 	 * @return the company
+	 * @review
 	 */
 	@Override
 	public Company addCompany(
-			String webId, String virtualHostname, String mx, boolean system,
-			int maxUsers, boolean active)
+			Long companyId, String webId, String virtualHostname, String mx,
+			boolean system, int maxUsers, boolean active)
 		throws PortalException {
 
 		// Company
@@ -178,8 +181,11 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		validateVirtualHost(webId, virtualHostname);
 		validateMx(-1, mx);
 
-		Company company = companyPersistence.create(
-			counterLocalService.increment());
+		if ((companyId == null) || (companyId == 0)) {
+			companyId = counterLocalService.increment();
+		}
+
+		Company company = companyPersistence.create(companyId);
 
 		if (webId.equals(PropsValues.COMPANY_DEFAULT_WEB_ID)) {
 			DBPartitionUtil.setDefaultCompanyId(company.getCompanyId());
@@ -242,6 +248,33 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 			return _checkCompany(company, mx);
 		}
+	}
+
+	/**
+	 * Adds a company.
+	 *
+	 * @param      webId the the company's web domain
+	 * @param      virtualHostname the company's virtual host name
+	 * @param      mx the company's mail domain
+	 * @param      system whether the company is the very first company (i.e.,
+	 *             the super company)
+	 * @param      maxUsers the max number of company users (optionally
+	 *             <code>0</code>)
+	 * @param      active whether the company is active
+	 * @return     the company
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #addCompany(Long, String, String, String, boolean, int,
+	 *             boolean)}
+	 */
+	@Deprecated
+	@Override
+	public Company addCompany(
+			String webId, String virtualHostname, String mx, boolean system,
+			int maxUsers, boolean active)
+		throws PortalException {
+
+		return addCompany(
+			null, webId, virtualHostname, mx, system, maxUsers, active);
 	}
 
 	/**
@@ -315,7 +348,9 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	@Override
 	public Company deleteCompany(long companyId) throws PortalException {
 		if (companyId == PortalInstances.getDefaultCompanyId()) {
-			throw new RequiredCompanyException();
+			throw new RequiredCompanyException(
+				"Select another default company before deleting company " +
+					companyId);
 		}
 
 		Long currentCompanyId = CompanyThreadLocal.getCompanyId();
@@ -667,7 +702,9 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			StringUtil.trim(virtualHostname));
 
 		if (!active && (companyId == PortalInstances.getDefaultCompanyId())) {
-			active = true;
+			throw new RequiredCompanyException(
+				"Select another default company before deactivating company " +
+					companyId);
 		}
 
 		Company company = companyPersistence.findByPrimaryKey(companyId);
@@ -911,7 +948,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	 * found in portal.properties.
 	 *
 	 * @param companyId the primary key of the company
-	 * @param unicodeProperties the company's properties. See {@link UnicodeProperties}
+	 * @param unicodeProperties the company's properties. See {@link
+	 *        UnicodeProperties}
 	 */
 	@Override
 	public void updatePreferences(
@@ -1429,7 +1467,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		throws PortalException {
 
 		if (Validator.isNull(mx) || !Validator.isDomain(mx)) {
-			throw new CompanyMxException();
+			throw new CompanyMxException("Invalid domain " + mx);
 		}
 
 		String emailAddress =
@@ -1439,7 +1477,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			EmailAddressValidatorFactory.getInstance();
 
 		if (!emailAddressValidator.validate(companyId, emailAddress)) {
-			throw new CompanyMxException();
+			throw new CompanyMxException(
+				"Invalid email address " + emailAddress);
 		}
 	}
 
@@ -1457,15 +1496,17 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		throws PortalException {
 
 		if (Validator.isNull(virtualHostname)) {
-			throw new CompanyVirtualHostException();
+			throw new CompanyVirtualHostException("Virtual hostname is null");
 		}
 		else if (virtualHostname.equals(_DEFAULT_VIRTUAL_HOST) &&
 				 !webId.equals(PropsValues.COMPANY_DEFAULT_WEB_ID)) {
 
-			throw new CompanyVirtualHostException();
+			throw new CompanyVirtualHostException(
+				"localhost can only be used with the default web ID " + webId);
 		}
 		else if (!Validator.isDomain(virtualHostname)) {
-			throw new CompanyVirtualHostException();
+			throw new CompanyVirtualHostException(
+				"Virtual hostname is an invalid domain");
 		}
 		else {
 			try {
@@ -1477,7 +1518,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 						virtualHost.getCompanyId());
 
 				if (!webId.equals(virtualHostnameCompany.getWebId())) {
-					throw new CompanyVirtualHostException();
+					throw new CompanyVirtualHostException(
+						"Duplicate virtual hostname " + virtualHostname);
 				}
 			}
 			catch (NoSuchVirtualHostException noSuchVirtualHostException) {

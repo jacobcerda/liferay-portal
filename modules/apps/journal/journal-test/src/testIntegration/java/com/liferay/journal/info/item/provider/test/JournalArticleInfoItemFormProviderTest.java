@@ -24,6 +24,11 @@ import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.field.InfoFormValues;
+import com.liferay.info.field.type.BooleanInfoFieldType;
+import com.liferay.info.field.type.ImageInfoFieldType;
+import com.liferay.info.field.type.IntegerInfoFieldType;
+import com.liferay.info.field.type.TextInfoFieldType;
+import com.liferay.info.field.type.URLInfoFieldType;
 import com.liferay.info.form.InfoForm;
 import com.liferay.info.item.InfoItemClassPKReference;
 import com.liferay.info.item.provider.InfoItemFormProvider;
@@ -84,67 +89,116 @@ public class JournalArticleInfoItemFormProviderTest {
 
 		infoFields.sort(Comparator.comparing(InfoField::getName));
 
-		Assert.assertEquals(infoFields.toString(), 12, infoFields.size());
+		Assert.assertEquals(infoFields.toString(), 15, infoFields.size());
 
-		InfoField infoField = infoFields.get(0);
+		Iterator<InfoField> iterator = infoFields.iterator();
+
+		InfoField infoField = iterator.next();
 
 		Assert.assertEquals("DDM_Text", infoField.getName());
 		Assert.assertTrue(infoField.isLocalizable());
+		Assert.assertEquals(
+			TextInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(1);
+		infoField = iterator.next();
 
 		Assert.assertEquals("authorName", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			TextInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(2);
+		infoField = iterator.next();
 
 		Assert.assertEquals("authorProfileImage", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			ImageInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(3);
+		infoField = iterator.next();
+
+		Assert.assertEquals("boolean", infoField.getName());
+		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			BooleanInfoFieldType.INSTANCE, infoField.getInfoFieldType());
+
+		infoField = iterator.next();
 
 		Assert.assertEquals("categories", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			TextInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(4);
+		infoField = iterator.next();
 
 		Assert.assertEquals("description", infoField.getName());
 		Assert.assertTrue(infoField.isLocalizable());
+		Assert.assertEquals(
+			TextInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(5);
+		infoField = iterator.next();
 
 		Assert.assertEquals("displayPageURL", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			URLInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(6);
+		infoField = iterator.next();
+
+		Assert.assertEquals("image", infoField.getName());
+		Assert.assertTrue(infoField.isLocalizable());
+		Assert.assertEquals(
+			ImageInfoFieldType.INSTANCE, infoField.getInfoFieldType());
+
+		infoField = iterator.next();
+
+		Assert.assertEquals("integer", infoField.getName());
+		Assert.assertTrue(infoField.isLocalizable());
+		Assert.assertEquals(
+			IntegerInfoFieldType.INSTANCE, infoField.getInfoFieldType());
+
+		infoField = iterator.next();
 
 		Assert.assertEquals("lastEditorName", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			TextInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(7);
+		infoField = iterator.next();
 
 		Assert.assertEquals("lastEditorProfileImage", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			ImageInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(8);
+		infoField = iterator.next();
 
 		Assert.assertEquals("publishDate", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			TextInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(9);
+		infoField = iterator.next();
 
 		Assert.assertEquals("smallImage", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			ImageInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(10);
+		infoField = iterator.next();
 
 		Assert.assertEquals("tagNames", infoField.getName());
 		Assert.assertFalse(infoField.isLocalizable());
+		Assert.assertEquals(
+			TextInfoFieldType.INSTANCE, infoField.getInfoFieldType());
 
-		infoField = infoFields.get(11);
+		infoField = iterator.next();
 
 		Assert.assertEquals("title", infoField.getName());
 		Assert.assertTrue(infoField.isLocalizable());
+		Assert.assertEquals(
+			TextInfoFieldType.INSTANCE, infoField.getInfoFieldType());
+
+		Assert.assertFalse(iterator.hasNext());
 	}
 
 	@Test
@@ -173,7 +227,7 @@ public class JournalArticleInfoItemFormProviderTest {
 			infoFormValues.getInfoFieldValues();
 
 		Assert.assertEquals(
-			infoFieldValues.toString(), 9, infoFieldValues.size());
+			infoFieldValues.toString(), 12, infoFieldValues.size());
 
 		InfoFieldValue<Object> descriptionInfoFieldValue =
 			infoFormValues.getInfoFieldValue("description");
@@ -230,6 +284,10 @@ public class JournalArticleInfoItemFormProviderTest {
 		Assert.assertEquals(
 			"Un poco más de texto",
 			secondDDMTextInfoFieldValue.getValue(LocaleUtil.SPAIN));
+
+		Assert.assertNotNull(infoFormValues.getInfoFieldValue("boolean"));
+		Assert.assertNotNull(infoFormValues.getInfoFieldValue("image"));
+		Assert.assertNotNull(infoFormValues.getInfoFieldValue("integer"));
 	}
 
 	private JournalArticle _getJournalArticle() throws Exception {

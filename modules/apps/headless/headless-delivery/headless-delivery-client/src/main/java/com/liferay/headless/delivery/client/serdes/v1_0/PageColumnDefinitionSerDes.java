@@ -55,6 +55,17 @@ public class PageColumnDefinitionSerDes {
 
 		sb.append("{");
 
+		if (pageColumnDefinition.getColumnViewportConfig() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"columnViewportConfig\": ");
+
+			sb.append(
+				String.valueOf(pageColumnDefinition.getColumnViewportConfig()));
+		}
+
 		if (pageColumnDefinition.getSize() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -86,6 +97,15 @@ public class PageColumnDefinitionSerDes {
 
 		Map<String, String> map = new TreeMap<>();
 
+		if (pageColumnDefinition.getColumnViewportConfig() == null) {
+			map.put("columnViewportConfig", null);
+		}
+		else {
+			map.put(
+				"columnViewportConfig",
+				String.valueOf(pageColumnDefinition.getColumnViewportConfig()));
+		}
+
 		if (pageColumnDefinition.getSize() == null) {
 			map.put("size", null);
 		}
@@ -114,7 +134,14 @@ public class PageColumnDefinitionSerDes {
 			PageColumnDefinition pageColumnDefinition,
 			String jsonParserFieldName, Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "size")) {
+			if (Objects.equals(jsonParserFieldName, "columnViewportConfig")) {
+				if (jsonParserFieldValue != null) {
+					pageColumnDefinition.setColumnViewportConfig(
+						ColumnViewportConfigSerDes.toDTO(
+							(String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "size")) {
 				if (jsonParserFieldValue != null) {
 					pageColumnDefinition.setSize(
 						Integer.valueOf((String)jsonParserFieldValue));

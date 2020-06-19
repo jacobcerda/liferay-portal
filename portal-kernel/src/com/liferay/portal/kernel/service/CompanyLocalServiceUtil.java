@@ -51,6 +51,8 @@ public class CompanyLocalServiceUtil {
 	/**
 	 * Adds a company.
 	 *
+	 * @param companyId the primary key of the company (<code>null</code> or
+	 <code>0</code> to generate it automatically)
 	 * @param webId the the company's web domain
 	 * @param virtualHostname the company's virtual host name
 	 * @param mx the company's mail domain
@@ -60,7 +62,34 @@ public class CompanyLocalServiceUtil {
 	 <code>0</code>)
 	 * @param active whether the company is active
 	 * @return the company
+	 * @review
 	 */
+	public static com.liferay.portal.kernel.model.Company addCompany(
+			Long companyId, String webId, String virtualHostname, String mx,
+			boolean system, int maxUsers, boolean active)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addCompany(
+			companyId, webId, virtualHostname, mx, system, maxUsers, active);
+	}
+
+	/**
+	 * Adds a company.
+	 *
+	 * @param webId the the company's web domain
+	 * @param virtualHostname the company's virtual host name
+	 * @param mx the company's mail domain
+	 * @param system whether the company is the very first company (i.e.,
+	 the super company)
+	 * @param maxUsers the max number of company users (optionally
+	 <code>0</code>)
+	 * @param active whether the company is active
+	 * @return the company
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #addCompany(Long, String, String, String, boolean, int,
+	 boolean)}
+	 */
+	@Deprecated
 	public static com.liferay.portal.kernel.model.Company addCompany(
 			String webId, String virtualHostname, String mx, boolean system,
 			int maxUsers, boolean active)
@@ -704,7 +733,8 @@ public class CompanyLocalServiceUtil {
 	 * found in portal.properties.
 	 *
 	 * @param companyId the primary key of the company
-	 * @param unicodeProperties the company's properties. See {@link UnicodeProperties}
+	 * @param unicodeProperties the company's properties. See {@link
+	 UnicodeProperties}
 	 */
 	public static void updatePreferences(
 			long companyId,

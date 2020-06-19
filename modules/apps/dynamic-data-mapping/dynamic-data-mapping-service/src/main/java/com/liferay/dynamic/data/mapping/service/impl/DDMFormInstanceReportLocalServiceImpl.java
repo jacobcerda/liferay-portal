@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.service.impl;
 
 import com.liferay.dynamic.data.mapping.constants.DDMFormInstanceReportConstants;
+import com.liferay.dynamic.data.mapping.internal.petra.executor.DDMFormInstanceReportPortalExecutor;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceReport;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.messaging.async.Async;
 
 import java.util.Date;
 
@@ -59,7 +59,7 @@ public class DDMFormInstanceReportLocalServiceImpl
 				counterLocalService.increment());
 
 		DDMFormInstance formInstance =
-			_formInstancePersistence.findByPrimaryKey(formInstanceId);
+			_ddmFormInstancePersistence.findByPrimaryKey(formInstanceId);
 
 		formInstanceReport.setGroupId(formInstance.getGroupId());
 		formInstanceReport.setCompanyId(formInstance.getCompanyId());
@@ -79,16 +79,17 @@ public class DDMFormInstanceReportLocalServiceImpl
 			formInstanceId);
 	}
 
-	@Async
 	@Override
 	public void processFormInstanceReportEvent(
 		long formInstanceReportId, long formInstanceRecordVersionId,
 		String formInstanceReportEvent) {
 
 		try {
-			updateFormInstanceReport(
-				formInstanceReportId, formInstanceRecordVersionId,
-				formInstanceReportEvent);
+			_ddmFormInstanceReportPortalExecutor.execute(
+				() ->
+					ddmFormInstanceReportLocalService.updateFormInstanceReport(
+						formInstanceReportId, formInstanceRecordVersionId,
+						formInstanceReportEvent));
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -126,7 +127,7 @@ public class DDMFormInstanceReportLocalServiceImpl
 
 		try {
 			DDMFormInstanceRecordVersion formInstanceRecordVersion =
-				_formInstanceRecordVersionLocalService.
+				_ddmFormInstanceRecordVersionLocalService.
 					getDDMFormInstanceRecordVersion(
 						formInstanceRecordVersionId);
 
@@ -212,10 +213,14 @@ public class DDMFormInstanceReportLocalServiceImpl
 		_ddmFormFieldTypeReportProcessorTracker;
 
 	@Reference
-	private DDMFormInstancePersistence _formInstancePersistence;
+	private DDMFormInstancePersistence _ddmFormInstancePersistence;
 
 	@Reference
 	private DDMFormInstanceRecordVersionLocalService
-		_formInstanceRecordVersionLocalService;
+		_ddmFormInstanceRecordVersionLocalService;
+
+	@Reference
+	private DDMFormInstanceReportPortalExecutor
+		_ddmFormInstanceReportPortalExecutor;
 
 }

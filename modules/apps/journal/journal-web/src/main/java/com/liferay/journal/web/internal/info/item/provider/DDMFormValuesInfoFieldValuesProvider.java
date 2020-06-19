@@ -16,13 +16,12 @@ package com.liferay.journal.web.internal.info.item.provider;
 
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.util.DLURLHelper;
-import com.liferay.dynamic.data.mapping.kernel.DDMFormField;
+import com.liferay.dynamic.data.mapping.info.field.converter.DDMFormFieldInfoFieldConverter;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 import com.liferay.dynamic.data.mapping.kernel.Value;
-import com.liferay.info.field.InfoField;
+import com.liferay.dynamic.data.mapping.util.DDMBeanTranslator;
 import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -120,15 +119,11 @@ public class DDMFormValuesInfoFieldValuesProvider<T extends GroupedModel> {
 			return Optional.empty();
 		}
 
-		DDMFormField ddmFormField = ddmFormFieldValue.getDDMFormField();
-
 		return Optional.of(
 			new InfoFieldValue<>(
-				new InfoField(
-					TextInfoFieldType.INSTANCE,
-					InfoLocalizedValue.localize(
-						getClass(), ddmFormFieldValue.getName()),
-					ddmFormField.isLocalizable(), ddmFormFieldValue.getName()),
+				_ddmFormFieldInfoFieldConverter.convert(
+					_ddmBeanTranslator.translate(
+						ddmFormFieldValue.getDDMFormField())),
 				InfoLocalizedValue.builder(
 				).defaultLocale(
 					value.getDefaultLocale()
@@ -237,6 +232,12 @@ public class DDMFormValuesInfoFieldValuesProvider<T extends GroupedModel> {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDMFormValuesInfoFieldValuesProvider.class);
+
+	@Reference
+	private DDMBeanTranslator _ddmBeanTranslator;
+
+	@Reference
+	private DDMFormFieldInfoFieldConverter _ddmFormFieldInfoFieldConverter;
 
 	@Reference
 	private DLAppService _dlAppService;

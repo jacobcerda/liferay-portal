@@ -75,7 +75,7 @@ ContentDashboardAdminManagementToolbarDisplayContext contentDashboardAdminManage
 					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-text
-						cssClass="text-center"
+						cssClass="text-center text-secondary"
 						name=""
 					>
 						<c:if test="<%= contentDashboardItem.isViewURLEnabled(request) %>">
@@ -155,3 +155,8 @@ ContentDashboardAdminManagementToolbarDisplayContext contentDashboardAdminManage
 		</div>
 	</div>
 </clay:container>
+
+<liferay-frontend:component
+	componentId="<%= contentDashboardAdminManagementToolbarDisplayContext.getDefaultEventHandler() %>"
+	module="js/ContentDashboardManagementToolbarDefaultEventHandler"
+/>

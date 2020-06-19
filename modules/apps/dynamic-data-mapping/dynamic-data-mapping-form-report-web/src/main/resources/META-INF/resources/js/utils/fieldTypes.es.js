@@ -17,6 +17,10 @@ export default {
 		icon: 'check-circle',
 		title: Liferay.Language.get('checkbox-multiple-field-type-label'),
 	},
+	date: {
+		icon: 'calendar',
+		title: Liferay.Language.get('date-field-type-label'),
+	},
 	radio: {
 		icon: 'radio-button',
 		title: Liferay.Language.get('radio-field-type-label'),

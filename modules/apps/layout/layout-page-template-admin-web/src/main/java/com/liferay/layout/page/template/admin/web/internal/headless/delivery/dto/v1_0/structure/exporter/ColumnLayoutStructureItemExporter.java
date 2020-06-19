@@ -14,10 +14,17 @@
 
 package com.liferay.layout.page.template.admin.web.internal.headless.delivery.dto.v1_0.structure.exporter;
 
+import com.liferay.headless.delivery.dto.v1_0.ColumnViewportConfig;
+import com.liferay.headless.delivery.dto.v1_0.ColumnViewportConfigDefinition;
 import com.liferay.headless.delivery.dto.v1_0.PageColumnDefinition;
 import com.liferay.headless.delivery.dto.v1_0.PageElement;
+import com.liferay.layout.responsive.ViewportSize;
 import com.liferay.layout.util.structure.ColumnLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructureItem;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.util.MapUtil;
+
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -46,9 +53,64 @@ public class ColumnLayoutStructureItemExporter
 				definition = new PageColumnDefinition() {
 					{
 						size = columnLayoutStructureItem.getSize();
+
+						setColumnViewportConfig(
+							() -> {
+								Map<String, JSONObject> viewportConfigurations =
+									columnLayoutStructureItem.
+										getViewportSizeConfigurations();
+
+								if (MapUtil.isEmpty(viewportConfigurations)) {
+									return null;
+								}
+
+								return new ColumnViewportConfig() {
+									{
+										landscapeMobile =
+											_toColumnViewportConfigDefinition(
+												viewportConfigurations,
+												ViewportSize.MOBILE_LANDSCAPE);
+										portraitMobile =
+											_toColumnViewportConfigDefinition(
+												viewportConfigurations,
+												ViewportSize.PORTRAIT_MOBILE);
+										tablet =
+											_toColumnViewportConfigDefinition(
+												viewportConfigurations,
+												ViewportSize.TABLET);
+									}
+								};
+							});
 					}
 				};
 				type = PageElement.Type.COLUMN;
+			}
+		};
+	}
+
+	private ColumnViewportConfigDefinition _toColumnViewportConfigDefinition(
+		Map<String, JSONObject> viewportConfigurations,
+		ViewportSize viewportSize) {
+
+		if (!viewportConfigurations.containsKey(
+				viewportSize.getViewportSizeId())) {
+
+			return null;
+		}
+
+		JSONObject jsonObject = viewportConfigurations.get(
+			viewportSize.getViewportSizeId());
+
+		return new ColumnViewportConfigDefinition() {
+			{
+				setSize(
+					() -> {
+						if (!jsonObject.has("size")) {
+							return null;
+						}
+
+						return jsonObject.getInt("size");
+					});
 			}
 		};
 	}

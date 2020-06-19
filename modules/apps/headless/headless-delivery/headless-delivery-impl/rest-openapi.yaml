@@ -237,6 +237,13 @@ components:
                 - className
                 - classPK
             type: object
+        ColumnViewportConfigDefinition:
+            properties:
+                size:
+                    maximum: 12
+                    minimum: 1
+                    type: integer
+            type: object
         Comment:
             description:
                 Represents a comment. See [Comment](https://www.schema.org/Comment) for more details.
@@ -1832,6 +1839,8 @@ components:
                         $ref: "#/components/schemas/RelatedContent"
                     readOnly: true
                     type: array
+                seen:
+                    type: boolean
                 showAsQuestion:
                     description:
                         A flag that indicates whether this thread was posted as a question that can receive approved
@@ -1909,6 +1918,9 @@ components:
                     items:
                         $ref: "#/components/schemas/NavigationMenuItem"
                     type: array
+                navigationType:
+                    enum: [Primary, Secondary, Social]
+                    type: string
                 siteId:
                     format: int64
                     readOnly: true
@@ -1917,10 +1929,23 @@ components:
             description:
                 ""
             properties:
+                availableLanguages:
+                    description:
+                        The list of languages the structure has a translation for.
+                    items:
+                        type: string
+                    readOnly: true
+                    type: array
                 creator:
                     allOf:
                         - $ref: "#/components/schemas/Creator"
                     readOnly: true
+                customName:
+                    type: string
+                customName_i18n:
+                    additionalProperties:
+                        type: string
+                    type: object
                 dateCreated:
                     format: date-time
                     readOnly: true
@@ -1994,6 +2019,15 @@ components:
             type: object
         PageColumnDefinition:
             properties:
+                columnViewportConfig:
+                    properties:
+                        landscapeMobile:
+                            $ref: "#/components/schemas/ColumnViewportConfigDefinition"
+                        portraitMobile:
+                            $ref: "#/components/schemas/ColumnViewportConfigDefinition"
+                        tablet:
+                            $ref: "#/components/schemas/ColumnViewportConfigDefinition"
+                    type: object
                 size:
                     maximum: 12
                     minimum: 1
@@ -2078,6 +2112,15 @@ components:
                     type: integer
                 reverseOrder:
                     type: boolean
+                rowViewportConfig:
+                    properties:
+                        landscapeMobile:
+                            $ref: "#/components/schemas/RowViewportConfigDefinition"
+                        portraitMobile:
+                            $ref: "#/components/schemas/RowViewportConfigDefinition"
+                        tablet:
+                            $ref: "#/components/schemas/RowViewportConfigDefinition"
+                    type: object
                 verticalAlignment:
                     type: string
             type: object
@@ -2089,15 +2132,51 @@ components:
                     $ref: "#/components/schemas/FragmentImage"
                 layout:
                     properties:
+                        align:
+                            enum: [Center, End, None, Start, Stretch]
+                            type: string
+                        borderColor:
+                            type: string
+                        borderRadius:
+                            enum: [Circle, Large, None, Pill, Regular]
+                            type: string
+                        borderWidth:
+                            type: integer
                         containerType:
                             enum: [Fixed, Fluid]
                             type: string
+                        contentDisplay:
+                            enum: [Block, Flex]
+                            type: string
+                        justify:
+                            enum: [Center, End, None, SpaceAround, SpaceBetween, Start]
+                            type: string
+                        marginBottom:
+                            type: integer
+                        marginLeft:
+                            type: integer
+                        marginRight:
+                            type: integer
+                        marginTop:
+                            type: integer
+                        opacity:
+                            type: integer
                         paddingBottom:
                             type: integer
                         paddingHorizontal:
                             type: integer
+                        paddingLeft:
+                            type: integer
+                        paddingRight:
+                            type: integer
                         paddingTop:
                             type: integer
+                        shadow:
+                            enum: [Default, Large, None, Regular, Small]
+                            type: string
+                        widthType:
+                            enum: [Fixed, Fluid]
+                            type: string
                     type: object
             type: object
         PageTemplate:
@@ -2261,6 +2340,15 @@ components:
                         The title of the content.
                     readOnly: true
                     type: string
+        RowViewportConfigDefinition:
+            properties:
+                modulesPerRow:
+                    type: integer
+                reverseOrder:
+                    type: boolean
+                verticalAlignment:
+                    type: string
+            type: object
         StructuredContent:
             description:
                 Represents content that has fields and is rendered by a template backed by a `ContentStructure`. This is

@@ -15,8 +15,10 @@
 import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayLayout from '@clayui/layout';
 import ClayModal, {useModal} from '@clayui/modal';
+import classNames from 'classnames';
 
-import 'product-navigation-global-apps/css/GlobalMenu.scss';
+import '../css/GlobalMenu.scss';
+
 import ClaySticker from '@clayui/sticker';
 import ClayTabs from '@clayui/tabs';
 import {fetch} from 'frontend-js-web';
@@ -26,11 +28,11 @@ import React, {useRef, useState} from 'react';
 const Sites = ({label, sites}) => {
 	return (
 		<>
-			<li className="dropdown-subheader">{label}</li>
+			<li className="global-apps-nav-subheader">{label}</li>
 
 			{sites.map(({key, label, logoURL, url}) => (
-				<li key={key}>
-					<a className="dropdown-item" href={url}>
+				<li className="global-apps-nav-item" key={key}>
+					<a className="global-apps-nav-link" href={url}>
 						<ClaySticker
 							className="inline-item-before"
 							inline={true}
@@ -49,43 +51,70 @@ const Sites = ({label, sites}) => {
 
 const AppsPanel = ({
 	categories = [],
+	companyName,
 	handleCloseButtonClick = () => {},
+	logoURL,
 	portletNamespace,
+	selectedPortletId,
 	sites,
 }) => {
-	const [activeTab, setActiveTab] = useState(0);
+	let index = categories.findIndex((category) =>
+		category.childCategories.some((childCategory) =>
+			childCategory.panelApps.some(
+				(panelApp) => panelApp.portletId === selectedPortletId
+			)
+		)
+	);
+
+	if (index === -1) {
+		index = 0;
+	}
+
+	const [activeTab, setActiveTab] = useState(index);
 
 	return (
 		<>
-			<ClayLayout.ContainerFluid>
-				<ClayLayout.ContentRow>
-					<ClayLayout.ContentCol expand>
-						<ClayTabs modern>
-							{categories.map(({key, label}, index) => (
-								<ClayTabs.Item
-									active={activeTab === index}
-									id={`${portletNamespace}tab_${index}`}
-									key={key}
-									onClick={() => setActiveTab(index)}
-								>
-									{label}
-								</ClayTabs.Item>
-							))}
-						</ClayTabs>
-					</ClayLayout.ContentCol>
+			<div className="border-bottom global-apps-menu-header">
+				<ClayLayout.ContainerFluid>
+					<ClayLayout.ContentRow verticalAlign="center">
+						<ClayLayout.ContentCol>
+							<ClaySticker>
+								<img alt="" height="32px" src={logoURL} />
+							</ClaySticker>
+						</ClayLayout.ContentCol>
+						<ClayLayout.ContentCol className="c-mr-3 c-pl-1 c-pr-3 control-menu-level-1-heading">
+							{companyName}
+						</ClayLayout.ContentCol>
+						<ClayLayout.ContentCol expand>
+							<ClayTabs modern>
+								{categories.map(({key, label}, index) => (
+									<ClayTabs.Item
+										active={activeTab === index}
+										id={`${portletNamespace}tab_${index}`}
+										key={key}
+										onClick={() => setActiveTab(index)}
+									>
+										<span className="c-inner" tabIndex="-1">
+											{label}
+										</span>
+									</ClayTabs.Item>
+								))}
+							</ClayTabs>
+						</ClayLayout.ContentCol>
 
-					<ClayLayout.ContentCol>
-						<ClayButtonWithIcon
-							className="text-secondary"
-							displayType="unstyled"
-							onClick={handleCloseButtonClick}
-							small
-							symbol="times"
-							title={Liferay.Language.get('close')}
-						/>
-					</ClayLayout.ContentCol>
-				</ClayLayout.ContentRow>
-			</ClayLayout.ContainerFluid>
+						<ClayLayout.ContentCol>
+							<ClayButtonWithIcon
+								className="text-secondary"
+								displayType="unstyled"
+								onClick={handleCloseButtonClick}
+								small
+								symbol="times"
+								title={Liferay.Language.get('close')}
+							/>
+						</ClayLayout.ContentCol>
+					</ClayLayout.ContentRow>
+				</ClayLayout.ContainerFluid>
+			</div>
 
 			<ClayTabs.Content activeIndex={activeTab}>
 				{categories.map(({childCategories}, index) => (
@@ -93,22 +122,37 @@ const AppsPanel = ({
 						aria-labelledby={`${portletNamespace}tab_${index}`}
 						key={`tabPane-${index}`}
 					>
-						<ClayLayout.Row className="c-p-md-3">
+						<ClayLayout.Row className="global-apps-nav">
 							{childCategories.map(({key, label, panelApps}) => (
 								<ClayLayout.Col key={key} md>
 									<ul className="list-unstyled">
-										<li className="dropdown-subheader">
+										<li className="global-apps-nav-header">
 											{label}
 										</li>
 
 										{panelApps.map(
 											({label, portletId, url}) => (
-												<li key={portletId}>
+												<li
+													className="global-apps-nav-item"
+													key={portletId}
+												>
 													<a
-														className="dropdown-item"
+														className={classNames(
+															'component-link global-apps-nav-link',
+															{
+																active:
+																	portletId ===
+																	selectedPortletId,
+															}
+														)}
 														href={url}
 													>
-														{label}
+														<span
+															className="c-inner"
+															tabIndex="-1"
+														>
+															{label}
+														</span>
 													</a>
 												</li>
 											)
@@ -117,9 +161,9 @@ const AppsPanel = ({
 								</ClayLayout.Col>
 							))}
 
-							<ClayLayout.Col md>
+							<div className="global-apps-sites">
 								<ul className="bg-light list-unstyled rounded">
-									<li className="dropdown-subheader">
+									<li className="global-apps-nav-header">
 										{Liferay.Language.get('sites')}
 									</li>
 
@@ -173,7 +217,7 @@ const AppsPanel = ({
 										</li>
 									)}
 								</ul>
-							</ClayLayout.Col>
+							</div>
 						</ClayLayout.Row>
 					</ClayTabs.TabPane>
 				))}
@@ -182,7 +226,12 @@ const AppsPanel = ({
 	);
 };
 
-const GlobalMenu = ({panelAppsURL}) => {
+const GlobalMenu = ({
+	companyName,
+	logoURL,
+	panelAppsURL,
+	selectedPortletId,
+}) => {
 	const [appsPanelData, setAppsPanelData] = useState({});
 	const [visible, setVisible] = useState(false);
 
@@ -200,6 +249,7 @@ const GlobalMenu = ({panelAppsURL}) => {
 					setAppsPanelData({
 						categories: items,
 						portletNamespace,
+						selectedPortletId,
 						sites,
 					});
 				})
@@ -225,7 +275,9 @@ const GlobalMenu = ({panelAppsURL}) => {
 				>
 					<ClayModal.Body>
 						<AppsPanel
+							companyName={companyName}
 							handleCloseButtonClick={onClose}
+							logoURL={logoURL}
 							{...appsPanelData}
 						/>
 					</ClayModal.Body>
@@ -248,7 +300,10 @@ const GlobalMenu = ({panelAppsURL}) => {
 };
 
 GlobalMenu.propTypes = {
+	companyName: PropTypes.string,
+	logoURL: PropTypes.string,
 	panelAppsURL: PropTypes.string,
+	selectedPortletId: PropTypes.string,
 };
 
 export default GlobalMenu;

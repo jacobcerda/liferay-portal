@@ -37,7 +37,7 @@ for (String childrenItemId : childrenItemIds) {
 
 			request.setAttribute("render_layout_structure.jsp-childrenItemIds", layoutStructureItem.getChildrenItemIds());
 
-			InfoListRenderer infoListRenderer = portletLayoutDisplayContext.getInfoListRenderer(collectionLayoutStructureItem);
+			InfoListRenderer<Object> infoListRenderer = (InfoListRenderer<Object>)portletLayoutDisplayContext.getInfoListRenderer(collectionLayoutStructureItem);
 			%>
 
 			<c:choose>
@@ -112,41 +112,15 @@ for (String childrenItemId : childrenItemIds) {
 
 			<%
 			ContainerLayoutStructureItem containerLayoutStructureItem = (ContainerLayoutStructureItem)layoutStructureItem;
-
-			String backgroundImage = portletLayoutDisplayContext.getBackgroundImage(containerLayoutStructureItem.getBackgroundImageJSONObject());
-
-			StringBundler sb = new StringBundler();
-
-			if (Validator.isNotNull(containerLayoutStructureItem.getBackgroundColorCssClass())) {
-				sb.append("bg-");
-				sb.append(containerLayoutStructureItem.getBackgroundColorCssClass());
-			}
-
-			if (containerLayoutStructureItem.getPaddingBottom() != -1L) {
-				sb.append(" pb-");
-				sb.append(containerLayoutStructureItem.getPaddingBottom());
-			}
-
-			if (containerLayoutStructureItem.getPaddingHorizontal() != -1L) {
-				sb.append(" px-");
-				sb.append(containerLayoutStructureItem.getPaddingHorizontal());
-			}
-
-			if (containerLayoutStructureItem.getPaddingTop() != -1L) {
-				sb.append(" pt-");
-				sb.append(containerLayoutStructureItem.getPaddingTop());
-			}
 			%>
 
-			<div class="<%= sb.toString() %>" style="<%= Validator.isNotNull(backgroundImage) ? "background-image: url(" + backgroundImage + "); background-position: 50% 50%; background-repeat: no-repeat; background-size: cover;" : "" %>">
-				<div class="<%= Objects.equals(containerLayoutStructureItem.getContainerType(), "fluid") ? "container-fluid" : "container" %>">
+			<div class="<%= portletLayoutDisplayContext.getCssClass(containerLayoutStructureItem) %>" style="<%= portletLayoutDisplayContext.getStyle(containerLayoutStructureItem) %>">
 
-					<%
-					request.setAttribute("render_layout_structure.jsp-childrenItemIds", layoutStructureItem.getChildrenItemIds());
-					%>
+				<%
+				request.setAttribute("render_layout_structure.jsp-childrenItemIds", layoutStructureItem.getChildrenItemIds());
+				%>
 
-					<liferay-util:include page="/layout/view/render_layout_structure.jsp" servletContext="<%= application %>" />
-				</div>
+				<liferay-util:include page="/layout/view/render_layout_structure.jsp" servletContext="<%= application %>" />
 			</div>
 		</c:when>
 		<c:when test="<%= layoutStructureItem instanceof DropZoneLayoutStructureItem %>">

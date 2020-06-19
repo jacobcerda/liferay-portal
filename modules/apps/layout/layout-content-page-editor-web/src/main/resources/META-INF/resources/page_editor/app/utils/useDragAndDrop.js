@@ -348,10 +348,13 @@ function computeDrop({dispatch, layoutData, onDragEnd, state}) {
 			onDragEnd(parentItem.itemId, position);
 		}
 		else {
-			onDragEnd(
-				state.dropTargetItem.itemId,
-				state.dropTargetItem.children.length
-			);
+			const position = state.dropTargetItem.children.includes(
+				state.dropItem.itemId
+			)
+				? state.dropTargetItem.children.length - 1
+				: state.dropTargetItem.children.length;
+
+			onDragEnd(state.dropTargetItem.itemId, position);
 		}
 	}
 
@@ -403,15 +406,16 @@ function computeHover({
 	// Drop inside target
 
 	const validDropInsideTarget = (() => {
+		const targetIsColumn =
+			targetItem.type === LAYOUT_DATA_ITEM_TYPES.column;
 		const targetIsFragment =
-			targetItem.type == LAYOUT_DATA_ITEM_TYPES.fragment;
-
+			targetItem.type === LAYOUT_DATA_ITEM_TYPES.fragment;
 		const targetIsEmpty =
 			layoutData.items[targetItem.itemId].children.length === 0;
 
 		return (
 			targetPositionWithMiddle === TARGET_POSITION.MIDDLE &&
-			targetIsEmpty &&
+			(targetIsEmpty || targetIsColumn) &&
 			!targetIsFragment
 		);
 	})();

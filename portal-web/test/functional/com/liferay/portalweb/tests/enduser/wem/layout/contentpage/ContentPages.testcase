@@ -426,11 +426,12 @@ definition {
 				targetFragmentName = "Row");
 		}
 
-		task ("Assert the Section has Fixed Width, padding bottom x1 and padding top x1") {
+		task ("Assert the Section has Fluid, padding bottom 0, padding horizontal 0 and padding top 0") {
 			PageEditor.viewSectionStyle(
-				container = "Fixed Width",
-				paddingBottom = "3",
-				paddingTop = "3",
+				container = "Fluid",
+				paddingBottom = "0",
+				paddingHorizontal = "0",
+				paddingTop = "0",
 				position = "1");
 		}
 
@@ -442,10 +443,9 @@ definition {
 
 		task ("Edit the section's properties") {
 			PageEditor.editLayoutSection(
-				container = "Fluid",
+				container = "Fixed Width",
 				paddingBottom = "4",
-				paddingHorizontal = "2",
-				paddingTop = "10");
+				paddingTop = "2");
 		}
 
 		task ("Assert the Row has exactly 3 columns and no space between columns") {
@@ -455,12 +455,11 @@ definition {
 				spaceBetweenColumns = "false");
 		}
 
-		task ("Assert the Section has Fluid, padding bottom x4, padding horizontal x2 and padding top x10") {
+		task ("Assert the Section has Fixed Width, padding bottom 4 and padding top 2") {
 			PageEditor.viewSectionStyle(
-				container = "Fluid",
+				container = "Fixed Width",
 				paddingBottom = "5",
-				paddingHorizontal = "4",
-				paddingTop = "8",
+				paddingTop = "4",
 				position = "1");
 		}
 	}
@@ -1378,65 +1377,6 @@ definition {
 		AssertElementPresent(
 			key_style = "576px",
 			locator1 = "PageEditor#VIEWPOINT_RESIZER");
-	}
-
-	@description = "This is a test for LPS-111548. Undo can make the page editor come back to previous state up to X last states when the page has X states that is less than 20."
-	@priority = "5"
-	test UndoPagechangeThreeTimes {
-		property osgi.module.configuration.file.names = "com.liferay.layout.content.page.editor.web.internal.configuration.FFLayoutContentPageEditorConfiguration.config";
-		property osgi.module.configurations = "undoEnabled = true";
-
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Test Content Page Name",
-			siteName = "Test Site Name");
-
-		PageEditor.addFragment(
-			collectionName = "Layout Elements",
-			fragmentName = "Row");
-
-		PageEditor.viewRowStyle(
-			columnCount = "3",
-			position = "1");
-
-		PageEditor.editLayoutRow(columnCount = "1");
-
-		PageEditor.viewRowStyle(
-			columnCount = "1",
-			position = "1");
-
-		Click.clickNoMouseOver(
-			key_elementType = "Row",
-			locator1 = "PageEditor#FRAGMENT_BODY_TOOLBAR_CONFIGURATION_BUTTON");
-
-		PageEditor.editLayoutRow(columnCount = "2");
-
-		PageEditor.viewRowStyle(
-			columnCount = "2",
-			position = "1");
-
-		Click(
-			key_text = "undo",
-			locator1 = "Icon#ANY");
-
-		PageEditor.viewRowStyle(
-			columnCount = "1",
-			position = "1");
-
-		Click(
-			key_text = "undo",
-			locator1 = "Icon#ANY");
-
-		PageEditor.viewRowStyle(
-			columnCount = "3",
-			position = "1");
-
-		Click(
-			key_text = "undo",
-			locator1 = "Icon#ANY");
-
-		AssertElementPresent(
-			key_text = "undo",
-			locator1 = "Icon#ANY_DISABLED");
 	}
 
 	@description = "This is a test for LPS-107285. When the Section fragment is duplicated, the configuration of it and its components should also be duplicated."

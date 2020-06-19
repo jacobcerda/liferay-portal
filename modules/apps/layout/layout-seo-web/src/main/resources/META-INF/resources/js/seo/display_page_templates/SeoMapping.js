@@ -16,6 +16,7 @@ import {PropTypes} from 'prop-types';
 import React from 'react';
 
 import MappingInputs from './components/MappingInputs';
+import lang from './utils/lang';
 
 function SeoMapping({
 	description,
@@ -29,13 +30,29 @@ function SeoMapping({
 			fields={fields}
 			inputs={[
 				{
+					fieldType: 'text',
+					helpMessage: lang.sub(
+						Liferay.Language.get(
+							'map-a-x-field-it-will-be-used-as-x'
+						),
+						Liferay.Language.get('text'),
+						Liferay.Language.get('html-title')
+					),
 					label: Liferay.Language.get('html-title'),
-					name: `${portletNamespace}title`,
+					name: `${portletNamespace}TypeSettingsProperties--mapped-title--`,
 					selectedFieldKey: title,
 				},
 				{
+					fieldType: 'text',
+					helpMessage: lang.sub(
+						Liferay.Language.get(
+							'map-a-x-field-it-will-be-used-as-x'
+						),
+						Liferay.Language.get('text'),
+						Liferay.Language.get('description')
+					),
 					label: Liferay.Language.get('description'),
-					name: `${portletNamespace}description`,
+					name: `${portletNamespace}TypeSettingsProperties--mapped-description--`,
 					selectedFieldKey: description,
 				},
 			]}
@@ -45,7 +62,7 @@ function SeoMapping({
 }
 
 SeoMapping.propTypes = {
-	description: PropTypes.string.isRequired,
+	description: PropTypes.string,
 	fields: PropTypes.arrayOf(
 		PropTypes.shape({
 			key: PropTypes.string,
@@ -56,7 +73,7 @@ SeoMapping.propTypes = {
 		classNameLabel: PropTypes.string,
 		classTypeLabel: PropTypes.string,
 	}).isRequired,
-	title: PropTypes.string.isRequired,
+	title: PropTypes.string,
 };
 
 export default function (props) {

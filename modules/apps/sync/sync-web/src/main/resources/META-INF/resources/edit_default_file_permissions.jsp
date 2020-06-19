@@ -129,20 +129,17 @@ if (groupIds.length == 1) {
 </table>
 
 <aui:script>
-	Liferay.provide(
-		window,
-		'<portlet:namespace />setPermissions',
-		function (uri) {
-			Liferay.Util.fetch(uri, {method: 'POST'})
-				.then(function (response) {
-					return response.text();
-				})
-				.then(function () {
-					Liferay.Util.getWindow(
-						'<portlet:namespace />editDefaultFilePermissionsDialog'
-					).destroy();
-				});
-		},
-		['liferay-util-window']
-	);
+	window['<portlet:namespace />setPermissions'] = function (uri) {
+		Liferay.Util.getOpener().Liferay.fire(
+
+			<%
+			String selectEventName = ParamUtil.getString(request, "selectEventName");
+			%>
+
+			'<%= HtmlUtil.escape(selectEventName) %>',
+			{
+				uri: uri,
+			}
+		);
+	};
 </aui:script>

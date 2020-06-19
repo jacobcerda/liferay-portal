@@ -18,7 +18,8 @@
 		position: relative;
 	}
 
-	.dpt-mapping-btn {
+	.dpt-mapping-btn:not([disabled]):not(.disabled).active {
+		background-color: map-get($btn-secondary, bg);
 		color: $purple;
 
 		&:focus,
@@ -38,5 +39,12 @@
 
 	.popover-scrollable {
 		overflow: auto;
+	}
+
+	.dpt-mapping-placeholder {
+		.form-text {
+			margin-bottom: 1.5rem;
+			margin-top: -1.25rem;
+		}
 	}
 }

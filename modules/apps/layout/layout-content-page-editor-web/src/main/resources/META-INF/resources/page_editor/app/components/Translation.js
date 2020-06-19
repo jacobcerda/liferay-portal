@@ -148,8 +148,10 @@ export default function Translation({
 			.filter(
 				(languageId) =>
 					showNotTranslated ||
-					editableValues.filter((editableValue) =>
-						isTranslated(editableValue, languageId)
+					editableValues.filter(
+						(editableValue) =>
+							isTranslated(editableValue, languageId) ||
+							languageId === defaultLanguageId
 					).length > 0
 			)
 			.map((languageId) => ({

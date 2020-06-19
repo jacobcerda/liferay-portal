@@ -21,7 +21,7 @@ import * as DefaultVariant from './DefaultVariant.es';
 export const Layout = ({components: Components = DefaultVariant, rows}) => {
 	const {
 		dispatch,
-		store: {activePage, editable, pageIndex, spritemap},
+		store: {activePage, allowNestedFields, editable, pageIndex, spritemap},
 	} = usePage();
 
 	return (
@@ -36,6 +36,7 @@ export const Layout = ({components: Components = DefaultVariant, rows}) => {
 					{({column, index}) => (
 						<Components.Column
 							activePage={activePage}
+							allowNestedFields={allowNestedFields}
 							column={column}
 							editable={editable}
 							index={index}
@@ -48,7 +49,10 @@ export const Layout = ({components: Components = DefaultVariant, rows}) => {
 									{...fieldProps}
 									activePage={activePage}
 									editable={editable}
-									key={fieldProps.field.instanceId}
+									key={
+										fieldProps.field?.instanceId ??
+										fieldProps.field.name
+									}
 									onBlur={(event) =>
 										dispatch({
 											payload: event,

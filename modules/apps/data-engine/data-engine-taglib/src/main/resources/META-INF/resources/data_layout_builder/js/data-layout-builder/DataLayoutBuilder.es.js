@@ -61,6 +61,7 @@ class DataLayoutBuilder extends React.Component {
 					},
 				},
 				formBuilderProps: {
+					allowNestedFields: config.allowNestedFields,
 					dnd: {
 						accept: [
 							DRAG_DATA_DEFINITION_FIELD,
@@ -143,7 +144,13 @@ class DataLayoutBuilder extends React.Component {
 		const pagesVisitor = new PagesVisitor(pages);
 
 		const newPages = pagesVisitor.mapFields((field) => {
-			fieldDefinitions.push(this.getDataDefinitionField(field));
+			fieldDefinitions.push(
+				this.getDataDefinitionField(
+					field,
+					availableLanguageIds,
+					defaultLanguageId
+				)
+			);
 
 			return field.fieldName;
 		}, false);
@@ -191,11 +198,19 @@ class DataLayoutBuilder extends React.Component {
 		};
 	}
 
-	getDataDefinitionField({nestedFields = [], settingsContext}) {
+	getDataDefinitionField(
+		{nestedFields = [], settingsContext},
+		availableLanguageIds = [],
+		defaultLanguageId
+	) {
 		const fieldConfig = {
 			customProperties: {},
 			nestedDataDefinitionFields: nestedFields.map((nestedField) =>
-				this.getDataDefinitionField(nestedField)
+				this.getDataDefinitionField(
+					nestedField,
+					availableLanguageIds,
+					defaultLanguageId
+				)
 			),
 		};
 		const settingsContextVisitor = new PagesVisitor(settingsContext.pages);
@@ -210,6 +225,13 @@ class DataLayoutBuilder extends React.Component {
 				}
 
 				if (localizable) {
+					availableLanguageIds.forEach((languageId) => {
+						if (!localizedValue[languageId]) {
+							localizedValue[languageId] =
+								localizedValue[defaultLanguageId] || '';
+						}
+					});
+
 					if (this._isCustomProperty(fieldName)) {
 						fieldConfig.customProperties[
 							fieldName
@@ -291,7 +313,10 @@ class DataLayoutBuilder extends React.Component {
 			dataDefinitionField
 		);
 
-		const ddmFormField = {settingsContext};
+		const ddmFormField = {
+			nestedFields: dataDefinitionField.nestedDataDefinitionFields,
+			settingsContext,
+		};
 		const visitor = new PagesVisitor(settingsContext.pages);
 
 		visitor.mapFields((field) => {
@@ -307,6 +332,13 @@ class DataLayoutBuilder extends React.Component {
 
 			ddmFormField[fieldName] = value;
 		});
+
+		if (ddmFormField.nestedFields.length > 0) {
+			ddmFormField.nestedFields = ddmFormField.nestedFields.map(
+				(nestedField) =>
+					this.getDDMFormField(dataDefinition, nestedField.name)
+			);
+		}
 
 		return ddmFormField;
 	}

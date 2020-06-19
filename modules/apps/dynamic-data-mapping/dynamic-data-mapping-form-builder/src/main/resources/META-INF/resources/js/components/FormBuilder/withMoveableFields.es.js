@@ -12,17 +12,16 @@
  * details.
  */
 
-import {FormSupport, PagesVisitor} from 'dynamic-data-mapping-form-renderer';
+import {FormSupport} from 'dynamic-data-mapping-form-renderer';
 import dom from 'metal-dom';
 import {DragDrop} from 'metal-drag-drop';
 import Component from 'metal-jsx';
 
-import {CSS_DDM_FIELDSET} from '../../util/cssClasses.es';
 import {
+	disableFieldDropTargets,
 	disableFieldSetDragSources,
 	disableFieldSetDropTargets,
 } from '../../util/dragAndDrop.es';
-import {getParentFieldSet} from '../../util/fieldSupport.es';
 import formBuilderProps from './props.es';
 
 const withMoveableFields = (ChildComponent) => {
@@ -73,33 +72,16 @@ const withMoveableFields = (ChildComponent) => {
 		}
 
 		rendered() {
-			const {pages} = this.props;
+			const {allowNestedFields = true, pages} = this.props;
 
 			disableFieldSetDragSources(this.element, pages);
 			disableFieldSetDropTargets(this.element, pages);
 
-			this._decorateFieldSets();
+			if (!allowNestedFields) {
+				disableFieldDropTargets(this.element, pages);
+			}
+
 			this._refreshDragAndDrop();
-		}
-
-		_decorateFieldSets() {
-			const {pages} = this.props;
-			const visitor = new PagesVisitor(pages);
-
-			visitor.visitFields((field) => {
-				const parentFieldSet = getParentFieldSet(
-					pages,
-					field.fieldName
-				);
-
-				if (parentFieldSet) {
-					const parentFieldSetNode = this.element.querySelector(
-						`.ddm-field-container[data-field-name="${parentFieldSet.fieldName}"]`
-					);
-
-					parentFieldSetNode.classList.add(CSS_DDM_FIELDSET);
-				}
-			});
 		}
 
 		_getClosestParent(node) {

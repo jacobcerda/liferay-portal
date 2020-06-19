@@ -15,6 +15,7 @@
 import ClayButton from '@clayui/button';
 import ClayForm, {ClayInput, ClaySelectWithOption} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
+import classNames from 'classnames';
 import {PropTypes} from 'prop-types';
 import React, {useRef, useState} from 'react';
 
@@ -27,7 +28,14 @@ const normalizeField = ({key, label}) => ({
 	value: key,
 });
 
-function MappingPanel({name, fields, field, source, onChange = noop}) {
+function MappingPanel({
+	isActive = false,
+	name,
+	fields,
+	field,
+	source,
+	onChange = noop,
+}) {
 	const [isPanelOpen, setIsPanelOpen] = useState(false);
 	const wrapperRef = useRef(null);
 
@@ -47,7 +55,9 @@ function MappingPanel({name, fields, field, source, onChange = noop}) {
 	return (
 		<div className="dpt-mapping-panel-wrapper" ref={wrapperRef}>
 			<ClayButton
-				className="dpt-mapping-btn lfr-portal-tooltip"
+				className={classNames('dpt-mapping-btn lfr-portal-tooltip', {
+					active: isActive,
+				})}
 				displayType="secondary"
 				monospaced
 				onClick={() => {
@@ -104,6 +114,7 @@ MappingPanel.propTypes = {
 			label: PropTypes.string,
 		})
 	).isRequired,
+	isActive: PropTypes.bool,
 	name: PropTypes.string.isRequired,
 	source: PropTypes.shape({
 		initialValue: PropTypes.string,

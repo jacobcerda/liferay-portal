@@ -33,6 +33,8 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -162,6 +164,36 @@ public class PageRowDefinition {
 	protected Boolean reverseOrder;
 
 	@Schema
+	@Valid
+	public RowViewportConfig getRowViewportConfig() {
+		return rowViewportConfig;
+	}
+
+	public void setRowViewportConfig(RowViewportConfig rowViewportConfig) {
+		this.rowViewportConfig = rowViewportConfig;
+	}
+
+	@JsonIgnore
+	public void setRowViewportConfig(
+		UnsafeSupplier<RowViewportConfig, Exception>
+			rowViewportConfigUnsafeSupplier) {
+
+		try {
+			rowViewportConfig = rowViewportConfigUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected RowViewportConfig rowViewportConfig;
+
+	@Schema
 	public String getVerticalAlignment() {
 		return verticalAlignment;
 	}
@@ -254,6 +286,16 @@ public class PageRowDefinition {
 			sb.append("\"reverseOrder\": ");
 
 			sb.append(reverseOrder);
+		}
+
+		if (rowViewportConfig != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"rowViewportConfig\": ");
+
+			sb.append(String.valueOf(rowViewportConfig));
 		}
 
 		if (verticalAlignment != null) {

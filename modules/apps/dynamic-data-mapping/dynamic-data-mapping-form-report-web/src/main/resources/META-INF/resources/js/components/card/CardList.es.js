@@ -43,6 +43,7 @@ const chartFactory = (field, values, totalEntries) => {
 				/>
 			);
 
+		case 'date':
 		case 'text': {
 			if (Array.isArray(values)) {
 				return (
