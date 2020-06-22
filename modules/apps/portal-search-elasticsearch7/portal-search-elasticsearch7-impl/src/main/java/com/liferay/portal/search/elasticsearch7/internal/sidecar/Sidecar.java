@@ -24,14 +24,14 @@ import com.liferay.petra.process.ProcessExecutor;
 import com.liferay.petra.process.ProcessLog;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.cluster.ClusterExecutor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration;
-import com.liferay.portal.search.elasticsearch7.internal.cluster.ClusterSettingsContext;
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchInstancePaths;
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchInstanceSettingsBuilder;
 import com.liferay.portal.search.elasticsearch7.internal.connection.HttpPortRange;
@@ -58,6 +58,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -71,14 +73,14 @@ import org.objectweb.asm.Opcodes;
 public class Sidecar {
 
 	public Sidecar(
-		ClusterSettingsContext clusterSettingsContext,
+		ClusterExecutor clusterExecutor,
 		ElasticsearchConfiguration elasticsearchConfiguration,
 		ElasticsearchInstancePaths elasticsearchInstancePaths,
 		ProcessExecutor processExecutor,
 		ProcessExecutorPaths processExecutorPaths,
 		Collection<SettingsContributor> settingsContributors) {
 
-		_clusterSettingsContext = clusterSettingsContext;
+		_clusterExecutor = clusterExecutor;
 		_dataHomePath = elasticsearchInstancePaths.getDataPath();
 		_elasticsearchConfiguration = elasticsearchConfiguration;
 		_elasticsearchInstancePaths = elasticsearchInstancePaths;
@@ -97,6 +99,8 @@ public class Sidecar {
 		if (_log.isInfoEnabled()) {
 			_log.info("Starting sidecar Elasticsearch");
 		}
+
+		_installElasticsearchIfNeeded();
 
 		ProcessChannel<Serializable> processChannel =
 			executeSidecarMainProcess();
@@ -179,18 +183,17 @@ public class Sidecar {
 	}
 
 	protected static String waitForPublishedAddress(
-		NoticeableFuture<String> noticeableFuture,
-		ProcessChannel<Serializable> processChannel) {
+			NoticeableFuture<String> noticeableFuture)
+		throws Exception {
 
 		try {
 			return noticeableFuture.get();
 		}
-		catch (Exception exception) {
-			processChannel.write(new StopSidecarProcessCallable());
-
-			throw new IllegalStateException(
-				"Unable to get sidecar Elasticsearch network host address",
-				exception);
+		catch (ExecutionException executionException) {
+			throw (Exception)executionException.getCause();
+		}
+		catch (InterruptedException interruptedException) {
+			throw new RuntimeException(interruptedException);
 		}
 	}
 
@@ -268,8 +271,13 @@ public class Sidecar {
 	}
 
 	protected String getNodeName() {
-		return GetterUtil.getString(
-			_elasticsearchConfiguration.nodeName(), "liferay");
+		String nodeName = _elasticsearchConfiguration.nodeName();
+
+		if (!Validator.isBlank(nodeName)) {
+			return nodeName;
+		}
+
+		return "liferay";
 	}
 
 	protected Path getPathData() {
@@ -277,10 +285,14 @@ public class Sidecar {
 	}
 
 	protected URL getSecurityPolicyURL(URL bundleURL) {
-		URLClassLoader urlClassLoader = new URLClassLoader(
-			new URL[] {bundleURL});
+		try (URLClassLoader urlClassLoader = new URLClassLoader(
+				new URL[] {bundleURL})) {
 
-		return urlClassLoader.findResource("META-INF/sidecar.policy");
+			return urlClassLoader.findResource("META-INF/sidecar.policy");
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
 	}
 
 	protected Settings getSettings() {
@@ -296,7 +308,7 @@ public class Sidecar {
 		).httpPortRange(
 			new HttpPortRange(_elasticsearchConfiguration)
 		).localBindInetAddressSupplier(
-			_clusterSettingsContext::getLocalBindInetAddress
+			_clusterExecutor::getBindInetAddress
 		).nodeName(
 			getNodeName()
 		).settingsContributors(
@@ -310,7 +322,33 @@ public class Sidecar {
 		NoticeableFuture<String> noticeableFuture = processChannel.write(
 			new StartSidecarProcessCallable(_getSidecarArguments()));
 
-		return waitForPublishedAddress(noticeableFuture, processChannel);
+		try {
+			return waitForPublishedAddress(noticeableFuture);
+		}
+		catch (IOException ioException) {
+			if (Objects.equals("Stream closed", ioException.getMessage())) {
+				throw new RuntimeException(
+					StringBundler.concat(
+						"Sidecar JVM did not launch successfully. ",
+						SidecarMainProcessCallable.class.getSimpleName(),
+						" may have crashed, or its classpath may be missing ",
+						"required libraries"),
+					ioException);
+			}
+
+			processChannel.write(new StopSidecarProcessCallable());
+
+			throw new RuntimeException(ioException);
+		}
+		catch (Exception exception) {
+			processChannel.write(new StopSidecarProcessCallable());
+
+			if (exception instanceof RuntimeException) {
+				throw (RuntimeException)exception;
+			}
+
+			throw new RuntimeException(exception);
+		}
 	}
 
 	private String _createClasspath(
@@ -499,10 +537,17 @@ public class Sidecar {
 		return arguments.toArray(new String[0]);
 	}
 
+	private void _installElasticsearchIfNeeded() {
+		ElasticsearchInstaller installer = new ElasticsearchInstaller(
+			_sidecarHomePath, new Elasticsearch730Distribution());
+
+		installer.install();
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(Sidecar.class);
 
 	private String _address;
-	private final ClusterSettingsContext _clusterSettingsContext;
+	private final ClusterExecutor _clusterExecutor;
 	private final Path _dataHomePath;
 	private final ElasticsearchConfiguration _elasticsearchConfiguration;
 	private final ElasticsearchInstancePaths _elasticsearchInstancePaths;

@@ -115,7 +115,7 @@ definition {
 			locator1 = "Fragment#PAGE_EDITOR_NO_FRAGMENTS_MESSAGE");
 	}
 
-	@description = "This is a test for LPS-108339. Can add a Row fragment to Section. Can add several Row fragments to Section."
+	@description = "This is a test for LPS-108339. Can add a Row fragment to Container. Can add several Row fragments to Container."
 	@priority = "5"
 	test AddRowToSection {
 		task ("Add a content page") {
@@ -129,13 +129,13 @@ definition {
 				siteName = "Test Site Name");
 		}
 
-		task ("Assert add a Row fragment to Section") {
+		task ("Assert add a Row fragment to Container") {
 			PageEditor.addFragment(
 				collectionName = "Layout Elements",
-				fragmentName = "Section");
+				fragmentName = "Container");
 
 			Click(
-				key_elementType = "Section",
+				key_elementType = "Container",
 				key_position = "1",
 				locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
 
@@ -144,13 +144,13 @@ definition {
 				key_fragmentName = "Row",
 				key_position = "1",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
-				locator2 = "PageEditor#SECTION_CONTAINER",
+				locator2 = "PageEditor#CONTAINER_CONTAINER",
 				value1 = "");
 
 			AssertElementPresent(
 				key_elementHeader = "/div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Row')]//li[contains(@class,'title')]",
 				key_position = "1",
-				locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 		}
 
 		task ("Assert add second Row fragment to the same Section") {
@@ -165,7 +165,7 @@ definition {
 			AssertElementPresent(
 				key_elementHeader = "/div[contains(@class,'page-editor__topper')][2]/div[contains(.,'Row')]//li[contains(@class,'title')]",
 				key_position = "1",
-				locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 		}
 	}
 
@@ -585,11 +585,11 @@ definition {
 		task ("Add a section") {
 			PageEditor.addFragment(
 				collectionName = "Layout Elements",
-				fragmentName = "Section");
+				fragmentName = "Container");
 		}
 
 		task ("Configure the section") {
-			PageEditor.editLayoutSection(backgroundColor = "warning");
+			PageEditor.editLayoutContainer(backgroundColor = "warning");
 		}
 
 		task ("View the fragment style") {
@@ -597,25 +597,25 @@ definition {
 		}
 
 		task ("Duplicate the fragment") {
-			PageEditor.gotoDuplicate(fragmentName = "Section");
+			PageEditor.gotoDuplicate(fragmentName = "Container");
 		}
 
-		task ("View the duplicate section fragment") {
-			PageEditor.viewDuplicateFragment(fragmentName = "Section");
+		task ("View the duplicate Container fragment") {
+			PageEditor.viewDuplicateFragment(fragmentName = "Container");
 		}
 
 		task ("Add a row") {
 			PageEditor.addFragment(
 				collectionName = "Layout Elements",
 				fragmentName = "Row",
-				targetFragmentName = "Section");
+				targetFragmentName = "Container");
 		}
 
 		task ("Duplicate the fragment") {
 			PageEditor.gotoDuplicate(fragmentName = "Row");
 		}
 
-		task ("View the duplicate section fragment") {
+		task ("View the duplicate row fragment") {
 			PageEditor.viewDuplicateFragment(fragmentName = "Row");
 		}
 	}
@@ -909,14 +909,14 @@ definition {
 
 		PageEditor.addFragment(
 			collectionName = "Layout Elements",
-			fragmentName = "Section");
+			fragmentName = "Container");
 
 		PageEditor.gotoTab(tabName = "Fragments");
 
 		PageEditor.expandFragmentCollection(collectionName = "Collection Name");
 
 		Click(
-			key_elementType = "Section",
+			key_elementType = "Container",
 			key_position = "1",
 			locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
 
@@ -925,15 +925,15 @@ definition {
 			key_fragmentName = "Fragment Name 2",
 			key_position = "1",
 			locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
-			locator2 = "PageEditor#SECTION_CONTAINER",
+			locator2 = "PageEditor#CONTAINER_CONTAINER",
 			value1 = "");
 
 		AssertElementPresent(
 			key_elementHeader = "//div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Fragment Name 2')]//li[contains(@class,'title')]",
 			key_position = "1",
-			locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+			locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 
-		PageEditor.gotoSaveAsFrgament(fragmentName = "Section");
+		PageEditor.gotoSaveAsFrgament(fragmentName = "Container");
 
 		PageEditorComposition.saveAsFragment(fragmentName = "New Fragment Name");
 
@@ -954,7 +954,7 @@ definition {
 		AssertElementPresent(
 			key_elementHeader = "//div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Fragment Name 2')]//li[contains(@class,'title')]",
 			key_position = "1",
-			locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+			locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 	}
 
 	@description = "Fragments that are being used cannot be deleted."

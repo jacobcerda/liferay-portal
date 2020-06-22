@@ -31,8 +31,8 @@ import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.field.type.URLInfoFieldType;
 import com.liferay.info.form.InfoForm;
 import com.liferay.info.item.InfoItemClassPKReference;
+import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.provider.InfoItemFormProvider;
-import com.liferay.info.item.provider.InfoItemServiceTracker;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.JournalTestUtil;
@@ -78,7 +78,7 @@ public class JournalArticleInfoItemFormProviderTest {
 	public void testGetInfoForm() throws Exception {
 		InfoItemFormProvider<JournalArticle> infoItemFormProvider =
 			(InfoItemFormProvider<JournalArticle>)
-				_infoItemServiceTracker.getInfoItemService(
+				_infoItemServiceTracker.getFirstInfoItemService(
 					InfoItemFormProvider.class, JournalArticle.class.getName());
 
 		JournalArticle journalArticle = _getJournalArticle();
@@ -205,7 +205,7 @@ public class JournalArticleInfoItemFormProviderTest {
 	public void testGetInfoFormValues() throws Exception {
 		InfoItemFormProvider<JournalArticle> infoItemFormProvider =
 			(InfoItemFormProvider<JournalArticle>)
-				_infoItemServiceTracker.getInfoItemService(
+				_infoItemServiceTracker.getFirstInfoItemService(
 					InfoItemFormProvider.class, JournalArticle.class.getName());
 
 		JournalArticle journalArticle = _getJournalArticle();

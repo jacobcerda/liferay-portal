@@ -18,13 +18,14 @@
 
 <%
 AppBuilderApp appBuilderApp = (AppBuilderApp)request.getAttribute(AppBuilderWebKeys.APP);
+List<Long> dataLayoutIds = (List<Long>)request.getAttribute(AppBuilderWebKeys.DATA_LAYOUT_IDS);
 %>
 
 <div class="app-builder-root">
 	<clay:container-fluid
 		cssClass="edit-entry"
 	>
-		<div id="<%= renderResponse.getNamespace() %>-control-menu"></div>
+		<div id="<%= liferayPortletResponse.getNamespace() %>-control-menu"></div>
 
 		<clay:row
 			cssClass="justify-content-center"
@@ -35,17 +36,29 @@ AppBuilderApp appBuilderApp = (AppBuilderApp)request.getAttribute(AppBuilderWebK
 				<div class="card card-root mb-0 mt-4 shadowless-card">
 					<div class="card-body pt-0">
 						<aui:form>
-							<liferay-data-engine:data-layout-renderer
-								containerId='<%= renderResponse.getNamespace() + "container" %>'
-								dataLayoutId="<%= appBuilderApp.getDdmStructureLayoutId() %>"
-								dataRecordId='<%= ParamUtil.getLong(request, "dataRecordId") %>'
-								namespace="<%= renderResponse.getNamespace() %>"
-							/>
+
+							<%
+							for (Long dataLayoutId : dataLayoutIds) {
+							%>
+
+								<liferay-data-engine:data-layout-renderer
+									containerId='<%= liferayPortletResponse.getNamespace() + "container" %>'
+									dataLayoutId="<%= dataLayoutId %>"
+									dataRecordId='<%= ParamUtil.getLong(request, "dataRecordId") %>'
+									namespace="<%= liferayPortletResponse.getNamespace() %>"
+								/>
+
+							<%
+							}
+							%>
 
 							<div id="<portlet:namespace />-edit-entry-app">
+								<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/app_builder/add_data_record" var="addEntryURL" />
 
 								<%
 								Map<String, Object> data = HashMapBuilder.<String, Object>put(
+									"addEntryURL", String.valueOf(addEntryURL)
+								).put(
 									"appDeploymentType", request.getAttribute(AppBuilderWebKeys.APP_DEPLOYMENT_TYPE)
 								).put(
 									"appId", appBuilderApp.getAppBuilderAppId()
@@ -54,7 +67,7 @@ AppBuilderApp appBuilderApp = (AppBuilderApp)request.getAttribute(AppBuilderWebK
 								).put(
 									"basePortletURL", String.valueOf(renderResponse.createRenderURL())
 								).put(
-									"controlMenuElementId", renderResponse.getNamespace() + "-control-menu"
+									"controlMenuElementId", liferayPortletResponse.getNamespace() + "-control-menu"
 								).put(
 									"dataDefinitionId", appBuilderApp.getDdmStructureId()
 								).put(
@@ -64,7 +77,9 @@ AppBuilderApp appBuilderApp = (AppBuilderApp)request.getAttribute(AppBuilderWebK
 								).put(
 									"dataRecordId", ParamUtil.getLong(request, "dataRecordId")
 								).put(
-									"editEntryContainerElementId", renderResponse.getNamespace() + "container"
+									"editEntryContainerElementId", liferayPortletResponse.getNamespace() + "container"
+								).put(
+									"namespace", liferayPortletResponse.getNamespace()
 								).put(
 									"redirect", ParamUtil.getString(request, "redirect")
 								).put(

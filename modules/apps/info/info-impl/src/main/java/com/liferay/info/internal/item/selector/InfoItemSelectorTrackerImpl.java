@@ -14,7 +14,7 @@
 
 package com.liferay.info.internal.item.selector;
 
-import com.liferay.info.item.provider.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.selector.InfoItemSelector;
 import com.liferay.info.item.selector.InfoItemSelectorTracker;
 import com.liferay.info.list.provider.InfoListProvider;
@@ -34,7 +34,7 @@ public class InfoItemSelectorTrackerImpl implements InfoItemSelectorTracker {
 
 	@Override
 	public InfoItemSelector<?> getInfoItemSelector(String key) {
-		return _infoItemServiceTracker.getInfoItemProvider(
+		return _infoItemServiceTracker.getInfoItemService(
 			InfoItemSelector.class, key);
 	}
 

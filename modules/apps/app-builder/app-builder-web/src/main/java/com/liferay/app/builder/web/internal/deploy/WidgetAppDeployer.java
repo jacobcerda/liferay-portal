@@ -21,12 +21,11 @@ import com.liferay.app.builder.service.AppBuilderAppLocalService;
 import com.liferay.app.builder.web.internal.portlet.AppPortlet;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.portlet.Portlet;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -52,7 +51,7 @@ public class WidgetAppDeployer implements AppDeployer {
 
 		_serviceRegistrationsMap.computeIfAbsent(
 			appId,
-			key -> new ServiceRegistration[] {
+			key -> ArrayUtil.append(
 				_deployPortlet(
 					appBuilderApp, _getAppName(appBuilderApp, null),
 					_getPortletName(appId, null), true, true),
@@ -61,8 +60,7 @@ public class WidgetAppDeployer implements AppDeployer {
 					_getPortletName(appId, "form_view"), true, false),
 				_deployPortlet(
 					appBuilderApp, _getAppName(appBuilderApp, "Table View"),
-					_getPortletName(appId, "table_view"), false, true)
-			});
+					_getPortletName(appId, "table_view"), false, true)));
 
 		_appBuilderAppLocalService.updateAppBuilderApp(appBuilderApp);
 	}
@@ -77,21 +75,18 @@ public class WidgetAppDeployer implements AppDeployer {
 		_bundleContext = bundleContext;
 	}
 
-	private ServiceRegistration<?> _deployPortlet(
+	private ServiceRegistration<?>[] _deployPortlet(
 		AppBuilderApp appBuilderApp, String appName, String portletName,
 		boolean showFormView, boolean showTableView) {
 
-		AppPortlet appPortlet = new AppPortlet(
-			appBuilderApp, "widget", appName, portletName, showFormView,
-			showTableView);
-
-		return _bundleContext.registerService(
-			Portlet.class, appPortlet,
-			appPortlet.getProperties(
-				HashMapBuilder.<String, Object>put(
-					"com.liferay.portlet.display-category",
-					"category.app_builder"
-				).build()));
+		return _appDeployerHelper.deployPortlet(
+			new AppPortlet(
+				appBuilderApp, "widget", appName, portletName, showFormView,
+				showTableView),
+			_bundleContext,
+			HashMapBuilder.<String, Object>put(
+				"com.liferay.portlet.display-category", "category.app_builder"
+			).build());
 	}
 
 	private String _getAppName(AppBuilderApp appBuilderApp, String suffix) {
@@ -126,6 +121,9 @@ public class WidgetAppDeployer implements AppDeployer {
 
 	@Reference
 	private AppBuilderAppLocalService _appBuilderAppLocalService;
+
+	@Reference
+	private AppDeployerHelper _appDeployerHelper;
 
 	private BundleContext _bundleContext;
 	private final ConcurrentHashMap<Long, ServiceRegistration<?>[]>

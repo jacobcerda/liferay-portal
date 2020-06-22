@@ -16,6 +16,7 @@ package com.liferay.portal.search.elasticsearch7.internal.connection;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.cluster.ClusterExecutor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.File;
@@ -24,11 +25,8 @@ import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration;
-import com.liferay.portal.search.elasticsearch7.internal.cluster.ClusterSettingsContext;
 import com.liferay.portal.search.elasticsearch7.internal.util.SearchLogHelperUtil;
 import com.liferay.portal.search.elasticsearch7.settings.SettingsContributor;
-
-import io.netty.buffer.ByteBufUtil;
 
 import java.io.IOException;
 
@@ -67,7 +65,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
  */
 @Component(
 	configurationPid = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration",
-	immediate = true, property = "operation.mode=EMBEDDED",
+	enabled = false, property = "operation.mode=EMBEDDED",
 	service = ElasticsearchConnection.class
 )
 public class EmbeddedElasticsearchConnection
@@ -79,20 +77,6 @@ public class EmbeddedElasticsearchConnection
 
 		if (_node == null) {
 			return;
-		}
-
-		try {
-			Class.forName(ByteBufUtil.class.getName());
-		}
-		catch (ClassNotFoundException classNotFoundException) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					StringBundler.concat(
-						"Unable to preload ", ByteBufUtil.class,
-						" to prevent Netty shutdown concurrent class loading ",
-						"interruption issue"),
-					classNotFoundException);
-			}
 		}
 
 		if (PortalRunMode.isTestMode()) {
@@ -344,7 +328,7 @@ public class EmbeddedElasticsearchConnection
 		).httpPortRange(
 			new HttpPortRange(elasticsearchConfiguration)
 		).localBindInetAddressSupplier(
-			clusterSettingsContext::getLocalBindInetAddress
+			clusterExecutor::getBindInetAddress
 		).nodeName(
 			getNodeName()
 		).settingsContributors(
@@ -380,7 +364,7 @@ public class EmbeddedElasticsearchConnection
 	protected static final String JNA_TMP_DIR = "elasticSearch-tmpDir";
 
 	@Reference
-	protected ClusterSettingsContext clusterSettingsContext;
+	protected ClusterExecutor clusterExecutor;
 
 	protected volatile ElasticsearchConfiguration elasticsearchConfiguration;
 

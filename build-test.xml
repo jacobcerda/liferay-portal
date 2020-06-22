@@ -2282,7 +2282,6 @@ jdbc.default.password=${database.password}</echo>
 
 	<macrodef name="prepare-portal-elasticsearch-osgi-configuration">
 		<sequential>
-			<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch6.configuration.ElasticsearchConfiguration.config">logExceptionsOnly=B"false"</echo>
 			<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration.config">logExceptionsOnly=B"false"${line.separator}sidecarShutdownTimeout=L"20000"</echo>
 		</sequential>
 	</macrodef>
@@ -2856,51 +2855,7 @@ ${tomcat-gc-log}
 					<ant antfile="build-test-solr.xml" target="print-solr-indices" />
 				</then>
 				<else>
-					<get-testcase-property property.name="test.name.skip.portal.instance" />
-
-					<if>
-						<and>
-							<not>
-								<isset property="test.name.skip.portal.instance" />
-							</not>
-							<equals arg1="test.portal.instance" arg2="true" />
-						</and>
-						<then>
-							<var name="portalInstanceName" value="${env.HOSTNAME}" />
-						</then>
-						<else>
-							<var name="portalInstanceName" value="localhost" />
-						</else>
-					</if>
-
-					<exec executable="curl" outputproperty="companyId">
-						<arg value="http://localhost:8080/api/jsonws/company/get-company-by-virtual-host/virtual-host/${portalInstanceName}" />
-						<arg value="-u" />
-						<arg value="test@liferay.com:test" />
-					</exec>
-
-					<propertyregex
-						input="${companyId}"
-						override="true"
-						property="companyId"
-						regexp="(?&lt;=companyId&quot;:&quot;)(.*)(?=&quot;,&quot;home)"
-						select="\1"
-					/>
-
-					<get-testcase-property property.name="osgi.app.includes" />
-
-					<if>
-						<or>
-							<equals arg1="${suite.search.engine}" arg2="elasticsearch7" />
-							<contains string="${osgi.app.includes}" substring="portal-search-elasticsearch7" />
-						</or>
-						<then>
-							<ant antfile="build-test-elasticsearch7.xml" target="print-elasticsearch-indices" />
-						</then>
-						<else>
-							<ant antfile="build-test-elasticsearch6.xml" target="print-elasticsearch-indices" />
-						</else>
-					</if>
+					<ant antfile="build-test-elasticsearch7.xml" target="print-elasticsearch-indices" />
 				</else>
 			</if>
 		</sequential>
@@ -5187,7 +5142,6 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 
 	<macrodef name="stop-remote-search-engine">
 		<sequential>
-			<get-testcase-property property.name="osgi.app.includes" />
 			<get-testcase-property property.name="remote.elasticsearch.clusters.enabled" />
 			<get-testcase-property property.name="remote.elasticsearch.enabled" />
 			<get-testcase-property property.name="test.name.skip.portal.instance" />
@@ -5195,26 +5149,18 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 			<if>
 				<equals arg1="${remote.elasticsearch.enabled}" arg2="true" />
 				<then>
-					<if>
-						<contains string="${osgi.app.includes}" substring="portal-search-elasticsearch7" />
-						<then>
-							<ant antfile="build-test-elasticsearch7.xml" target="stop-elasticsearch" />
+					<ant antfile="build-test-elasticsearch7.xml" target="stop-elasticsearch" />
 
-							<if>
-								<and>
-									<equals arg1="${remote.elasticsearch.clusters.enabled}" arg2="true" />
-									<not>
-										<contains string="${test.name.skip.portal.instance}" substring="CrossCluster" />
-									</not>
-								</and>
-								<then>
-									<ant antfile="build-test-elasticsearch7.xml" target="stop-elasticsearch-local-cluster" />
-								</then>
-							</if>
+					<if>
+						<and>
+							<equals arg1="${remote.elasticsearch.clusters.enabled}" arg2="true" />
+							<not>
+								<contains string="${test.name.skip.portal.instance}" substring="CrossCluster" />
+							</not>
+						</and>
+						<then>
+							<ant antfile="build-test-elasticsearch7.xml" target="stop-elasticsearch-local-cluster" />
 						</then>
-						<else>
-							<ant antfile="build-test-elasticsearch6.xml" target="stop-elasticsearch" />
-						</else>
 					</if>
 				</then>
 			</if>
@@ -8132,24 +8078,11 @@ osb.lcs.portlet.oauth.consumer.secret=${osb.lcs.portlet.oauth.consumer.secret}</
 	</category>
 </log4j:configuration>]]></echo>
 
-		<echo file="${liferay.home}/osgi/log4j/com.liferay.portal.search.elasticsearch6.impl-log4j-ext.xml"><![CDATA[<?xml version="1.0"?>
-<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
-
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-	<category name="com.liferay.portal.search.elasticsearch6.internal.connection.EmbeddedElasticsearchConnection">
-		<priority value="ERROR" />
-	</category>
-
-	<category name="com.liferay.portal.search.elasticsearch6.internal.index.CompanyIndexFactory">
-		<priority value="INFO" />
-	</category>
-</log4j:configuration>]]></echo>
-
 		<echo file="${liferay.home}/osgi/log4j/com.liferay.portal.search.elasticsearch7.impl-log4j-ext.xml"><![CDATA[<?xml version="1.0"?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-	<category name="com.liferay.portal.search.elasticsearch7.internal.connection.EmbeddedElasticsearchConnection">
+	<category name="com.liferay.portal.search.elasticsearch7.internal.connection.SidecarElasticsearchConnectionManager">
 		<priority value="ERROR" />
 	</category>
 
@@ -12337,44 +12270,12 @@ module.framework.properties.blacklist.portal.profile.names=${blacklist.portal.pr
 			</then>
 		</if>
 
-		<get-testcase-property property.name="portal.suite.search.engine" />
 		<get-testcase-property property.name="remote.elasticsearch.enabled" />
 
 		<if>
 			<equals arg1="${remote.elasticsearch.enabled}" arg2="true" />
 			<then>
-				<if>
-					<contains string="${env.CI_TEST_SUITE}" substring="search" />
-					<then>
-						<propertycopy from="search.engine[${env.CI_TEST_SUITE}]" name="suite.search.engine" silent="true" />
-
-						<if>
-							<equals arg1="${suite.search.engine}" arg2="elasticsearch7" />
-							<then>
-								<ant antfile="build-test-elasticsearch7.xml" target="start-elasticsearch" />
-							</then>
-							<else>
-								<ant antfile="build-test-elasticsearch6.xml" target="start-elasticsearch" />
-							</else>
-						</if>
-					</then>
-					<else>
-						<if>
-							<or>
-								<contains string="${portal.suite.search.engine}" substring="elasticsearch6" />
-								<not>
-									<isset property="portal.suite.search.engine" />
-								</not>
-							</or>
-							<then>
-								<ant antfile="build-test-elasticsearch6.xml" target="start-elasticsearch" />
-							</then>
-							<else>
-								<ant antfile="build-test-elasticsearch7.xml" target="start-elasticsearch" />
-							</else>
-						</if>
-					</else>
-				</if>
+				<ant antfile="build-test-elasticsearch7.xml" target="start-elasticsearch" />
 			</then>
 		</if>
 
@@ -12910,7 +12811,7 @@ url=${short.hostname}:8080</echo>
 				<equals arg1="${app.server.bundles.size}" arg2="0" />
 			</not>
 			<then>
-				<ant antfile="build-test-elasticsearch6.xml" target="start-elasticsearch" />
+				<ant antfile="build-test-elasticsearch7.xml" target="start-elasticsearch" />
 
 				<prepare-additional-bundles />
 			</then>

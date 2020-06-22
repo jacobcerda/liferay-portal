@@ -14,7 +14,7 @@
 
 package com.liferay.info.internal.list.renderer;
 
-import com.liferay.info.item.provider.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.list.renderer.InfoListRenderer;
 import com.liferay.info.list.renderer.InfoListRendererTracker;
 
@@ -31,7 +31,7 @@ public class InfoListRendererTrackerImpl implements InfoListRendererTracker {
 
 	@Override
 	public InfoListRenderer<?> getInfoListRenderer(String key) {
-		return _infoItemServiceTracker.getInfoItemProvider(
+		return _infoItemServiceTracker.getInfoItemService(
 			InfoListRenderer.class, key);
 	}
 

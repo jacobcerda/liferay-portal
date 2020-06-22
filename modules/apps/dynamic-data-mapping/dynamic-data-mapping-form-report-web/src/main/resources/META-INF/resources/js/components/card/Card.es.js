@@ -18,6 +18,7 @@ import {ClayTooltipProvider} from '@clayui/tooltip';
 import React from 'react';
 
 import EmptyState from '../empty-state/EmptyState.es';
+import Summary from '../summary/Summary.es';
 
 const TotalEntriesLabel = ({totalEntries}) => {
 	let label = Liferay.Language.get('there-are-no-entries');
@@ -39,8 +40,13 @@ const TotalEntriesLabel = ({totalEntries}) => {
 	);
 };
 
-export default ({children, field: {icon, label, title}, totalEntries}) => (
-	<div className="col-md-8">
+export default ({
+	children,
+	field: {icon, label, title},
+	summary,
+	totalEntries,
+}) => (
+	<div className="report-cards-area">
 		<div className="sheet">
 			<div className="col-md-12">
 				<ClayCard displayType="image">
@@ -63,6 +69,10 @@ export default ({children, field: {icon, label, title}, totalEntries}) => (
 
 							<TotalEntriesLabel totalEntries={totalEntries} />
 						</div>
+
+						{!!Object.entries(summary).length && (
+							<Summary summary={summary} />
+						)}
 					</ClayCard.AspectRatio>
 
 					<ClayCard.Body>

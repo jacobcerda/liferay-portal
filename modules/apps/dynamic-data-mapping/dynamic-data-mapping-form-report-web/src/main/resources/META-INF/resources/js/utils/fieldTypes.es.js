@@ -21,6 +21,10 @@ export default {
 		icon: 'calendar',
 		title: Liferay.Language.get('date-field-type-label'),
 	},
+	numeric: {
+		icon: 'integer',
+		title: Liferay.Language.get('numeric-field-type-label'),
+	},
 	radio: {
 		icon: 'radio-button',
 		title: Liferay.Language.get('radio-field-type-label'),

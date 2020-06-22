@@ -133,6 +133,23 @@ const APIGUI = () => {
 
 	window.global = window;
 
+	const mutationObserver = new MutationObserver((mutations) => {
+		mutations.forEach(() => {
+			document
+				.querySelectorAll('.btn.try-out__btn:not(.cancel)')
+				.forEach((div) => {
+					div.click();
+					div.style.display = 'none';
+				});
+		});
+	});
+
+	mutationObserver.observe(document.documentElement, {
+		attributes: true,
+		childList: true,
+		subtree: true,
+	});
+
 	const graphQLFetcher = useCallback(
 		(graphQLParams) =>
 			apiFetch(
@@ -149,6 +166,13 @@ const APIGUI = () => {
 		req.headers['x-csrf-token'] = document.querySelector(
 			'meta[name="csrf-token"]'
 		).content;
+
+		for (let i = 0; i < headers.length; i++) {
+			const header = headers[i];
+			if (header.key && header.value) {
+				req.headers[header.key] = header.value;
+			}
+		}
 
 		return req;
 	};
@@ -272,6 +296,7 @@ const APIGUI = () => {
 
 				{showSwagger && !showGraphQL && (
 					<SwaggerUI
+						displayOperationId={true}
 						requestInterceptor={requestInterceptor}
 						supportedSubmitMethods={[
 							'get',

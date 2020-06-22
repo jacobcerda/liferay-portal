@@ -20,8 +20,7 @@ body,
 	.card-header {
 		background-color: white;
 		background-image: none;
-		padding-bottom: 28px;
-		padding-top: 0;
+		padding: 0;
 	}
 
 	.card-body {
@@ -48,7 +47,7 @@ body,
 					padding-bottom: 10px;
 
 					svg {
-						width: 6%;
+						width: 7%;
 					}
 
 					p {
@@ -122,7 +121,43 @@ body,
 	}
 
 	.field-info {
-		margin-left: 34px;
+		margin-bottom: 24px;
+		margin-left: 52px;
+	}
+
+	.field-list {
+		width: 100%;
+	}
+
+	.summary {
+		display: flex;
+		justify-content: flex-start;
+
+		.summary-item:last-child {
+			margin-right: 0;
+		}
+
+		.summary-item {
+			align-self: center;
+			background: #f7f8f9;
+			border-radius: 4px;
+			cursor: default;
+			margin-bottom: 16px;
+			margin-right: 16px;
+			padding: 8px 12px;
+
+			.type {
+				color: #6b6c7e;
+				font-size: 14px;
+				line-height: 150%;
+			}
+
+			.value {
+				color: #000;
+				font-size: 24px;
+				font-weight: 600;
+			}
+		}
 	}
 }
 
@@ -272,4 +307,8 @@ body,
 	height: 400px !important;
 	min-height: 400px;
 	min-width: 400px;
+}
+
+.report-cards-area {
+	width: 808px;
 }

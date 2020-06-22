@@ -31,8 +31,8 @@ import com.liferay.info.display.contributor.InfoDisplayObjectProvider;
 import com.liferay.info.display.url.provider.InfoEditURLProvider;
 import com.liferay.info.display.url.provider.InfoEditURLProviderTracker;
 import com.liferay.info.field.InfoFieldValue;
+import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.provider.InfoItemFormProvider;
-import com.liferay.info.item.provider.InfoItemServiceTracker;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.petra.string.CharPool;
@@ -302,7 +302,7 @@ public abstract class BaseAssetDisplayPageFriendlyURLResolver
 
 		if (infoDisplayObjectProvider != null) {
 			InfoItemFormProvider<Object> infoItemFormProvider =
-				infoItemServiceTracker.getInfoItemService(
+				infoItemServiceTracker.getFirstInfoItemService(
 					InfoItemFormProvider.class,
 					portal.getClassName(
 						infoDisplayObjectProvider.getClassNameId()));

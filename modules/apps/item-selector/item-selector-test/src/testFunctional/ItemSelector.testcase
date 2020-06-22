@@ -90,9 +90,9 @@ definition {
 
 		PageEditor.addFragment(
 			collectionName = "Layout Elements",
-			fragmentName = "Section");
+			fragmentName = "Container");
 
-		PageEditor.editLayoutSection(
+		PageEditor.editLayoutContainer(
 			backgroundImage = "Manual Selection",
 			entryTitle = "Document_1.svg",
 			navItem = "Documents and Media");
@@ -151,9 +151,9 @@ definition {
 
 		PageEditor.addFragment(
 			collectionName = "Layout Elements",
-			fragmentName = "Section");
+			fragmentName = "Container");
 
-		PageEditor.editLayoutSection(
+		PageEditor.editLayoutContainer(
 			backgroundImage = "Manual Selection",
 			entryTitle = "Document_1.jpeg",
 			navItem = "Documents and Media");

@@ -213,7 +213,7 @@ public class ElasticsearchConnectionManager
 		ElasticsearchConnection elasticsearchConnection) {
 
 		_elasticsearchConnections.put(
-			elasticsearchConnection.getConnectionId(), elasticsearchConnection);
+			String.valueOf(OperationMode.EMBEDDED), elasticsearchConnection);
 	}
 
 	public void setOperationMode(OperationMode operationMode) {
@@ -267,7 +267,20 @@ public class ElasticsearchConnectionManager
 				_elasticsearchConnections.get(
 					String.valueOf(OperationMode.EMBEDDED));
 
-			elasticsearchConnection.connect();
+			try {
+				elasticsearchConnection.connect();
+			}
+			catch (RuntimeException runtimeException) {
+				_log.error(
+					StringBundler.concat(
+						"Elasticsearch sidecar could not be started. Search ",
+						"will be unavailable. Manual installation of ",
+						"Elasticsearch and activation of remote mode is ",
+						"recommended."),
+					runtimeException);
+
+				throw runtimeException;
+			}
 		}
 	}
 
@@ -344,14 +357,20 @@ public class ElasticsearchConnectionManager
 			}
 		}
 
+		String remoteClusterConnectionId =
+			_elasticsearchConfiguration.remoteClusterConnectionId();
+
+		if (Validator.isBlank(remoteClusterConnectionId)) {
+			remoteClusterConnectionId = "remote";
+		}
+
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Getting remote cluster connection with ID: " +
-					_elasticsearchConfiguration.remoteClusterConnectionId());
+					remoteClusterConnectionId);
 		}
 
-		return _elasticsearchConnections.get(
-			_elasticsearchConfiguration.remoteClusterConnectionId());
+		return _elasticsearchConnections.get(remoteClusterConnectionId);
 	}
 
 	protected boolean isOperationModeEmbedded() {

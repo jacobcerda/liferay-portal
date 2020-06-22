@@ -770,7 +770,6 @@ definition {
 		DMDocument.downloadPG(dmDocumentTitle = "/D/M/Document Title");
 	}
 
-	@ignore = "true"
 	@priority = "5"
 	test EditAndDeleteGoogleDoc {
 		property portal.release = "false";
@@ -802,17 +801,17 @@ definition {
 		GoogleDrive.gotoDrive(
 			userEmailAddress = PropsUtil.get("email.address.3"),
 			userPassword = PropsUtil.get("email.password.3"),
-			windowTitle = "Documents and Media Page - ${siteName}");
+			windowTitle = "New Google Drive Shortcut - ${siteName}");
 
-		GoogleDrive.selectDocument(googleDocName = "taco.jpg");
+		GoogleDrive.selectDocument(googleDocName = "liferay.txt");
 
 		PortletEntry.publish();
 
-		DMDocument.viewPG(dmDocumentTitle = "taco.jpg");
+		DMDocument.viewPG(dmDocumentTitle = "liferay.txt");
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
-		DMDocument.deletePG(dmDocumentTitle = "taco.jpg");
+		DMDocument.deletePG(dmDocumentTitle = "liferay.txt");
 	}
 
 	@priority = "5"
@@ -1098,7 +1097,6 @@ definition {
 			locationFieldName = "true");
 	}
 
-	@ignore = "true"
 	@priority = "5"
 	test MoveGoogleDocToFolder {
 		property portal.release = "false";
@@ -1130,25 +1128,26 @@ definition {
 		GoogleDrive.gotoDrive(
 			userEmailAddress = PropsUtil.get("email.address.3"),
 			userPassword = PropsUtil.get("email.password.3"),
-			windowTitle = "Documents and Media Page - ${siteName}");
+			windowTitle = "New Google Drive Shortcut - ${siteName}");
 
-		GoogleDrive.selectDocument(googleDocName = "taco.jpg");
+		GoogleDrive.selectDocument(googleDocName = "liferay.txt");
 
 		PortletEntry.publish();
 
 		JSONDocument.addFolder(
 			dmFolderDescription = "DM Folder Description",
-			dmFolderName = "DM Folder Name");
+			dmFolderName = "DM Folder Name",
+			groupName = "Guest");
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
 		DMDocument.moveToFolderPG(
-			dmDocumentTitle = "taco.jpg",
+			dmDocumentTitle = "liferay.txt",
 			dmFolderName = "DM Folder Name");
 
 		DMNavigator.gotoFolder(dmFolderName = "DM Folder Name");
 
-		DMDocument.viewPG(dmDocumentTitle = "taco.jpg");
+		DMDocument.viewPG(dmDocumentTitle = "liferay.txt");
 	}
 
 	@priority = "5"

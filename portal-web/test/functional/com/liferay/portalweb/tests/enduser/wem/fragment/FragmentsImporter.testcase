@@ -107,19 +107,19 @@ definition {
 				siteName = "Test Site Name");
 		}
 
-		task ("Add a Section to page") {
+		task ("Add a Container to page") {
 			PageEditor.addFragment(
 				collectionName = "Layout Elements",
-				fragmentName = "Section");
+				fragmentName = "Container");
 		}
 
-		task ("Add the created fragment into Section") {
+		task ("Add the created fragment into Container") {
 			PageEditor.gotoTab(tabName = "Fragments");
 
 			PageEditor.expandFragmentCollection(collectionName = "Collection Name");
 
 			Click(
-				key_elementType = "Section",
+				key_elementType = "Container",
 				key_position = "1",
 				locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
 
@@ -128,16 +128,16 @@ definition {
 				key_fragmentName = "Fragment Name",
 				key_position = "1",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
-				locator2 = "PageEditor#SECTION_CONTAINER",
+				locator2 = "PageEditor#CONTAINER_CONTAINER",
 				value1 = "");
 
 			AssertElementPresent(
 				key_elementHeader = "//div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Fragment Name')]//li[contains(@class,'title')]",
 				key_position = "1",
-				locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 		}
 
-		PageEditor.gotoSaveAsFrgament(fragmentName = "Section");
+		PageEditor.gotoSaveAsFrgament(fragmentName = "Container");
 
 		PageEditorComposition.saveAsFragment(
 			collectionName = "Collection Name",
@@ -184,7 +184,7 @@ definition {
 		AssertElementPresent(
 			key_elementHeader = "/div[contains(.,'Fragment Name')]//li[contains(@class,'title')]",
 			key_position = "1",
-			locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+			locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 	}
 
 	@description = "Fragment collections can be exported and imported."
@@ -273,19 +273,19 @@ definition {
 				siteName = "Test Site Name");
 		}
 
-		task ("Add a Section to page") {
+		task ("Add a Container to page") {
 			PageEditor.addFragment(
 				collectionName = "Layout Elements",
-				fragmentName = "Section");
+				fragmentName = "Container");
 		}
 
-		task ("Add an Image fragment into Section") {
+		task ("Add an Image fragment into Container") {
 			PageEditor.gotoTab(tabName = "Fragments");
 
 			PageEditor.expandFragmentCollection(collectionName = "Basic Components");
 
 			Click(
-				key_elementType = "Section",
+				key_elementType = "Container",
 				key_position = "1",
 				locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
 
@@ -294,13 +294,13 @@ definition {
 				key_fragmentName = "Image",
 				key_position = "1",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
-				locator2 = "PageEditor#SECTION_CONTAINER",
+				locator2 = "PageEditor#CONTAINER_CONTAINER",
 				value1 = "");
 
 			AssertElementPresent(
 				key_elementHeader = "//div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Image')]//li[contains(@class,'title')]",
 				key_position = "1",
-				locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 		}
 
 		PageEditorMapping.gotoEditableFieldMapping(
@@ -324,7 +324,7 @@ definition {
 			key_image = "Document_1.jpg",
 			locator1 = "Fragment#PAGE_EDITOR_FRAGMENT_IMAGE");
 
-		PageEditor.gotoSaveAsFrgament(fragmentName = "Section");
+		PageEditor.gotoSaveAsFrgament(fragmentName = "Container");
 
 		PageEditorComposition.saveAsFragment(
 			fragmentName = "New Fragment Name",
@@ -386,10 +386,10 @@ definition {
 				siteName = "Test Site Name");
 		}
 
-		task ("Add a Section to page") {
+		task ("Add a Container to page") {
 			PageEditor.addFragment(
 				collectionName = "Layout Elements",
-				fragmentName = "Section");
+				fragmentName = "Container");
 		}
 
 		JSONDocument.addFileWithUploadedFile(
@@ -400,19 +400,19 @@ definition {
 			sourceFileName = "Document_1.jpg");
 
 		task ("Configure the section") {
-			PageEditor.editLayoutSection(
+			PageEditor.editLayoutContainer(
 				backgroundImage = "Manual Selection",
 				entryTitle = "Document_1.jpg",
 				navItem = "Documents and Media");
 		}
 
-		task ("Add the Heading fragment into Section") {
+		task ("Add the Heading fragment into Container") {
 			PageEditor.gotoTab(tabName = "Fragments");
 
 			PageEditor.expandFragmentCollection(collectionName = "Basic Components");
 
 			Click(
-				key_elementType = "Section",
+				key_elementType = "Container",
 				key_position = "1",
 				locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
 
@@ -421,13 +421,13 @@ definition {
 				key_fragmentName = "Heading",
 				key_position = "1",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
-				locator2 = "PageEditor#SECTION_CONTAINER",
+				locator2 = "PageEditor#CONTAINER_CONTAINER",
 				value1 = "");
 
 			AssertElementPresent(
 				key_elementHeader = "//div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Heading')]//li[contains(@class,'title')]",
 				key_position = "1",
-				locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 		}
 
 		PageEditor.gotoConfiguration(fragmentName = "Heading");
@@ -438,7 +438,7 @@ definition {
 			textAlign = "Center",
 			textColor = "danger");
 
-		PageEditor.gotoSaveAsFrgament(fragmentName = "Section");
+		PageEditor.gotoSaveAsFrgament(fragmentName = "Container");
 
 		PageEditorComposition.saveAsFragment(fragmentName = "New Fragment Name");
 
@@ -514,7 +514,7 @@ definition {
 		task ("Add a Section to page") {
 			PageEditor.addFragment(
 				collectionName = "Layout Elements",
-				fragmentName = "Section");
+				fragmentName = "Container");
 		}
 
 		task ("Add the Heading fragment into Section") {
@@ -523,7 +523,7 @@ definition {
 			PageEditor.expandFragmentCollection(collectionName = "Basic Components");
 
 			Click(
-				key_elementType = "Section",
+				key_elementType = "Container",
 				key_position = "1",
 				locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
 
@@ -532,13 +532,13 @@ definition {
 				key_fragmentName = "Heading",
 				key_position = "1",
 				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
-				locator2 = "PageEditor#SECTION_CONTAINER",
+				locator2 = "PageEditor#CONTAINER_CONTAINER",
 				value1 = "");
 
 			AssertElementPresent(
 				key_elementHeader = "//div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Heading')]//li[contains(@class,'title')]",
 				key_position = "1",
-				locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 		}
 
 		PageEditorMapping.gotoEditableFieldMapping(
@@ -557,7 +557,7 @@ definition {
 
 		PageEditor.waitForAutoSave();
 
-		PageEditor.gotoSaveAsFrgament(fragmentName = "Section");
+		PageEditor.gotoSaveAsFrgament(fragmentName = "Container");
 
 		PageEditorComposition.saveAsFragment(fragmentName = "New Fragment Name");
 
@@ -1052,7 +1052,7 @@ definition {
 			AssertElementPresent(
 				key_elementHeader = "/div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Fragment Name')]//li[contains(@class,'title')]",
 				key_position = "1",
-				locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT");
+				locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
 
 			AssertElementPresent(
 				key_color = "success",
@@ -1127,7 +1127,7 @@ definition {
 		AssertTextEquals(
 			key_elementHeader = "//div[contains(@class,'page-editor__topper') and contains(.,'Heading')]//*[contains(@data-lfr-editable-id,'element-text')]",
 			key_position = "1",
-			locator1 = "PageEditor#SECTION_CONTAINER_NESTED_ELEMENT",
+			locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT",
 			value1 = "Modify Text");
 	}
 

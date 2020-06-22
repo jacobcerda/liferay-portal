@@ -17,6 +17,7 @@ import ClayButton from '@clayui/button';
 import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayNavigationBar from '@clayui/navigation-bar';
+import classNames from 'classnames';
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {withRouter} from 'react-router-dom';
 
@@ -46,6 +47,7 @@ import lang from '../../utils/lang.es';
 import {
 	dateToBriefInternationalHuman,
 	historyPushWithSlug,
+	stripHTML,
 } from '../../utils/utils.es';
 
 export default withRouter(
@@ -236,7 +238,16 @@ export default withRouter(
 											</Link>
 										)}
 
-										<h1 className="c-mt-2 question-headline">
+										<h1
+											className={classNames(
+												'c-mt-2',
+												'question-headline',
+												{
+													'question-seen':
+														question.seen,
+												}
+											)}
+										>
 											{question.headline}
 										</h1>
 
@@ -467,7 +478,8 @@ export default withRouter(
 											<ClayButton
 												disabled={
 													!articleBody ||
-													articleBody.length < 23
+													stripHTML(articleBody)
+														.length < 15
 												}
 												displayType="primary"
 												onClick={() => {

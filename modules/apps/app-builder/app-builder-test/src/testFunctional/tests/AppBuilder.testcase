@@ -20,7 +20,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 	}
 
@@ -536,7 +536,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.deleteEntry(itemName = "my custom object");
@@ -909,7 +909,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "Custom Object Title");
@@ -932,7 +932,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "Custom Object Title");
@@ -1515,7 +1515,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		LexiconEntry.gotoVerticalEllipsisMenuItemNoError(menuItem = "Table Views");
@@ -1545,7 +1545,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		LexiconEntry.gotoVerticalEllipsisMenuItemNoError(menuItem = "Table Views");
@@ -1613,7 +1613,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object 1");
@@ -1655,7 +1655,6 @@ definition {
 	@priority = "5"
 	test PublishAppsInProductMenuAndReuseItsViews {
 		property portal.acceptance = "true";
-		property portal.upstream = "quarantine";
 
 		var myFormViewName_1 = "My Form View 1";
 		var myFormViewName_2 = "My Form View 2";
@@ -1766,7 +1765,6 @@ definition {
 	}
 
 	@description = "Publish apps in standalone mode and reuse its views"
-	@ignore = "true"
 	@priority = "4"
 	test PublishAppsInStandaloneAndReuseItsViews {
 		property portal.acceptance = "true";
@@ -1904,7 +1902,6 @@ definition {
 	@description = "Remove fields from the Form View through the 'Remove' option"
 	@priority = "5"
 	test RemoveFormViewFields {
-		property portal.upstream = "quarantine";
 
 		AppBuilderAdmin.addCustomObject(
 			customObjectName = "my custom object",
@@ -2190,7 +2187,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "Users",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Password Policies");
 
 		PasswordPolicies.togglePasswordChangeRequired(
@@ -2200,7 +2197,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "Users",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Users and Organizations");
 
 		User.editPasswordCP(
@@ -2224,7 +2221,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.addCustomObject(
@@ -2256,7 +2253,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.validateItemNameOnTable(itemName = "Admin object");
@@ -2354,7 +2351,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.addCustomObject(
@@ -2423,7 +2420,7 @@ definition {
 
 				GlobalMenu.gotoPortlet(
 					category = "App Builder",
-					panel = "Control Panel",
+					panel = "Applications",
 					portlet = "Objects");
 
 				LexiconEntry.gotoVerticalEllipsisMenuItemNoError(menuItem = "App Permissions");
@@ -2626,7 +2623,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object");
@@ -2643,7 +2640,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object");
@@ -2656,7 +2653,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object");
@@ -2671,7 +2668,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object");
@@ -2688,7 +2685,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object");
@@ -2705,7 +2702,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object");
@@ -2801,7 +2798,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object");
@@ -2858,7 +2855,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object");
@@ -2885,7 +2882,7 @@ definition {
 
 		GlobalMenu.gotoPortlet(
 			category = "App Builder",
-			panel = "Control Panel",
+			panel = "Applications",
 			portlet = "Objects");
 
 		AppBuilderAdmin.openItem(itemName = "my custom object");
@@ -3021,7 +3018,6 @@ definition {
 	@description = "View details of an entry in an App"
 	@priority = "5"
 	test ViewEntryDetails {
-		property portal.upstream = "quarantine";
 
 		var myFormViewName = "My Registration form";
 		var myTableViewName = "My display table";

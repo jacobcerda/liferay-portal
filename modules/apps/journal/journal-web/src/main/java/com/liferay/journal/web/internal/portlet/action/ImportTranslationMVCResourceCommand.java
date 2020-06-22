@@ -15,7 +15,6 @@
 package com.liferay.journal.web.internal.portlet.action;
 
 import com.liferay.document.library.kernel.exception.FileSizeException;
-import com.liferay.document.library.kernel.exception.RequiredFileException;
 import com.liferay.info.item.InfoItemClassPKReference;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
@@ -23,7 +22,6 @@ import com.liferay.journal.service.JournalArticleService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
-import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.LiferayFileItemException;
@@ -31,10 +29,8 @@ import com.liferay.portal.kernel.upload.UploadException;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.upload.UploadRequestSizeException;
 import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.translation.exception.InvalidXLIFFFileException;
 import com.liferay.translation.exporter.TranslationInfoFormValuesExporter;
@@ -77,53 +73,37 @@ public class ImportTranslationMVCResourceCommand extends BaseMVCActionCommand {
 
 			_checkExceededSizeLimit(uploadPortletRequest);
 
-			String sourceFileName = uploadPortletRequest.getFileName("file");
+			_checkContentType(uploadPortletRequest.getContentType("file"));
 
-			long groupId = ParamUtil.getLong(actionRequest, "groupId");
-			String articleId = ParamUtil.getString(actionRequest, "articleId");
+			long articleResourceId = ParamUtil.getLong(
+				actionRequest, "articleResourceId");
 
-			JournalArticle article = _journalArticleService.getArticle(
-				groupId, articleId);
+			InputStream inputStream = uploadPortletRequest.getFileAsStream(
+				"file");
 
-			try (InputStream inputStream = uploadPortletRequest.getFileAsStream(
-					"file")) {
+			_translationInfoFormValuesExporter.importXLIFF(
+				themeDisplay.getScopeGroupId(),
+				new InfoItemClassPKReference(
+					JournalArticle.class.getName(), articleResourceId),
+				inputStream);
 
-				String contentType = uploadPortletRequest.getContentType(
-					"file");
+			String redirect = ParamUtil.getString(actionRequest, "redirect");
 
-				if (!Objects.equals("application/xliff+xml", contentType)) {
-					throw new InvalidXLIFFFileException(
-						"Unsupported content type: " + contentType);
-				}
-
-				_translationInfoFormValuesExporter.importXLIFF(
-					themeDisplay.getScopeGroupId(),
-					new InfoItemClassPKReference(
-						JournalArticle.class.getName(), article.getClassPK()),
-					inputStream);
-
-				String redirect = ParamUtil.getString(
-					actionRequest, "redirect");
-
-				_journalArticleService.updateArticleTranslation(
-					article.getGroupId(), article.getArticleId(),
-					article.getVersion(), LocaleUtil.getDefault(),
-					article.getTitle(), article.getDescription(),
-					article.getContent(), null,
-					ServiceContextFactory.getInstance(actionRequest));
-				actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
-			}
-			catch (PortalException portalException) {
-				if (Validator.isNotNull(sourceFileName)) {
-					SessionErrors.add(
-						actionRequest, RequiredFileException.class);
-				}
-
-				throw portalException;
-			}
+			actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
 		}
 		catch (Exception exception) {
 			SessionErrors.add(actionRequest, exception.getClass(), exception);
+		}
+	}
+
+	private void _checkContentType(String contentType)
+		throws InvalidXLIFFFileException {
+
+		if (!Objects.equals("application/x-xliff+xml", contentType) &&
+			!Objects.equals("application/xliff+xml", contentType)) {
+
+			throw new InvalidXLIFFFileException(
+				"Unsupported content type: " + contentType);
 		}
 	}
 

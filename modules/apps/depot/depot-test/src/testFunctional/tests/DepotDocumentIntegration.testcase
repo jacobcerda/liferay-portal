@@ -109,9 +109,9 @@ definition {
 
 		PageEditor.addFragment(
 			collectionName = "Layout Elements",
-			fragmentName = "Section");
+			fragmentName = "Container");
 
-		PageEditor.editLayoutSection(
+		PageEditor.editLayoutContainer(
 			backgroundImage = "Manual Selection",
 			depotName = "Test Depot Name",
 			imageFileName = "Document_1.jpeg");

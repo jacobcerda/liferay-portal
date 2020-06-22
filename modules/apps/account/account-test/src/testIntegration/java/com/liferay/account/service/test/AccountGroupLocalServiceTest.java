@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -73,12 +74,8 @@ public class AccountGroupLocalServiceTest {
 
 	@Test
 	public void testSearchAccountGroups() throws Exception {
-		long[] accountGroupIds = new long[5];
-
-		for (int i = 0; i < accountGroupIds.length; i++) {
-			AccountGroup accountGroup = _addAccountGroup();
-
-			accountGroupIds[i] = accountGroup.getAccountGroupId();
+		for (int i = 0; i < 5; i++) {
+			_addAccountGroup();
 		}
 
 		BaseModelSearchResult<AccountGroup> baseModelSearchResult =
@@ -111,8 +108,13 @@ public class AccountGroupLocalServiceTest {
 
 		Assert.assertEquals(
 			expectedAccountGroups.size(), baseModelSearchResult.getLength());
+	}
 
-		expectedAccountGroups = Arrays.asList(
+	@Test
+	public void testSearchAccountGroupsWithPagination() throws Exception {
+		String keywords = RandomTestUtil.randomString();
+
+		List<AccountGroup> expectedAccountGroups = Arrays.asList(
 			_addAccountGroup(RandomTestUtil.randomString(), keywords),
 			_addAccountGroup(RandomTestUtil.randomString(), keywords),
 			_addAccountGroup(RandomTestUtil.randomString(), keywords),
@@ -127,9 +129,9 @@ public class AccountGroupLocalServiceTest {
 				return name1.compareToIgnoreCase(name2);
 			};
 
-		_testSearchAccountGroups(
+		_testSearchAccountGroupsWithPagination(
 			comparator, expectedAccountGroups, keywords, false);
-		_testSearchAccountGroups(
+		_testSearchAccountGroupsWithPagination(
 			comparator, expectedAccountGroups, keywords, true);
 	}
 
@@ -158,7 +160,7 @@ public class AccountGroupLocalServiceTest {
 				accountGroup.getAccountGroupId()));
 	}
 
-	private void _testSearchAccountGroups(
+	private void _testSearchAccountGroupsWithPagination(
 			Comparator<AccountGroup> comparator,
 			List<AccountGroup> expectedAccountGroups, String keywords,
 			boolean reversed)
@@ -186,11 +188,9 @@ public class AccountGroupLocalServiceTest {
 			expectedAccountGroups.sort(comparator);
 		}
 
-		for (int i = 0; i < delta; i++) {
-			Assert.assertEquals(
-				expectedAccountGroups.get(start + i),
-				actualAccountGroups.get(i));
-		}
+		Assert.assertEquals(
+			ListUtil.subList(expectedAccountGroups, start, start + delta),
+			actualAccountGroups);
 	}
 
 	@Inject

@@ -21,20 +21,22 @@ export default ({data, field, totalEntries}) => {
 	const {toggleSidebar} = useContext(SidebarContext);
 
 	return (
-		<ul className="entries-list">
-			{Array.isArray(data) &&
-				data.map((field, index) => <li key={index}>{field}</li>)}
+		<div className="field-list">
+			<ul className="entries-list">
+				{Array.isArray(data) &&
+					data.map((field, index) => <li key={index}>{field}</li>)}
 
-			{data.length == 5 && totalEntries > 5 ? (
-				<li key={'see-more'}>
-					<ClayButton
-						displayType="link"
-						onClick={() => toggleSidebar(field, totalEntries)}
-					>
-						{Liferay.Language.get('see-all-entries')}
-					</ClayButton>
-				</li>
-			) : null}
-		</ul>
+				{data.length == 5 && totalEntries > 5 ? (
+					<li key={'see-more'}>
+						<ClayButton
+							displayType="link"
+							onClick={() => toggleSidebar(field, totalEntries)}
+						>
+							{Liferay.Language.get('see-all-entries')}
+						</ClayButton>
+					</li>
+				) : null}
+			</ul>
+		</div>
 	);
 };

@@ -58,9 +58,7 @@ definition {
 
 		Navigator.gotoPage(pageName = "Questions Page");
 
-		Click(
-			key_questionNameField = "Question ListOfTagsAppearsInTheTagsTab",
-			locator1 = "Questions#QUESTIONS_NAME_FIELD");
+		Questions.gotoCategory(categoryName = "Question ListOfTagsAppearsInTheTagsTab");
 
 		Pause(locator = "3000");
 
@@ -89,9 +87,7 @@ definition {
 
 		Navigator.gotoPage(pageName = "Questions Page");
 
-		Click(
-			key_questionNameField = "Question TagCardRedirectTheUserToTheQuestionsThatAreUsingThisTag",
-			locator1 = "Questions#QUESTIONS_NAME_FIELD");
+		Questions.gotoCategory(categoryName = "Question TagCardRedirectTheUserToTheQuestionsThatAreUsingThisTag");
 
 		Pause(locator = "3000");
 
@@ -124,9 +120,7 @@ definition {
 
 		Navigator.gotoPage(pageName = "Questions Page");
 
-		Click(
-			key_questionNameField = "Question ValidateSearchByQuestionTags",
-			locator1 = "Questions#QUESTIONS_NAME_FIELD");
+		Questions.gotoCategory(categoryName = "Question ValidateSearchByQuestionTags");
 
 		Pause(locator = "3000");
 
@@ -134,9 +128,9 @@ definition {
 			key_questionTabField = "Tags",
 			locator1 = "Questions#QUESTIONS_LIST_TAB_FIELD");
 
-		Type(
-			locator1 = "Questions#SEARCH_QUESTION_FIELD",
-			value1 = "tagvalidatesearchbyquestiontags");
+		Questions.search(
+			searchKey = "tagvalidatesearchbyquestiontags",
+			searchTag = "true");
 
 		Pause(locator = "3000");
 
@@ -153,23 +147,17 @@ definition {
 			categoryName = "Question ValidateTagsOccurrences",
 			userEmailAddress = "test@liferay.com");
 
-		Questions.addQuestionByAPI(
-			bodyField = "1- Body ValidateTagsOccurrences",
-			categoryName = "Question ValidateTagsOccurrences",
-			tagField = "tag1",
-			titleField = "1- Title ValidateTagsOccurrences");
-
-		Questions.addQuestionByAPI(
-			bodyField = "2- Body ValidateTagsOccurrences",
-			categoryName = "Question ValidateTagsOccurrences",
-			tagField = "tag1",
-			titleField = "2- Title ValidateTagsOccurrences");
+		for (var num : list "1,2") {
+			Questions.addQuestionByAPI(
+				bodyField = "${num}- Body ValidateTagsOccurrences",
+				categoryName = "Question ValidateTagsOccurrences",
+				tagField = "tag1",
+				titleField = "${num}- Title ValidateTagsOccurrences");
+		}
 
 		Navigator.gotoPage(pageName = "Questions Page");
 
-		Click(
-			key_questionNameField = "Question ValidateTagsOccurrences",
-			locator1 = "Questions#QUESTIONS_NAME_FIELD");
+		Questions.gotoCategory(categoryName = "Question ValidateTagsOccurrences");
 
 		Pause(locator = "3000");
 

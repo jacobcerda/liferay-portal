@@ -2,24 +2,28 @@
 
 exports[`List renders 1`] = `
 <DocumentFragment>
-  <ul
-    class="entries-list"
+  <div
+    class="field-list"
   >
-    <li>
-      label1
-    </li>
-    <li>
-      label2
-    </li>
-    <li>
-      label3
-    </li>
-    <li>
-      label4
-    </li>
-    <li>
-      label5
-    </li>
-  </ul>
+    <ul
+      class="entries-list"
+    >
+      <li>
+        label1
+      </li>
+      <li>
+        label2
+      </li>
+      <li>
+        label3
+      </li>
+      <li>
+        label4
+      </li>
+      <li>
+        label5
+      </li>
+    </ul>
+  </div>
 </DocumentFragment>
 `;
